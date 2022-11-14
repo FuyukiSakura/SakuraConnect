@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32929.385
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SakuraConnect.Server", "SakuraConnect\Server\SakuraConnect.Server.csproj", "{8BAC4D73-D337-407F-B026-6614DC1FFCB6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SakuraConnect.Server", "SakuraConnect\Server\SakuraConnect.Server.csproj", "{8BAC4D73-D337-407F-B026-6614DC1FFCB6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SakuraConnect.Client", "SakuraConnect\Client\SakuraConnect.Client.csproj", "{D36A8F17-D9B5-4F88-91D3-D1311082F3DE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SakuraConnect.Client", "SakuraConnect\Client\SakuraConnect.Client.csproj", "{D36A8F17-D9B5-4F88-91D3-D1311082F3DE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SakuraConnect.Shared", "SakuraConnect\Shared\SakuraConnect.Shared.csproj", "{F427EFD3-152B-407B-81B8-9E389BA8C4BA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SakuraConnect.Shared", "SakuraConnect\Shared\SakuraConnect.Shared.csproj", "{F427EFD3-152B-407B-81B8-9E389BA8C4BA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
