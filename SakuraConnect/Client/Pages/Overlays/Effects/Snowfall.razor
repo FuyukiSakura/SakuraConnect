@@ -1,0 +1,15 @@
+﻿@page "/overlays/effects/snowfall"
+@using SakuraConnect.Client.Shared.EmptyLayouts
+@layout EmptyLayout
+
+<div class="snowfall">
+    @for (var i = 0; i < _snowFlakes; ++i)
+    {
+        <div class="snowflake"></div>
+    }
+</div>
+
+@code
+{
+    int _snowFlakes = 250;
+}
