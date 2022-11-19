@@ -7,9 +7,6 @@
 .snowflake {
     position: absolute; // [1] Break the layout flow
     color: white; // [2] Set the color for the snowflake
-    &:after {
-        content: "\2744"; // [3] Give it some shape
-    }
 }
 
 .snowflake:nth-child(1) {

@@ -11,5 +11,10 @@
         /// Gets the event name for triggering the snowing
         /// </summary>
         public const string StartSnow = "StartSnow";
+
+        /// <summary>
+        /// Gets the event name for changing icon of the snow
+        /// </summary>
+        public const string ChangeIcon = "ChangeIcon";
     }
 }

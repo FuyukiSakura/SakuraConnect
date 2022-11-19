@@ -9,7 +9,7 @@
 <div class="snowfall">
     @for (var i = 0; i < _snowFlakes; ++i)
     {
-        <div class="snowflake"></div>
+        <div class="snowflake">@_icon</div>
     }
 </div>
 
@@ -22,6 +22,7 @@
     /// Gets or sets the number of snow flakes displayed on screen
     /// </summary>
     int _snowFlakes;
+    string _icon = "❄";
 
     HubConnection _hubConnection;
 
@@ -35,16 +36,30 @@
             .Build();
         _hubConnection.Closed += HubConnectionOnClosed;
         _hubConnection.On(SnowfallHubMessage.StartSnow, OnSnowStart);
+        _hubConnection.On<string>(SnowfallHubMessage.ChangeIcon, OnIconChange);
         await _hubConnection.StartAsync();
         await _hubConnection.SendAsync(SnowfallHubMessage.Subscribe, GroupId);
     }
 
     /// <summary>
-    /// 
+    /// Handles <see cref="SnowfallHubMessage.StartSnow"/> event
+    /// received from SignalR
     /// </summary>
     void OnSnowStart()
     {
         _snowFlakes = 100;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Handles <see cref="SnowfallHubMessage.ChangeIcon"/> event
+    /// received from SignalR
+    /// </summary>
+    /// <param name="icon"></param>
+    /// <exception cref="NotImplementedException"></exception>
+    void OnIconChange(string icon)
+    {
+        _icon = icon;
         StateHasChanged();
     }
 

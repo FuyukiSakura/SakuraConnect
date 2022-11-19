@@ -19,11 +19,29 @@ namespace SakuraConnect.Server.Controllers.Overlays.Effects
             _hubContext = hubContext;
         }
 
+        /// <summary>
+        /// Notifies all client in the group to start the snow
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id}/start")]
         public string StartSnow(string id)
         {
             _hubContext.Clients.Group(id).SendAsync(SnowfallHubMessage.StartSnow);
             return "snow started";
+        }
+
+        /// <summary>
+        /// Notifies all client in the group to change the snow icon
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="icon"></param>
+        /// <returns></returns>
+        [HttpGet("{id}/change")]
+        public string ChangeIcon(string id, string icon)
+        {
+            _hubContext.Clients.Group(id).SendAsync(SnowfallHubMessage.ChangeIcon, icon);
+            return "icon changed";
         }
     }
 }
