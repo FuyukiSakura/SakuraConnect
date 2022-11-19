@@ -37,6 +37,7 @@
         _hubConnection.Closed += HubConnectionOnClosed;
         _hubConnection.On(SnowfallHubMessage.StartSnow, OnSnowStart);
         _hubConnection.On<string>(SnowfallHubMessage.ChangeIcon, OnIconChange);
+        _hubConnection.On<int>(SnowfallHubMessage.ChangeNumber, OnNumberChange);
         await _hubConnection.StartAsync();
         await _hubConnection.SendAsync(SnowfallHubMessage.Subscribe, GroupId);
     }
@@ -60,6 +61,18 @@
     void OnIconChange(string icon)
     {
         _icon = icon;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Handles <see cref="SnowfallHubMessage.ChangeNumber"/> event
+    /// received from SignalR
+    /// </summary>
+    /// <param name="snowFlakes"></param>
+    /// <exception cref="NotImplementedException"></exception>
+    void OnNumberChange(int snowFlakes)
+    {
+        _snowFlakes = snowFlakes;
         StateHasChanged();
     }
 

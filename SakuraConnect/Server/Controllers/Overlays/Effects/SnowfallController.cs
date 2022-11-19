@@ -22,7 +22,7 @@ namespace SakuraConnect.Server.Controllers.Overlays.Effects
         /// <summary>
         /// Notifies all client in the group to start the snow
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="id">id of the group of subscribers</param>
         /// <returns></returns>
         [HttpGet("{id}/start")]
         public string StartSnow(string id)
@@ -32,16 +32,25 @@ namespace SakuraConnect.Server.Controllers.Overlays.Effects
         }
 
         /// <summary>
-        /// Notifies all client in the group to change the snow icon
+        /// Notifies all client in the group to change how the snows are rendered
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="icon"></param>
+        /// <param name="id">id of the group of subscribers</param>
+        /// <param name="icon">The icon of the snow</param>
+        /// <param name="snowFlakes">Number of snow flakes to render</param>
         /// <returns></returns>
         [HttpGet("{id}/change")]
-        public string ChangeIcon(string id, string icon)
+        public string ChangeIcon(string id, string? icon, int? snowFlakes)
         {
-            _hubContext.Clients.Group(id).SendAsync(SnowfallHubMessage.ChangeIcon, icon);
-            return "icon changed";
+            if (icon != null)
+            {
+                _hubContext.Clients.Group(id).SendAsync(SnowfallHubMessage.ChangeIcon, icon);
+            }
+
+            if (snowFlakes != null)
+            {
+                _hubContext.Clients.Group(id).SendAsync(SnowfallHubMessage.ChangeNumber, snowFlakes);
+            }
+            return "snow changed";
         }
     }
 }

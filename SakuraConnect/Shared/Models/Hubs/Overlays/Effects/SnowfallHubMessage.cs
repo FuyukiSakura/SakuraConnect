@@ -16,5 +16,11 @@
         /// Gets the event name for changing icon of the snow
         /// </summary>
         public const string ChangeIcon = "ChangeIcon";
+
+        /// <summary>
+        /// Gets the event name for changing the number of
+        /// snowflakes rendered on the screen
+        /// </summary>
+        public const string ChangeNumber = "ChangeNumber";
     }
 }
