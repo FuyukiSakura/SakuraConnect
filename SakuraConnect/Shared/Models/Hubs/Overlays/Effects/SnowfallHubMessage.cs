@@ -13,6 +13,11 @@
         public const string StartSnow = "StartSnow";
 
         /// <summary>
+        /// Gets the event name for stopping the snowing
+        /// </summary>
+        public const string StopSnow = "StopSnow";
+
+        /// <summary>
         /// Gets the event name for changing icon of the snow
         /// </summary>
         public const string ChangeIcon = "ChangeIcon";

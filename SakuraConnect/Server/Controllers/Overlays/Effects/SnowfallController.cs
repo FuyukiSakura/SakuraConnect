@@ -32,6 +32,18 @@ namespace SakuraConnect.Server.Controllers.Overlays.Effects
         }
 
         /// <summary>
+        /// Notifies all client in the group to start the snow
+        /// </summary>
+        /// <param name="id">id of the group of subscribers</param>
+        /// <returns></returns>
+        [HttpGet("{id}/stop")]
+        public string StopSnow(string id)
+        {
+            _hubContext.Clients.Group(id).SendAsync(SnowfallHubMessage.StopSnow);
+            return "snow stopped";
+        }
+
+        /// <summary>
         /// Notifies all client in the group to change how the snows are rendered
         /// </summary>
         /// <param name="id">id of the group of subscribers</param>

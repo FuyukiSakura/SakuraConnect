@@ -36,6 +36,7 @@
             .Build();
         _hubConnection.Closed += HubConnectionOnClosed;
         _hubConnection.On(SnowfallHubMessage.StartSnow, OnSnowStart);
+        _hubConnection.On(SnowfallHubMessage.StopSnow, OnSnowStop);
         _hubConnection.On<string>(SnowfallHubMessage.ChangeIcon, OnIconChange);
         _hubConnection.On<int>(SnowfallHubMessage.ChangeNumber, OnNumberChange);
         await _hubConnection.StartAsync();
@@ -49,6 +50,16 @@
     void OnSnowStart()
     {
         _snowFlakes = 100;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Handles <see cref="SnowfallHubMessage.StopSnow"/> event
+    /// received from SignalR
+    /// </summary>
+    void OnSnowStop()
+    {
+        _snowFlakes = 0;
         StateHasChanged();
     }
 
