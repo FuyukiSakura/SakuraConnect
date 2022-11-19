@@ -6,7 +6,7 @@
 @using SakuraConnect.Shared.Models.Hubs.Overlays.Effects
 @layout EmptyLayout
 
-<div class="snowfall">
+<div class="snowfall" style="zoom: @(_zoom)">
     @for (var i = 0; i < _snowFlakes; ++i)
     {
         <div class="snowflake">@_icon</div>
@@ -30,6 +30,15 @@
     /// Gets or sets the number of snow flakes displayed on screen
     /// </summary>
     int _snowFlakes;
+
+    /// <summary>
+    /// Gets or sets the zoom ratio of the app
+    /// </summary>
+    float _zoom = 2;
+
+    /// <summary>
+    /// Gets or sets the icon to be displayed as snow
+    /// </summary>
     string _icon = DefaultIcon;
 
     HubConnection _hubConnection;
@@ -47,6 +56,8 @@
         _hubConnection.On(SnowfallHubMessage.StopSnow, OnSnowStop);
         _hubConnection.On<string>(SnowfallHubMessage.ChangeIcon, OnIconChange);
         _hubConnection.On<int>(SnowfallHubMessage.ChangeNumber, OnNumberChange);
+        _hubConnection.On<float>(SnowfallHubMessage.ChangeZoom, OnZoomSet);
+        _hubConnection.On<float>(SnowfallHubMessage.Zoom, OnZoom);
         await _hubConnection.StartAsync();
         await _hubConnection.SendAsync(SnowfallHubMessage.Subscribe, GroupId);
     }
@@ -59,6 +70,7 @@
     {
         _snowFlakes = 100;
         _icon = DefaultIcon;
+        _zoom = 2;
         StateHasChanged();
     }
 
@@ -93,6 +105,32 @@
     void OnNumberChange(int snowFlakes)
     {
         _snowFlakes = snowFlakes;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Handles <see cref="SnowfallHubMessage.ChangeZoom"/> event
+    /// received from SignalR
+    /// </summary>
+    /// <param name="zoom">the zoom in ratio</param>
+    void OnZoomSet(float zoom)
+    {
+        _zoom = zoom;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Handles <see cref="SnowfallHubMessage.Zoom"/> event
+    /// received from SignalR
+    /// </summary>
+    /// <param name="ratio">the amount to add/subtract to the zoom ratio</param>
+    void OnZoom(float ratio)
+    {
+        _zoom += ratio;
+        if (_zoom < 0.5)
+        {
+            _zoom = 0.5f;
+        }
         StateHasChanged();
     }
 

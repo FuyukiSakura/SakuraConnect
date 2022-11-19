@@ -27,5 +27,17 @@
         /// snowflakes rendered on the screen
         /// </summary>
         public const string ChangeNumber = "ChangeNumber";
+
+        /// <summary>
+        /// Gets the event name for changing the number of
+        /// snowflakes rendered on the screen
+        /// </summary>
+        public const string ChangeZoom = "ChangeZoom";
+
+        /// <summary>
+        /// Gets the event name for changing the number of
+        /// snowflakes rendered on the screen
+        /// </summary>
+        public const string Zoom = "ZoomIn";
     }
 }
