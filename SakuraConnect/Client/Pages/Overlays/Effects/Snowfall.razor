@@ -41,7 +41,8 @@
     /// </summary>
     string _icon = DefaultIcon;
 
-    HubConnection _hubConnection;
+    // Dependencies
+    HubConnection _hubConnection = null!;
 
     ///
     /// <inheritdoc />
@@ -54,9 +55,9 @@
         _hubConnection.Closed += HubConnectionOnClosed;
         _hubConnection.On(SnowfallHubMessage.StartSnow, OnSnowStart);
         _hubConnection.On(SnowfallHubMessage.StopSnow, OnSnowStop);
-        _hubConnection.On<string>(SnowfallHubMessage.ChangeIcon, OnIconChange);
-        _hubConnection.On<int>(SnowfallHubMessage.ChangeNumber, OnNumberChange);
-        _hubConnection.On<float>(SnowfallHubMessage.ChangeZoom, OnZoomSet);
+        _hubConnection.On<string>(SnowfallHubMessage.UpdateIcon, OnIconSet);
+        _hubConnection.On<int>(SnowfallHubMessage.UpdateNumber, OnNumberSet);
+        _hubConnection.On<float>(SnowfallHubMessage.UpdateZoom, OnZoomSet);
         _hubConnection.On<float>(SnowfallHubMessage.Zoom, OnZoom);
         await _hubConnection.StartAsync();
         await _hubConnection.SendAsync(SnowfallHubMessage.Subscribe, GroupId);
@@ -85,31 +86,29 @@
     }
 
     /// <summary>
-    /// Handles <see cref="SnowfallHubMessage.ChangeIcon"/> event
+    /// Handles <see cref="SnowfallHubMessage.UpdateIcon"/> event
     /// received from SignalR
     /// </summary>
-    /// <param name="icon"></param>
-    /// <exception cref="NotImplementedException"></exception>
-    void OnIconChange(string icon)
+    /// <param name="icon">the icon of the snowflake</param>
+    void OnIconSet(string icon)
     {
         _icon = icon;
         StateHasChanged();
     }
 
     /// <summary>
-    /// Handles <see cref="SnowfallHubMessage.ChangeNumber"/> event
+    /// Handles <see cref="SnowfallHubMessage.UpdateNumber"/> event
     /// received from SignalR
     /// </summary>
-    /// <param name="snowFlakes"></param>
-    /// <exception cref="NotImplementedException"></exception>
-    void OnNumberChange(int snowFlakes)
+    /// <param name="snowFlakes">number of snowflakes to render</param>
+    void OnNumberSet(int snowFlakes)
     {
         _snowFlakes = snowFlakes;
         StateHasChanged();
     }
 
     /// <summary>
-    /// Handles <see cref="SnowfallHubMessage.ChangeZoom"/> event
+    /// Handles <see cref="SnowfallHubMessage.UpdateZoom"/> event
     /// received from SignalR
     /// </summary>
     /// <param name="zoom">the zoom in ratio</param>

@@ -50,22 +50,22 @@ namespace SakuraConnect.Server.Controllers.Overlays.Effects
         /// <param name="icon">The icon of the snow</param>
         /// <param name="snowFlakes">Number of snow flakes to render</param>
         /// <returns></returns>
-        [HttpGet("{id}/change")]
-        public string ChangeIcon(string id, string? icon, int? snowFlakes, float? zoom)
+        [HttpGet("{id}/update")]
+        public string UpdateSnow(string id, string? icon, int? snowFlakes, float? zoom)
         {
             if (icon != null)
             {
-                _hubContext.Clients.Group(id).SendAsync(SnowfallHubMessage.ChangeIcon, icon);
+                _hubContext.Clients.Group(id).SendAsync(SnowfallHubMessage.UpdateIcon, icon);
             }
 
             if (snowFlakes != null)
             {
-                _hubContext.Clients.Group(id).SendAsync(SnowfallHubMessage.ChangeNumber, snowFlakes);
+                _hubContext.Clients.Group(id).SendAsync(SnowfallHubMessage.UpdateNumber, snowFlakes);
             }
 
             if (zoom != null)
             {
-                _hubContext.Clients.Group(id).SendAsync(SnowfallHubMessage.ChangeZoom, zoom);
+                _hubContext.Clients.Group(id).SendAsync(SnowfallHubMessage.UpdateZoom, zoom);
             }
             return "snow changed";
         }
@@ -74,8 +74,8 @@ namespace SakuraConnect.Server.Controllers.Overlays.Effects
         /// Notifies all client in the group to zoom in/out of the snow
         /// This makes snowflakes bigger or smaller
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="ratio"></param>
+        /// <param name="id">id of the group of subscribers</param>
+        /// <param name="ratio">ratio of zoom to increase, can be negative</param>
         /// <returns></returns>
         [HttpGet("{id}/zoom")]
         public string Zoom(string id, float ratio)
