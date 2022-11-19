@@ -15,6 +15,14 @@
 
 @code
 {
+    /// <summary>
+    /// Gets the default snow icon
+    /// </summary>
+    const string DefaultIcon = "❄";
+
+    /// <summary>
+    /// Gets or sets the group id this overlay to listen for events
+    /// </summary>
     [Parameter]
     public string GroupId { get; set; } = "";
 
@@ -22,7 +30,7 @@
     /// Gets or sets the number of snow flakes displayed on screen
     /// </summary>
     int _snowFlakes;
-    string _icon = "❄";
+    string _icon = DefaultIcon;
 
     HubConnection _hubConnection;
 
@@ -50,6 +58,7 @@
     void OnSnowStart()
     {
         _snowFlakes = 100;
+        _icon = DefaultIcon;
         StateHasChanged();
     }
 
