@@ -58,6 +58,7 @@
         _hubConnection.On<string>(SnowfallHubMessage.UpdateIcon, OnIconSet);
         _hubConnection.On<int>(SnowfallHubMessage.UpdateNumber, OnNumberSet);
         _hubConnection.On<float>(SnowfallHubMessage.UpdateZoom, OnZoomSet);
+        _hubConnection.On<int>(SnowfallHubMessage.AddSnow, OnAdd);
         _hubConnection.On<float>(SnowfallHubMessage.Zoom, OnZoom);
         await _hubConnection.StartAsync();
         await _hubConnection.SendAsync(SnowfallHubMessage.Subscribe, GroupId);
@@ -130,6 +131,23 @@
         {
             _zoom = 0.5f;
         }
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Handles <see cref="SnowfallHubMessage.AddSnow"/> event
+    /// received from SignalR
+    /// </summary>
+    /// <param name="count">the amount to add/subtract</param>
+    void OnAdd(int count)
+    {
+        _snowFlakes += count;
+        _snowFlakes = _snowFlakes switch
+        {
+            var i when i < 10 => 10,
+            > 1000 => 1000,
+            _ => _snowFlakes
+        };
         StateHasChanged();
     }
 

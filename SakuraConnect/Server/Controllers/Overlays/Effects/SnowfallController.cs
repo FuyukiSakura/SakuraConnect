@@ -71,6 +71,19 @@ namespace SakuraConnect.Server.Controllers.Overlays.Effects
         }
 
         /// <summary>
+        /// Notifies all client in the group to add/subtract number of the snowflakes
+        /// </summary>
+        /// <param name="id">id of the group of subscribers</param>
+        /// <param name="count">number of snowflakes to add, can be negative</param>
+        /// <returns></returns>
+        [HttpGet("{id}/add")]
+        public string AddSnow(string id, int count)
+        {
+            _hubContext.Clients.Group(id).SendAsync(SnowfallHubMessage.AddSnow, count);
+            return "snow added";
+        }
+
+        /// <summary>
         /// Notifies all client in the group to zoom in/out of the snow
         /// This makes snowflakes bigger or smaller
         /// </summary>

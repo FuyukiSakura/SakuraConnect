@@ -35,6 +35,12 @@
         public const string UpdateZoom = nameof(UpdateZoom);
 
         /// <summary>
+        /// Gets the event name for adding number of
+        /// snowflakes rendered on the screen
+        /// </summary>
+        public const string AddSnow = nameof(AddSnow);
+
+        /// <summary>
         /// Gets the event name for changing the size of snow
         /// </summary>
         public const string Zoom = nameof(Zoom);
