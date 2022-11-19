@@ -1,9 +1,10 @@
-using Microsoft.AspNetCore.ResponseCompression;
+using SakuraConnect.Server.Hubs.Overlays.Effects;
+using SakuraConnect.Shared.Models.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
+builder.Services.AddSignalR();
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
@@ -28,9 +29,9 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-
 app.MapRazorPages();
 app.MapControllers();
+app.MapHub<SnowfallHub>(HubUri.Snowfall);
 app.MapFallbackToFile("index.html");
 
 app.Run();

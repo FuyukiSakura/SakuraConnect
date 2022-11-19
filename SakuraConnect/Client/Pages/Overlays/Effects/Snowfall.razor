@@ -1,5 +1,9 @@
-﻿@page "/overlays/effects/snowfall"
+﻿@page "/overlays/effects/snowfall/{GroupId}"
 @using SakuraConnect.Client.Shared.EmptyLayouts
+@using Microsoft.AspNetCore.SignalR.Client
+@using SakuraConnect.Shared.Models.Hosting
+@using SakuraConnect.Shared.Models.Hubs
+@using SakuraConnect.Shared.Models.Hubs.Overlays.Effects
 @layout EmptyLayout
 
 <div class="snowfall">
@@ -11,5 +15,50 @@
 
 @code
 {
-    int _snowFlakes = 250;
+    [Parameter]
+    public string GroupId { get; set; } = "";
+
+    /// <summary>
+    /// Gets or sets the number of snow flakes displayed on screen
+    /// </summary>
+    int _snowFlakes;
+
+    HubConnection _hubConnection;
+
+    ///
+    /// <inheritdoc />
+    ///
+    protected override async Task OnInitializedAsync()
+    {
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl(HostUri.Backend + HubUri.Snowfall)
+            .Build();
+        _hubConnection.Closed += HubConnectionOnClosed;
+        _hubConnection.On(SnowfallHubMessage.StartSnow, OnSnowStart);
+        await _hubConnection.StartAsync();
+        await _hubConnection.SendAsync(SnowfallHubMessage.Subscribe, GroupId);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    void OnSnowStart()
+    {
+        _snowFlakes = 100;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Tries to reconnect when the connection is closed
+    /// </summary>
+    /// <param name="arg"></param>
+    /// <returns></returns>
+    async Task HubConnectionOnClosed(Exception? arg)
+    {
+        while (_hubConnection.State != HubConnectionState.Connected)
+        {
+            await _hubConnection.StartAsync();
+            await Task.Delay(2000);
+        }
+    }
 }
