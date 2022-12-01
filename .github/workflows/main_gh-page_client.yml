@@ -11,7 +11,7 @@ jobs:
     # use ubuntu-latest image to run steps on
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v1
@@ -35,7 +35,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: site
-          path: release
+          path: release/wwwroot
 
   deploy:
     concurrency: ci-${{ github.ref }}
@@ -51,8 +51,8 @@ jobs:
           name: site
 
       - name: Commit wwwroot to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@3.7.1
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: gh-pages
-          FOLDER: release/wwwroot
+          FOLDER: site
