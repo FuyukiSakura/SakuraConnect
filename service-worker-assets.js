@@ -33,7 +33,7 @@
       "url": "_framework\/icudt.dat"
     },
     {
-      "hash": "sha256-f92Ld+wrsWPEkM1zSFFPZslOPsp9MT5vzqsYUJHtEGE=",
+      "hash": "sha256-obYwO3Gj7Z7cL390wo+WmIwXghRfbnXDR62GReU2sLY=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -129,7 +129,7 @@
       "url": "_framework\/Microsoft.Win32.Primitives.dll"
     },
     {
-      "hash": "sha256-cm3NpGhmpLJROo6LFAeh2NUf+5YUbCO88zMMJ0wW7ZM=",
+      "hash": "sha256-0jG+62w\/y\/lcABAeV61pSpR51WO7lMHJgodhPu+v1MU=",
       "url": "_framework\/SakuraConnect.Client.dll"
     },
     {
@@ -261,7 +261,7 @@
       "url": "_framework\/System.Threading.ThreadPool.dll"
     },
     {
-      "hash": "sha256-nwwnnmn613AIP27c0djgPdWEKqZXkMz0RvYAsnKYhUQ=",
+      "hash": "sha256-qv9Ee6XGoPq0vb5SDmM1J\/f8qOZIAsGOoVz8f0IFmNg=",
       "url": "SakuraConnect.Client.styles.css"
     },
     {
@@ -341,5 +341,5 @@
       "url": "manifest.json"
     }
   ],
-  "version": "Ls73JJGn"
+  "version": "oIQ9KZHg"
 };
