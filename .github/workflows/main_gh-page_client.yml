@@ -32,7 +32,7 @@ jobs:
         run: cp release/wwwroot/index.html release/wwwroot/404.html
 
       - name: Upload Artifacts 🔺 # The project is then uploaded as an artifact named 'site'.
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: site
           path: release/wwwroot
@@ -46,7 +46,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Download Artifacts 🔻 # The built project is downloaded into the 'site' folder.
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: site
 
@@ -55,4 +55,4 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: gh-pages
-          FOLDER: site
+          FOLDER: .
