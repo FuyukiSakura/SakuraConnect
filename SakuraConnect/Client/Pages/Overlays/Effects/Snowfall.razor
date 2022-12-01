@@ -1,10 +1,12 @@
-﻿@page "/overlays/effects/snowfall/{GroupId}"
+﻿@page "/overlays/effects/snowfall"
+@page "/overlays/effects/snowfall/{GroupId}"
 @using SakuraConnect.Client.Shared.EmptyLayouts
 @using Microsoft.AspNetCore.SignalR.Client
 @using SakuraConnect.Shared.Models.Hosting
 @using SakuraConnect.Shared.Models.Hubs
 @using SakuraConnect.Shared.Models.Hubs.Overlays.Effects
 @layout EmptyLayout
+@inject NavigationManager NavManager
 
 <div class="snowfall" style="zoom: @(_zoom)">
     @for (var i = 0; i < _snowFlakes; ++i)
@@ -49,6 +51,13 @@
     ///
     protected override async Task OnInitializedAsync()
     {
+        if (string.IsNullOrWhiteSpace(GroupId))
+        {
+            // Generate group id if not given
+            GroupId = Guid.NewGuid().ToString();
+            NavManager.NavigateTo("/overlays/effects/snowfall/" + GroupId);
+        }
+
         _hubConnection = new HubConnectionBuilder()
             .WithUrl(HostUri.Backend + HubUri.Snowfall)
             .Build();
