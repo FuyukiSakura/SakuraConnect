@@ -1,0 +1,86 @@
+﻿body, html, .snowfall {
+    overflow: hidden;
+    height: 100%;
+    width: 100%;
+}
+
+.snowflake {
+    position: absolute; // [1] Break the layout flow
+    color: white; // [2] Set the color for the snowflake
+}
+
+.snowflake:nth-child(1) {
+    top: -20%;
+}
+
+.snowflake:nth-child(2) {
+    top: -40%;
+}
+
+.snowflake:nth-child(3) {
+    top: -33%;
+}
+
+// Total numner of snowflakes
+$snowflakes: 1000;
+
+// Randomize the animation and positioning for each snowflake
+@for $i from 1 through $snowflakes {
+    // Position of the snowflake on the y-axis
+    $top: (random(50) + 50) * 1%;
+
+    // Position of the snowflake on the x-axis
+    $left: random(100) * 1%;
+
+    // Animation delay for the flake
+    $delay: random(20) - 1s;
+
+    // Floating span for the flake
+    $duration: random(6) + 4s;
+
+    // Size of the flake
+    $size: random(24);
+
+    /* Snowflake ##{$i} */
+    .snowflake:nth-of-type(#{$i}) {
+        animation-name: snowflake-#{$i};
+        animation-delay: $delay;
+        // Play the animation for anything between 5-10 seconds
+        animation-duration: $duration;
+        animation-iteration-count: infinite;
+        left: $left;
+        top: -$top;
+
+        &:after {
+            font-size: $size * 1px;
+        }
+    }
+
+    // Animation for snowflake ##{$i}
+    @keyframes snowflake-#{$i} {
+        0% {
+            transform: rotate(0deg);
+            left: $left;
+            top: -$top;
+        }
+
+        25% {
+            left: $left + 1%;
+        }
+
+        50% {
+            left: $left;
+        }
+
+        75% {
+            left: $left + 2%;
+            opacity: 1;
+        }
+
+        100% {
+            transform: rotate(360deg);
+            top: $top + 40%;
+            opacity: 0;
+        }
+    }
+}
