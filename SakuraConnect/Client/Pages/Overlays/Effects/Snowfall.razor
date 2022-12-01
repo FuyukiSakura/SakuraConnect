@@ -1,0 +1,176 @@
+﻿@page "/overlays/effects/snowfall"
+@page "/overlays/effects/snowfall/{GroupId}"
+@using SakuraConnect.Client.Shared.EmptyLayouts
+@using Microsoft.AspNetCore.SignalR.Client
+@using SakuraConnect.Shared.Models.Hosting
+@using SakuraConnect.Shared.Models.Hubs
+@using SakuraConnect.Shared.Models.Hubs.Overlays.Effects
+@layout EmptyLayout
+@inject NavigationManager NavManager
+
+<div class="snowfall" style="zoom: @(_zoom)">
+    @for (var i = 0; i < _snowFlakes; ++i)
+    {
+        <div class="snowflake">@_icon</div>
+    }
+</div>
+
+@code
+{
+    /// <summary>
+    /// Gets the default snow icon
+    /// </summary>
+    const string DefaultIcon = "❄";
+
+    /// <summary>
+    /// Gets or sets the group id this overlay to listen for events
+    /// </summary>
+    [Parameter]
+    public string GroupId { get; set; } = "";
+
+    /// <summary>
+    /// Gets or sets the number of snow flakes displayed on screen
+    /// </summary>
+    int _snowFlakes;
+
+    /// <summary>
+    /// Gets or sets the zoom ratio of the app
+    /// </summary>
+    float _zoom = 2;
+
+    /// <summary>
+    /// Gets or sets the icon to be displayed as snow
+    /// </summary>
+    string _icon = DefaultIcon;
+
+    // Dependencies
+    HubConnection _hubConnection = null!;
+
+    ///
+    /// <inheritdoc />
+    ///
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrWhiteSpace(GroupId))
+        {
+            // Generate group id if not given
+            GroupId = Guid.NewGuid().ToString();
+            NavManager.NavigateTo("/overlays/effects/snowfall/" + GroupId);
+        }
+
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl(HostUri.Backend + HubUri.Snowfall)
+            .Build();
+        _hubConnection.Closed += HubConnectionOnClosed;
+        _hubConnection.On(SnowfallHubMessage.StartSnow, OnSnowStart);
+        _hubConnection.On(SnowfallHubMessage.StopSnow, OnSnowStop);
+        _hubConnection.On<string>(SnowfallHubMessage.UpdateIcon, OnIconSet);
+        _hubConnection.On<int>(SnowfallHubMessage.UpdateNumber, OnNumberSet);
+        _hubConnection.On<float>(SnowfallHubMessage.UpdateZoom, OnZoomSet);
+        _hubConnection.On<int>(SnowfallHubMessage.AddSnow, OnAdd);
+        _hubConnection.On<float>(SnowfallHubMessage.Zoom, OnZoom);
+        await _hubConnection.StartAsync();
+        await _hubConnection.SendAsync(SnowfallHubMessage.Subscribe, GroupId);
+    }
+
+    /// <summary>
+    /// Handles <see cref="SnowfallHubMessage.StartSnow"/> event
+    /// received from SignalR
+    /// </summary>
+    void OnSnowStart()
+    {
+        _snowFlakes = 100;
+        _icon = DefaultIcon;
+        _zoom = 2;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Handles <see cref="SnowfallHubMessage.StopSnow"/> event
+    /// received from SignalR
+    /// </summary>
+    void OnSnowStop()
+    {
+        _snowFlakes = 0;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Handles <see cref="SnowfallHubMessage.UpdateIcon"/> event
+    /// received from SignalR
+    /// </summary>
+    /// <param name="icon">the icon of the snowflake</param>
+    void OnIconSet(string icon)
+    {
+        _icon = icon;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Handles <see cref="SnowfallHubMessage.UpdateNumber"/> event
+    /// received from SignalR
+    /// </summary>
+    /// <param name="snowFlakes">number of snowflakes to render</param>
+    void OnNumberSet(int snowFlakes)
+    {
+        _snowFlakes = snowFlakes;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Handles <see cref="SnowfallHubMessage.UpdateZoom"/> event
+    /// received from SignalR
+    /// </summary>
+    /// <param name="zoom">the zoom in ratio</param>
+    void OnZoomSet(float zoom)
+    {
+        _zoom = zoom;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Handles <see cref="SnowfallHubMessage.Zoom"/> event
+    /// received from SignalR
+    /// </summary>
+    /// <param name="ratio">the amount to add/subtract to the zoom ratio</param>
+    void OnZoom(float ratio)
+    {
+        _zoom += ratio;
+        if (_zoom < 0.5)
+        {
+            _zoom = 0.5f;
+        }
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Handles <see cref="SnowfallHubMessage.AddSnow"/> event
+    /// received from SignalR
+    /// </summary>
+    /// <param name="count">the amount to add/subtract</param>
+    void OnAdd(int count)
+    {
+        _snowFlakes += count;
+        _snowFlakes = _snowFlakes switch
+        {
+            var i when i < 10 => 10,
+            > 1000 => 1000,
+            _ => _snowFlakes
+        };
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Tries to reconnect when the connection is closed
+    /// </summary>
+    /// <param name="arg"></param>
+    /// <returns></returns>
+    async Task HubConnectionOnClosed(Exception? arg)
+    {
+        while (_hubConnection.State != HubConnectionState.Connected)
+        {
+            await _hubConnection.StartAsync();
+            await Task.Delay(2000);
+        }
+    }
+}

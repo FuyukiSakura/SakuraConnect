@@ -1,6 +1,6 @@
 {
-  "name": "SakuraConnect",
-  "short_name": "SakuraConnect",
+  "name": "Sakura Connect",
+  "short_name": "Sakura Connect",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#ffffff",
