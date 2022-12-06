@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SakuraConnect.Client", "Sak
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SakuraConnect.Shared", "SakuraConnect\Shared\SakuraConnect.Shared.csproj", "{F427EFD3-152B-407B-81B8-9E389BA8C4BA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dreamer", "SakuraConnect\Dreamer\Dreamer.csproj", "{16B00589-A48E-496D-98BE-FB02893E5D30}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,12 @@ Global
 		{F427EFD3-152B-407B-81B8-9E389BA8C4BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F427EFD3-152B-407B-81B8-9E389BA8C4BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F427EFD3-152B-407B-81B8-9E389BA8C4BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16B00589-A48E-496D-98BE-FB02893E5D30}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16B00589-A48E-496D-98BE-FB02893E5D30}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16B00589-A48E-496D-98BE-FB02893E5D30}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{16B00589-A48E-496D-98BE-FB02893E5D30}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16B00589-A48E-496D-98BE-FB02893E5D30}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16B00589-A48E-496D-98BE-FB02893E5D30}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
