@@ -23,8 +23,11 @@ namespace Sakura.Live.Connect.Dreamer
 	        builder.Services.AddThePanda();
 	        builder.Services.AddOscCore();
             builder.Services.AddSingleton<WeatherForecastService>();
-
-            return builder.Build();
+            
+            var app = builder.Build();
+            var monitor = app.Services.GetService<IThePandaMonitor>();
+            monitor!.StartAsync();
+            return app;
         }
     }
 }
