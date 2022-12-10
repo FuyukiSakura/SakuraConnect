@@ -4,6 +4,7 @@
 @using Sakura.Live.Osc.Core.Services
 @using Sakura.Live.Osc.Core.Settings
 @inject OscDuplicateService _oscDuplicateSvc
+@inject OscReceiverService OscReceiverService
 
 <h1>OSC Duplicator</h1>
 
@@ -16,6 +17,7 @@
            aria-label="Port"
            aria-describedby="vmc-receiver-port"
            @bind-value="ServerPort">
+    <ServiceConfigButton Service="@OscReceiverService" />
 </div>
 
 <h2>
