@@ -1,4 +1,6 @@
 ﻿using Sakura.Live.Connect.Dreamer.Data;
+using Sakura.Live.Osc.Core;
+using Sakura.Live.ThePanda.Core;
 
 namespace Sakura.Live.Connect.Dreamer
 {
@@ -16,9 +18,10 @@ namespace Sakura.Live.Connect.Dreamer
 
             builder.Services.AddMauiBlazorWebView();
 #if DEBUG
-		builder.Services.AddBlazorWebViewDeveloperTools();
+		    builder.Services.AddBlazorWebViewDeveloperTools();
 #endif
-
+	        builder.Services.AddThePanda();
+	        builder.Services.AddOscCore();
             builder.Services.AddSingleton<WeatherForecastService>();
 
             return builder.Build();

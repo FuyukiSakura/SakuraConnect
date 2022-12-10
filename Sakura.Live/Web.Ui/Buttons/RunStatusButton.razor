@@ -1,0 +1,49 @@
+﻿<div class="d-grid gap-2">
+    <button type="button"
+            class="btn @GetClasses()"
+            @onclick="OnClick">@GetText()</button>
+</div>
+
+@code {
+    /// <summary>
+    /// Gets or sets the display text of the button
+    /// </summary>
+    [Parameter]
+    public string StartText { get; set; } = "";
+
+    /// <summary>
+    /// Gets or sets the display text of the button
+    /// </summary>
+    [Parameter]
+    public string StopText { get; set; } = "";
+
+    /// <summary>
+    /// Gets or sets the running status of the button
+    /// </summary>
+    [Parameter]
+    public bool IsRunning { get; set; }
+
+    /// <summary>
+    /// Gets or sets the save button callback action
+    /// </summary>
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    /// <summary>
+    /// Gets the button color when status changes
+    /// </summary>
+    /// <returns></returns>
+    string GetClasses()
+    {
+        return IsRunning ? "btn-danger" : "btn-success";
+    }
+
+    /// <summary>
+    /// Gets the displayed text according to the status
+    /// </summary>
+    /// <returns></returns>
+    string GetText()
+    {
+        return IsRunning ? StopText : StartText;
+    }
+}
