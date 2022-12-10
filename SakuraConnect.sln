@@ -15,6 +15,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sakura.Live.ThePanda.Core",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sakura.Live.Osc.Core", "Sakura.Live\Osc.Core\Sakura.Live.Osc.Core.csproj", "{678F8C42-52A1-4768-815C-B6411D71221A}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SakuraConnect.Web.Ui", "SakuraConnect\Web.Ui\SakuraConnect.Web.Ui.csproj", "{5E29FED2-0F63-46FF-86A7-0775EC6EC2C6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

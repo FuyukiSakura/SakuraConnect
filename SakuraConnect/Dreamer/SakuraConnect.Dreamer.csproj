@@ -57,6 +57,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\Sakura.Live\ThePanda.Core\Sakura.Live.ThePanda.Core.csproj" />
+      <ProjectReference Include="..\Web.Ui\SakuraConnect.Web.Ui.csproj" />
     </ItemGroup>
 
 </Project>
