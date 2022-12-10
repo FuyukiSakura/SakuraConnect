@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SakuraConnect.Client", "Sak
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SakuraConnect.Shared", "SakuraConnect\Shared\SakuraConnect.Shared.csproj", "{F427EFD3-152B-407B-81B8-9E389BA8C4BA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dreamer", "SakuraConnect\Dreamer\Dreamer.csproj", "{16B00589-A48E-496D-98BE-FB02893E5D30}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SakuraConnect.Dreamer", "SakuraConnect\Dreamer\SakuraConnect.Dreamer.csproj", "{16B00589-A48E-496D-98BE-FB02893E5D30}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sakura.Live.ThePanda.Core", "Sakura.Live\ThePanda.Core\Sakura.Live.ThePanda.Core.csproj", "{5D7D8660-B720-4659-A44E-127FA6985DC4}"
 EndProject
