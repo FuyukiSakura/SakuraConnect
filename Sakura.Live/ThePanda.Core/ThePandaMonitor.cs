@@ -68,7 +68,8 @@ namespace Sakura.Live.ThePanda.Core
         void StopServicesNoLongerReferenced()
         {
             var noLongerRequiredServices = _services
-                .Where(pair => !MonitorRequired(pair))
+                .Where(pair => !MonitorRequired(pair) 
+                               && pair.Key.Status != ServiceStatus.Stopped) // Checks if the service is already stopped
                 .Select(pair => pair.Key)
                 .ToArray();
             foreach (var service in noLongerRequiredServices)
