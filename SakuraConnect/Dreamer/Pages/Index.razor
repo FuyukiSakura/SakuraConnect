@@ -16,7 +16,7 @@
            placeholder="VMC default: 39539"
            aria-label="Port"
            aria-describedby="vmc-receiver-port"
-           @bind-value="ServerPort">
+           @bind-value="OscReceiverService.Port">
     <ServiceConfigButton Service="@OscReceiverService" />
 </div>
 
@@ -28,7 +28,7 @@
 </h2>
 
 <div class="row mb-3">
-    @foreach (var sender in OscSenders)
+    @foreach (var sender in _oscDuplicateSvc.Senders)
     {
         <div class="col-sm-6 col-md-4">
             <div class="card">
@@ -84,20 +84,9 @@
     public bool IsServerRunning { get; set; }
 
     /// <summary>
-    /// Gets or sets the port the app is listening for
-    /// OSC broadcasts
-    /// </summary>
-    public int ServerPort { get; set; } = 39550;
-
-    /// <summary>
     /// Gets or sets the auto recovery option
     /// </summary>
     public bool IsAutoRecovered { get; set; } = true;
-
-    /// <summary>
-    /// List of OSC senders
-    /// </summary>
-    public List<OscSender> OscSenders { get; set; } = new();
 
     ///
     /// <inheritdoc />
@@ -121,7 +110,7 @@
         else
         {
             SaveVmcSettings();
-            await _oscDuplicateSvc.StartAsync(OscSenders);
+            await _oscDuplicateSvc.StartAsync();
             IsServerRunning = true;
         }
     }
@@ -132,9 +121,9 @@
     /// <exception cref="NotImplementedException"></exception>
     void AddSender_OnClick()
     {
-        var maxPort = OscSenders.Max(sender => sender.Port);
+        var maxPort = _oscDuplicateSvc.Senders.Max(sender => sender.Port);
         var nextPort = maxPort > 39550 ? maxPort + 1 : 39551;
-        OscSenders.Add(new OscSender
+        _oscDuplicateSvc.Senders.Add(new OscSender
         {
             IpAddress = "127.0.0.1",
             Port = nextPort
@@ -147,7 +136,7 @@
     /// <param name="sender"></param>
     void RemoveSender(OscSender sender)
     {
-        OscSenders.Remove(sender);
+        _oscDuplicateSvc.Senders.Remove(sender);
     }
 
     /// <summary>
@@ -155,7 +144,7 @@
     /// </summary>
     void SaveVmcSettings()
     {
-        var jsonSettingString = JsonSerializer.Serialize(OscSenders);
+        var jsonSettingString = JsonSerializer.Serialize(_oscDuplicateSvc.Senders);
         Preferences.Set(
             VmcPreferenceKeys.Duplicators,
             jsonSettingString,
@@ -163,7 +152,7 @@
             );
         Preferences.Set(
             VmcPreferenceKeys.Port,
-            ServerPort,
+            OscReceiverService.Port,
             VmcPreferenceKeys.ContainerKey);
     }
 
@@ -172,6 +161,11 @@
     /// </summary>
     void LoadVmcSettings()
     {
+        OscReceiverService.Port = Preferences.Get(
+            VmcPreferenceKeys.Port,
+            39550,
+            VmcPreferenceKeys.ContainerKey);
+
         var jsonSettingString = Preferences.Get(VmcPreferenceKeys.Duplicators,
             OscSender.Default,
             VmcPreferenceKeys.ContainerKey);
@@ -179,7 +173,7 @@
             .Deserialize<OscSender[]>(jsonSettingString);
         foreach (var setting in settings)
         {
-            OscSenders.Add(setting);
+            _oscDuplicateSvc.Senders.Add(setting);
         }
     }
 }

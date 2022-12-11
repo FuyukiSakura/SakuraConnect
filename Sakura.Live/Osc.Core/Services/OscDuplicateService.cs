@@ -1,6 +1,5 @@
 ﻿using Sakura.Live.Osc.Core.Events;
 using System.Net.Sockets;
-using System.Net;
 using Sakura.Live.Osc.Core.Settings;
 using Sakura.Live.ThePanda.Core;
 
@@ -11,7 +10,12 @@ namespace Sakura.Live.Osc.Core.Services
     /// </summary>
     public class OscDuplicateService
     {
-        IPEndPoint[] _duplicateEndpoints = Array.Empty<IPEndPoint>();
+        /// <summary>
+        /// Gets or sets a list of senders the duplication service
+        /// should send to
+        /// </summary>
+        public List<OscSender> Senders { get; set; } = new();
+        
         readonly Socket _socket = new (AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 
         readonly IThePandaMonitor _monitorSvc;
@@ -33,13 +37,9 @@ namespace Sakura.Live.Osc.Core.Services
         /// <summary>
         /// Starts listening and duplicating OSC requests
         /// </summary>
-        /// <param name="senders"></param>
         /// <returns></returns>
-        public async Task StartAsync(IEnumerable<OscSender> senders) {
-            
-            _duplicateEndpoints = senders.Select(sender => sender.EndPoint)
-                .ToArray();
-            
+        public async Task StartAsync() 
+        {
             _receiverService.OscReceived += ReceiverService_OnOscReceived;
             _monitorSvc.Register(this, _receiverService);
             await Task.CompletedTask;
@@ -52,7 +52,9 @@ namespace Sakura.Live.Osc.Core.Services
         /// <param name="e"></param>
         void ReceiverService_OnOscReceived(object? sender, OscEventArgs e)
         {
-            foreach (var ipEndPoint in _duplicateEndpoints)
+            var duplicateEndpoints = Senders.Select(s => s.EndPoint)
+                .ToArray();
+            foreach (var ipEndPoint in duplicateEndpoints)
             {
                 _ = Task.Run(() => _socket.SendTo(e.OscData, ipEndPoint));
             }
