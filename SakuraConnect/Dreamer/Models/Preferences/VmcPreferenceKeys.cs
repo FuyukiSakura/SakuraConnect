@@ -4,7 +4,7 @@ namespace Sakura.Live.Connect.Dreamer.Models.Preferences
     /// <summary>
     /// The keys for storing VMC settings in <see cref="Microsoft.Maui.Storage.Preferences"/>
     /// </summary>
-    public class VmcPreferenceKeys
+    public static class VmcPreferenceKeys
     {
         /// <summary>
         /// Gets the container key for VMC settings
