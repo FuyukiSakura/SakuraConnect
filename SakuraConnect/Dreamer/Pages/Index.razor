@@ -1,0 +1,192 @@
+﻿@page "/"
+@using System.Text.Json
+@using Sakura.Live.Connect.Dreamer.Models.Bootstrap
+@using Sakura.Live.Connect.Dreamer.Models.Preferences
+@using Sakura.Live.Osc.Core.Services
+@using Sakura.Live.Osc.Core.Settings
+@inject OscDuplicateService _oscDuplicateSvc
+@inject OscReceiverService OscReceiverService
+
+<h1>OSC Duplicator</h1>
+
+<div class="input-group mb-3">
+    <ServiceConfigButton Service="@OscReceiverService" />
+    <span class="input-group-text"
+          id="vmc-receiver-port">Listen on</span>
+    <input type="text"
+           class="form-control"
+           placeholder="VMC default: 39539"
+           aria-label="Port"
+           aria-describedby="vmc-receiver-port"
+           @bind-value="OscReceiverService.Port">
+</div>
+
+<h2>
+    Send to 
+    <button type="button"
+            class="btn btn-outline-success"
+            @onclick="AddSender_OnClick">+</button>
+</h2>
+
+<div class="row">
+    @foreach (var sender in _oscDuplicateSvc.Senders)
+    {
+        <div class="col-lg-6 col-xl-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="input-group mb-1">
+                        <span class="input-group-text"
+                              id="vmc-sender-name-@sender.Name">Name</span>
+                        <input type="text"
+                               class="form-control"
+                               placeholder="Beat Saber"
+                               aria-label="Name @sender.Name"
+                               aria-describedby="vmc-sender-name-@sender.Name"
+                               @bind-value="sender.Name">
+                        <button type="button"
+                                class="btn btn-outline-danger"
+                                @onclick="@(() => RemoveSender(sender))">-</button>
+                    </div>
+                    <div class="input-group mb-1">
+                        <span class="input-group-text"
+                              id="vmc-sender-ip-@sender.Name">IP Address</span>
+                        <input type="text"
+                               class="form-control"
+                               placeholder="127.0.0.1"
+                               aria-label="IP @sender.Name"
+                               aria-describedby="vmc-sender-ip-@sender.Name"
+                               @bind-value="sender.IpAddress">
+                    </div>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text"
+                              id="vmc-sender-port-@sender.Name">Port</span>
+                        <input type="text"
+                               class="form-control"
+                               placeholder="39539"
+                               aria-label="IP @sender.Name"
+                               aria-describedby="vmc-sender-port-@sender.Name"
+                               @bind-value="sender.Port">
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<StartStopButton StartText="Start"
+                 StopText="Stop"
+                 IsRunning="@IsServerRunning"
+                 @onclick="StartService_OnClick" />
+
+<ConfirmDialog @ref="_confirmDeleteDialog" />
+
+@code{
+    private ConfirmDialog _confirmDeleteDialog;
+
+    /// <summary>
+    /// Gets or sets the running status of the VMC server
+    /// </summary>
+    public bool IsServerRunning { get; set; }
+
+    /// <summary>
+    /// Gets or sets the auto recovery option
+    /// </summary>
+    public bool IsAutoRecovered { get; set; } = true;
+
+    ///
+    /// <inheritdoc />
+    ///
+    protected override void OnInitialized()
+    {
+        LoadVmcSettings();
+        base.OnInitialized();
+    }
+
+    /// <summary>
+    /// Handles start server button on clicked event
+    /// </summary>
+    async void StartService_OnClick()
+    {
+        if (IsServerRunning)
+        {
+            _oscDuplicateSvc.Stop();
+            IsServerRunning = false;
+        }
+        else
+        {
+            SaveVmcSettings();
+            await _oscDuplicateSvc.StartAsync();
+            IsServerRunning = true;
+        }
+    }
+
+    /// <summary>
+    /// Handles add sender button on click
+    /// </summary>
+    /// <exception cref="NotImplementedException"></exception>
+    void AddSender_OnClick()
+    {
+        var maxPort = _oscDuplicateSvc.Senders.Max(sender => sender.Port);
+        var nextPort = maxPort > 39550 ? maxPort + 1 : 39551;
+        _oscDuplicateSvc.Senders.Add(new OscSender
+        {
+            IpAddress = "127.0.0.1",
+            Port = nextPort
+        });
+    }
+
+    /// <summary>
+    /// Removes the OSC sender
+    /// </summary>
+    /// <param name="sender"></param>
+    async Task RemoveSender(OscSender sender)
+    {
+        var confirmation = await _confirmDeleteDialog.ShowAsync(
+            title: $"Delete '{sender.Name}'",
+            message1: "This cannot be undone, are you sure?",
+            confirmDialogOptions: DialogOptions.ConfirmDelete);
+
+        if (confirmation)
+        {
+            _oscDuplicateSvc.Senders.Remove(sender);
+        }
+    }
+
+    /// <summary>
+    /// Saves duplicator settings
+    /// </summary>
+    void SaveVmcSettings()
+    {
+        var jsonSettingString = JsonSerializer.Serialize(_oscDuplicateSvc.Senders);
+        Preferences.Set(
+            VmcPreferenceKeys.Duplicators,
+            jsonSettingString,
+            VmcPreferenceKeys.ContainerKey
+            );
+        Preferences.Set(
+            VmcPreferenceKeys.Port,
+            OscReceiverService.Port,
+            VmcPreferenceKeys.ContainerKey);
+    }
+
+    /// <summary>
+    /// Loads duplicator settings
+    /// </summary>
+    void LoadVmcSettings()
+    {
+        OscReceiverService.Port = Preferences.Get(
+            VmcPreferenceKeys.Port,
+            39550,
+            VmcPreferenceKeys.ContainerKey);
+
+        var jsonSettingString = Preferences.Get(VmcPreferenceKeys.Duplicators,
+            OscSender.Default,
+            VmcPreferenceKeys.ContainerKey);
+        var settings = JsonSerializer
+            .Deserialize<OscSender[]>(jsonSettingString);
+        foreach (var setting in settings)
+        {
+            _oscDuplicateSvc.Senders.Add(setting);
+        }
+    }
+}

@@ -9,6 +9,16 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SakuraConnect.Client", "Sak
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SakuraConnect.Shared", "SakuraConnect\Shared\SakuraConnect.Shared.csproj", "{F427EFD3-152B-407B-81B8-9E389BA8C4BA}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SakuraConnect.Dreamer", "SakuraConnect\Dreamer\SakuraConnect.Dreamer.csproj", "{16B00589-A48E-496D-98BE-FB02893E5D30}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sakura.Live.ThePanda.Core", "Sakura.Live\ThePanda.Core\Sakura.Live.ThePanda.Core.csproj", "{5D7D8660-B720-4659-A44E-127FA6985DC4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sakura.Live.Osc.Core", "Sakura.Live\Osc.Core\Sakura.Live.Osc.Core.csproj", "{678F8C42-52A1-4768-815C-B6411D71221A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sakura.Live.Web.Ui", "Sakura.Live\Web.Ui\Sakura.Live.Web.Ui.csproj", "{238E77B6-56B4-4947-8798-4655A19AD93A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SakuraConnect.Web.Ui", "SakuraConnect\Web.Ui\SakuraConnect.Web.Ui.csproj", "{5E29FED2-0F63-46FF-86A7-0775EC6EC2C6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +37,28 @@ Global
 		{F427EFD3-152B-407B-81B8-9E389BA8C4BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F427EFD3-152B-407B-81B8-9E389BA8C4BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F427EFD3-152B-407B-81B8-9E389BA8C4BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16B00589-A48E-496D-98BE-FB02893E5D30}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16B00589-A48E-496D-98BE-FB02893E5D30}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16B00589-A48E-496D-98BE-FB02893E5D30}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{16B00589-A48E-496D-98BE-FB02893E5D30}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16B00589-A48E-496D-98BE-FB02893E5D30}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16B00589-A48E-496D-98BE-FB02893E5D30}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{5D7D8660-B720-4659-A44E-127FA6985DC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D7D8660-B720-4659-A44E-127FA6985DC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D7D8660-B720-4659-A44E-127FA6985DC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D7D8660-B720-4659-A44E-127FA6985DC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{678F8C42-52A1-4768-815C-B6411D71221A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{678F8C42-52A1-4768-815C-B6411D71221A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{678F8C42-52A1-4768-815C-B6411D71221A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{678F8C42-52A1-4768-815C-B6411D71221A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{238E77B6-56B4-4947-8798-4655A19AD93A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{238E77B6-56B4-4947-8798-4655A19AD93A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{238E77B6-56B4-4947-8798-4655A19AD93A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{238E77B6-56B4-4947-8798-4655A19AD93A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E29FED2-0F63-46FF-86A7-0775EC6EC2C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E29FED2-0F63-46FF-86A7-0775EC6EC2C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E29FED2-0F63-46FF-86A7-0775EC6EC2C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E29FED2-0F63-46FF-86A7-0775EC6EC2C6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
