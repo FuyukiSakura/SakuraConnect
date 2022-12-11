@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using System.Text.Json
+@using Sakura.Live.Connect.Dreamer.Models.Bootstrap
 @using Sakura.Live.Connect.Dreamer.Models.Preferences
 @using Sakura.Live.Osc.Core.Services
 @using Sakura.Live.Osc.Core.Settings
@@ -77,7 +78,11 @@
                  IsRunning="@IsServerRunning"
                  @onclick="StartService_OnClick" />
 
+<ConfirmDialog @ref="_confirmDeleteDialog" />
+
 @code{
+    private ConfirmDialog _confirmDeleteDialog;
+
     /// <summary>
     /// Gets or sets the running status of the VMC server
     /// </summary>
@@ -134,9 +139,17 @@
     /// Removes the OSC sender
     /// </summary>
     /// <param name="sender"></param>
-    void RemoveSender(OscSender sender)
+    async Task RemoveSender(OscSender sender)
     {
-        _oscDuplicateSvc.Senders.Remove(sender);
+        var confirmation = await _confirmDeleteDialog.ShowAsync(
+            title: $"Delete '{sender.Name}'",
+            message1: "This cannot be undone, are you sure?",
+            confirmDialogOptions: DialogOptions.ConfirmDelete);
+
+        if (confirmation)
+        {
+            _oscDuplicateSvc.Senders.Remove(sender);
+        }
     }
 
     /// <summary>
