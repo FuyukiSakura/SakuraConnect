@@ -30,6 +30,13 @@ namespace Sakura.Live.ThePanda.Core
         ///
         public void Register(object sender, IAutoStartable service)
         {
+            if (service.Status == ServiceStatus.Stopped)
+            {
+                // Only starts a service that is not running
+                // let the monitor handle if it's in Error
+                _ = service.StartAsync();
+            }
+
             if (_services.ContainsKey(service))
             {
                 _services[service].Add(sender);
@@ -40,9 +47,6 @@ namespace Sakura.Live.ThePanda.Core
             {
                 sender
             }));
-
-            // Starts immediately after register
-            _ = service.StartAsync();
         }
 
         ///
