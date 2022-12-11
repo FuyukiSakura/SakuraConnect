@@ -11,7 +11,7 @@ namespace Sakura.Live.Connect.Dreamer.Models.Bootstrap
         /// <summary>
         /// Is shown when user tries to delete a setting
         /// </summary>
-        public static ConfirmDialogOptions ConfirmDelete = new()
+        public static readonly ConfirmDialogOptions ConfirmDelete = new()
         {
             YesButtonText = "Yes",
             YesButtonColor = ButtonColor.Danger,
