@@ -10,7 +10,8 @@
 <h1>OSC Duplicator</h1>
 
 <div class="input-group mb-3">
-    <span class="input-group-text" 
+    <ServiceConfigButton Service="@OscReceiverService" />
+    <span class="input-group-text"
           id="vmc-receiver-port">Listen on</span>
     <input type="text"
            class="form-control"
@@ -18,7 +19,6 @@
            aria-label="Port"
            aria-describedby="vmc-receiver-port"
            @bind-value="OscReceiverService.Port">
-    <ServiceConfigButton Service="@OscReceiverService" />
 </div>
 
 <h2>
@@ -28,10 +28,10 @@
             @onclick="AddSender_OnClick">+</button>
 </h2>
 
-<div class="row mb-3">
+<div class="row">
     @foreach (var sender in _oscDuplicateSvc.Senders)
     {
-        <div class="col-sm-6 col-md-4">
+        <div class="col-lg-6 col-xl-4 mb-3">
             <div class="card">
                 <div class="card-body">
                     <div class="input-group mb-1">
