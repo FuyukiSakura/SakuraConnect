@@ -1,4 +1,5 @@
-﻿using Sakura.Live.Osc.Core;
+﻿using BlazorBootstrap;
+using Sakura.Live.Osc.Core;
 using Sakura.Live.ThePanda.Core;
 
 namespace Sakura.Live.Connect.Dreamer
@@ -16,6 +17,7 @@ namespace Sakura.Live.Connect.Dreamer
                 });
 
             builder.Services.AddMauiBlazorWebView();
+            builder.Services.AddBlazorBootstrap();
 #if DEBUG
 		    builder.Services.AddBlazorWebViewDeveloperTools();
 #endif
