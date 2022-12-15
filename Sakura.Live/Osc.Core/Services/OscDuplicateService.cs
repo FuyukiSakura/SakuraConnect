@@ -52,11 +52,9 @@ namespace Sakura.Live.Osc.Core.Services
         /// <param name="e"></param>
         void ReceiverService_OnOscReceived(object? sender, OscEventArgs e)
         {
-            var duplicateEndpoints = Senders.Select(s => s.EndPoint)
-                .ToArray();
-            foreach (var ipEndPoint in duplicateEndpoints)
+            foreach (var oscSender in Senders)
             {
-                _ = Task.Run(() => _socket.SendTo(e.OscData, ipEndPoint));
+                _ = Task.Run(() => _socket.SendTo(e.OscData, oscSender.EndPoint));
             }
         }
 
