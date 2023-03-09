@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Shared\SakuraConnect.Shared.csproj" />
+    <ProjectReference Include="..\Web.Ui\SakuraConnect.Web.Ui.csproj" />
   </ItemGroup>
 
   <ItemGroup>

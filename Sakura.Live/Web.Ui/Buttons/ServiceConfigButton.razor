@@ -1,0 +1,65 @@
+﻿@using Sakura.Live.ThePanda.Core.Interfaces
+@using Sakura.Live.ThePanda.Core
+<button class="btn @GetClasses()" type="button">&nbsp;@Text&nbsp;</button>
+
+@code {
+    [Parameter]
+    public IAutoStartable? Service { get; set; }
+
+    /// <summary>
+    /// Sets the display text of the button
+    /// </summary>
+    public string Text { get; set; } = "";
+
+    /// <summary>
+    /// Gets the running status of the given service
+    /// </summary>
+    public ServiceStatus Status { get; set; } = ServiceStatus.Stopped;
+
+    ///
+    /// <inheritdoc />
+    ///
+    protected override void OnInitialized()
+    {
+        MonitorService();
+        base.OnInitialized();
+    }
+
+    /// <summary>
+    /// Listens to service status changes and modify the button's status
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    void MonitorService()
+    {
+        if (Service == null)
+        {
+            return;
+        }
+
+        Status = Service.Status;
+        Service.StatusChanged += (sender, args) =>
+        {
+            Status = Service.Status;
+            StateHasChanged();
+        };
+    }
+
+    /// <summary>
+    /// Gets the button class according to the running status
+    /// </summary>
+    /// <returns></returns>
+    string GetClasses()
+    {
+        switch (Status)
+        {
+            case ServiceStatus.Stopped:
+                return "btn-secondary";
+            case ServiceStatus.Running:
+                return "btn-success";
+            case ServiceStatus.Error:
+                return "btn-danger";
+            default:
+                return "btn-warning";
+        }
+    }
+}
