@@ -6,8 +6,7 @@ name: Deploy Server
 on:
   push:
     branches:
-      - main
-  workflow_dispatch:
+      - master
 
 jobs:
   build:
