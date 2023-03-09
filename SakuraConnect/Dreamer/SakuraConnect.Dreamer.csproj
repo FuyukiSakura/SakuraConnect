@@ -56,13 +56,15 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Blazor.Bootstrap" Version="1.1.0" />
       <PackageReference Include="Blazorise.Bootstrap" Version="1.2.2" />
+      <PackageReference Include="Blazor.Bootstrap" Version="1.5.0" />
+      <PackageReference Include="TwitchLib" Version="3.5.3" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\..\Sakura.Live\Cognitive.Translation.Core\Sakura.Live.Cognitive.Translation.Core.csproj" />
       <ProjectReference Include="..\..\Sakura.Live\Obs.Core\Sakura.Live.Obs.Core.csproj" />
+      <ProjectReference Include="..\..\Sakura.Live\OpenAi.Core\Sakura.Live.OpenAi.Core.csproj" />
       <ProjectReference Include="..\..\Sakura.Live\Osc.Core\Sakura.Live.Osc.Core.csproj" />
       <ProjectReference Include="..\..\Sakura.Live\ThePanda.Core\Sakura.Live.ThePanda.Core.csproj" />
       <ProjectReference Include="..\..\Sakura.Live\Web.Ui\Sakura.Live.Web.Ui.csproj" />

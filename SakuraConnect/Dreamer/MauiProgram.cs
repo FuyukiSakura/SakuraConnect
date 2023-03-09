@@ -1,9 +1,11 @@
-﻿using BlazorBootstrap;
-﻿using Blazorise;
+﻿
+using BlazorBootstrap;
+using Blazorise;
 using Blazorise.Bootstrap;
 using Sakura.Live.Cognitive.Translation.Core;
 using Sakura.Live.Connect.Dreamer.Services;
 using Sakura.Live.Obs.Core;
+using Sakura.Live.OpenAi.Core;
 using Sakura.Live.Osc.Core;
 using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Interfaces;
@@ -35,6 +37,8 @@ namespace Sakura.Live.Connect.Dreamer
             builder.Services.AddObsCore();
             builder.Services.AddTranslationCore();
 
+            builder.Services.AddOpenAiCore();
+            
             var app = builder.Build();
             var monitor = app.Services.GetService<IThePandaMonitor>();
             monitor!.StartAsync();

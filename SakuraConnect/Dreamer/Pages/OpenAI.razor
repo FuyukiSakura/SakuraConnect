@@ -1,0 +1,97 @@
+﻿@page "/openai"
+@using Sakura.Live.OpenAi.Core.Services
+@using Sakura.Live.Connect.Dreamer.Models.Preferences
+@inject OpenAiService OpenAiService
+@inject GreetingService GreetingService
+
+<h1>Open AI</h1>
+
+<h2>Greetings</h2>
+
+<article>Create your own style of greetings dynamically!</article>
+
+<div class="input-group mb-3">
+    <ServiceConfigButton Service="@OpenAiService" />
+    <span class="input-group-text"
+          id="open-ai-key">API Key</span>
+    <input type="text"
+           class="form-control"
+           placeholder="Beat Saber"
+           aria-label="Name"
+           aria-describedby="open-ai-key"
+           @bind-value="OpenAiService.ApiKey">
+</div>
+
+<StartStopButton StartText="Start"
+                 StopText="Stop"
+                 IsRunning="@IsServerRunning"
+                 @onclick="StartService_OnClick" />
+
+<textarea @bind="Greeting"></textarea>
+
+@code {
+
+    public string Greeting { get; set; }
+
+    /// <summary>
+    /// Gets or sets the prompt to generate the greeting
+    /// </summary>
+    public string Prompt { get; set; } = "Can you greet in Aussie way to";
+
+    /// <summary>
+    /// Gets or sets the running status of the VMC server
+    /// </summary>
+    public bool IsServerRunning { get; set; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    async void StartService_OnClick()
+    {
+        // TODO: Use dependency type of start
+        if (IsServerRunning)
+        {
+            await OpenAiService.StopAsync();
+            IsServerRunning = false;
+        }
+        else
+        {
+            SaveOpenAiSettings();
+            await OpenAiService.StartAsync();
+            IsServerRunning = true;
+            Greeting = await GreetingService.GreetsAsync(Prompt, "FuyukiSakura");
+        }
+    }
+
+    ///
+    /// <inheritdoc />
+    ///
+    protected override void OnInitialized()
+    {
+        LoadOpenAiSettings();
+        base.OnInitialized();
+    }
+
+    /// <summary>
+    /// Saves Open Ai Settings
+    /// </summary>
+    void SaveOpenAiSettings()
+    {
+        Preferences.Set(
+            OpenAiPreferenceKeys.ApiKey,
+            OpenAiService.ApiKey,
+            OpenAiPreferenceKeys.ContainerKey);
+    }
+
+    /// <summary>
+    /// Loads Open Ai Settings
+    /// </summary>
+    void LoadOpenAiSettings()
+    {
+        OpenAiService.ApiKey = Preferences.Get(
+            OpenAiPreferenceKeys.ApiKey,
+            "",
+            OpenAiPreferenceKeys.ContainerKey);
+    }
+
+}
