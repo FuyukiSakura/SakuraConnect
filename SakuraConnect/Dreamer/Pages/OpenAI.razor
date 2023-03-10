@@ -1,14 +1,16 @@
 ﻿@page "/openai"
 @using Sakura.Live.OpenAi.Core.Services
 @using Sakura.Live.Connect.Dreamer.Models.Preferences
+@using Sakura.Live.Twitch.Core.Services
 @inject OpenAiService OpenAiService
 @inject GreetingService GreetingService
+@inject TwitchChatService TwitchChatService
 
 <h1>Open AI</h1>
 
 <h2>Greetings</h2>
 
-<article>Create your own style of greetings dynamically!</article>
+<p>Create your own style of greetings dynamically!</p>
 
 <div class="input-group mb-3">
     <ServiceConfigButton Service="@OpenAiService" />
@@ -16,10 +18,57 @@
           id="open-ai-key">API Key</span>
     <input type="text"
            class="form-control"
-           placeholder="Beat Saber"
+           placeholder="OpenAI API key"
            aria-label="Name"
            aria-describedby="open-ai-key"
            @bind-value="OpenAiService.ApiKey">
+</div>
+
+<div class="input-group mb-3">
+    <span class="input-group-text"
+          id="open-prompt">Prompt</span>
+    <input type="text"
+           class="form-control"
+           placeholder="How do you want your bot to behave?"
+           aria-label="Prompt"
+           aria-describedby="open-prompt"
+           @bind-value="GreetingService.Prompt">
+</div>
+
+<h2>Twitch</h2>
+
+<div class="input-group mb-3">
+    <ServiceConfigButton Service="@TwitchChatService" />
+    <span class="input-group-text"
+          id="twich-username">Username</span>
+    <input type="text"
+           class="form-control"
+           placeholder="Username"
+           aria-label="Name"
+           aria-describedby="twich-username"
+           @bind-value="TwitchChatService.Username">
+</div>
+
+<div class="input-group mb-3">
+    <span class="input-group-text"
+          id="twich-access-token">Access Token</span>
+    <input type="text"
+           class="form-control"
+           placeholder="AccessToken"
+           aria-label="AccessToken"
+           aria-describedby="twich-access-token"
+           @bind-value="TwitchChatService.AccessToken">
+</div>
+
+<div class="input-group mb-3">
+    <span class="input-group-text"
+          id="twich-channel">Channel</span>
+    <input type="text"
+           class="form-control"
+           placeholder="Channel"
+           aria-label="Channel"
+           aria-describedby="twich-channel"
+           @bind-value="TwitchChatService.Channel">
 </div>
 
 <StartStopButton StartText="Start"
@@ -27,17 +76,7 @@
                  IsRunning="@IsServerRunning"
                  @onclick="StartService_OnClick" />
 
-<textarea @bind="Greeting"></textarea>
-
 @code {
-
-    public string Greeting { get; set; }
-
-    /// <summary>
-    /// Gets or sets the prompt to generate the greeting
-    /// </summary>
-    public string Prompt { get; set; } = "Can you greet in Aussie way to";
-
     /// <summary>
     /// Gets or sets the running status of the VMC server
     /// </summary>
@@ -51,15 +90,14 @@
         // TODO: Use dependency type of start
         if (IsServerRunning)
         {
-            await OpenAiService.StopAsync();
+            await GreetingService.StopAsync();
             IsServerRunning = false;
         }
         else
         {
             SaveOpenAiSettings();
-            await OpenAiService.StartAsync();
+            await GreetingService.StartAsync();
             IsServerRunning = true;
-            Greeting = await GreetingService.GreetsAsync(Prompt, "FuyukiSakura");
         }
     }
 

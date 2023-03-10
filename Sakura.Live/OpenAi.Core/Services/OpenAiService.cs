@@ -1,7 +1,9 @@
 ﻿using OpenAI.GPT3;
 using OpenAI.GPT3.Interfaces;
 using OpenAI.GPT3.Managers;
+using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Helpers;
+using TwitchLib.Communication.Interfaces;
 
 namespace Sakura.Live.OpenAi.Core.Services
 {
@@ -21,7 +23,7 @@ namespace Sakura.Live.OpenAi.Core.Services
         /// Gets the instance of Open AI service
         /// </summary>
         /// <returns></returns>
-        public IOpenAIService Get()
+        public IOpenAIService? Get()
         {
             return _openAiService;
         }
@@ -31,12 +33,27 @@ namespace Sakura.Live.OpenAi.Core.Services
         /// </summary>
         /// <param name="apiKey"></param>
         /// <returns></returns>
-        public async Task StartAsync(string apiKey)
+        void Start(string apiKey)
         {
             _openAiService = new OpenAIService(new OpenAiOptions
             {
                 ApiKey =  apiKey
             });
+            _ = HeartBeatAsync();
+        }
+
+        /// <summary>
+        /// Checks if the thread is still running
+        /// </summary>
+        /// <returns></returns>
+        async Task HeartBeatAsync()
+        {
+            Status = ServiceStatus.Running;
+            while (Status == ServiceStatus.Running) // Checks if the client is connected
+            {
+                LastUpdate = DateTime.Now;
+                await Task.Delay(HeartBeat.Default);
+            }
         }
 
         ///
@@ -44,7 +61,7 @@ namespace Sakura.Live.OpenAi.Core.Services
         ///
         public override async Task StartAsync()
         {
-            _ = StartAsync(ApiKey);
+            Start(ApiKey);
             await base.StartAsync();
         }
     }
