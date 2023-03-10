@@ -9,6 +9,7 @@ using Sakura.Live.OpenAi.Core;
 using Sakura.Live.Osc.Core;
 using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Interfaces;
+using Sakura.Live.Twitch.Core;
 
 namespace Sakura.Live.Connect.Dreamer
 {
@@ -38,6 +39,7 @@ namespace Sakura.Live.Connect.Dreamer
             builder.Services.AddTranslationCore();
 
             builder.Services.AddOpenAiCore();
+            builder.Services.AddTwitchCore();
             
             var app = builder.Build();
             var monitor = app.Services.GetService<IThePandaMonitor>();
