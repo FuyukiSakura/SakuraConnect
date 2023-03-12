@@ -26,13 +26,24 @@
 
 <div class="input-group mb-3">
     <span class="input-group-text"
-          id="open-prompt">Prompt</span>
+          id="greeting-prompt">Prompt</span>
     <input type="text"
            class="form-control"
            placeholder="How do you want your bot to behave?"
            aria-label="Prompt"
-           aria-describedby="open-prompt"
+           aria-describedby="greeting-prompt"
            @bind-value="GreetingService.Prompt">
+</div>
+
+<div class="input-group mb-3">
+    <span class="input-group-text"
+          id="greeting-character-limit">Max Words</span>
+    <NumberInput class="form-control"
+                 TValue="int"
+                 aria-label="Words"
+                 aria-describedby="greeting-word-limit"
+                 placeholder="Max number of words the greeting can contain."
+                 @bind-Value="@GreetingService.Characters" />
 </div>
 
 <h2>Twitch</h2>

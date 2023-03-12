@@ -20,6 +20,11 @@ namespace Sakura.Live.OpenAi.Core.Services
         public string Prompt { get; set; } =
             "You are a vtuber.";
 
+        /// <summary>
+        /// Gets or sets the number of characters to be generated
+        /// </summary>
+        public int Characters { get; set; } = 30;
+
         // Dependencies
         readonly OpenAiService _service;
         readonly TwitchChatService _twitchChat;
@@ -44,16 +49,22 @@ namespace Sakura.Live.OpenAi.Core.Services
         /// Greets the audience according to the selected tone of the user
         /// </summary>
         /// <param name="prompt">The prompt for generating the customized greet</param>
+        /// <param name="message">The audience's input</param>
         /// <param name="username">The name of the user to be greeted</param>
         /// <returns></returns>
-        public async Task<string> GreetsAsync(string prompt, string message, string username)
+        public async Task<string> GreetsAsync(
+            string prompt,
+            string message,
+            string username)
         {
             var completionResult = await _service.Get().ChatCompletion.CreateCompletion(new ChatCompletionCreateRequest
             {
                 Messages = new List<ChatMessage>
                 {
-                    ChatMessage.FromSystem(prompt),
-                    ChatMessage.FromUser($"{message}"),
+                    ChatMessage.FromSystem(
+                        prompt 
+                        + $"You can only response within {Characters} words."), // Adds character limits
+                    ChatMessage.FromUser($"{username}: {message}"),
                 },
                 Model = Models.ChatGpt3_5Turbo,
                 Temperature = 1,
