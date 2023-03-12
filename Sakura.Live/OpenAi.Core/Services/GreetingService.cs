@@ -14,8 +14,11 @@ namespace Sakura.Live.OpenAi.Core.Services
     {
         readonly List<string> _greetedUsers = new ();
 
+        /// <summary>
+        /// Gets or sets the prompt for generating the customized greet
+        /// </summary>
         public string Prompt { get; set; } =
-            "You are cheerful and energetic virtual streamer 冬雪桜 aka 小櫻. You are trying to start a conversation with your audience.";
+            "You are a vtuber.";
 
         // Dependencies
         readonly OpenAiService _service;
