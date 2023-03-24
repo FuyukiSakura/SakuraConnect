@@ -4,6 +4,7 @@ using TwitchLib.Client;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Models;
 using TwitchLib.Communication.Clients;
+using TwitchLib.Communication.Events;
 using TwitchLib.Communication.Models;
 
 namespace Sakura.Live.Twitch.Core.Services
@@ -60,14 +61,24 @@ namespace Sakura.Live.Twitch.Core.Services
             };
             var customClient = new WebSocketClient(clientOptions);
             _client = new TwitchClient(customClient);
+            _client.OnDisconnected += Twitch_OnDisconnected;
         }
 
         /// <summary>
         /// Sends a message to the channel
         /// </summary>
         /// <param name="message"></param>
-        public void SendMessage(string message)
+        public async Task SendMessage(string message)
         {
+            var retries = 0;
+            while ((!_client.IsConnected 
+                   || Status != ServiceStatus.Running)
+                   && retries < 5) // Prevents flooding of message after disconnection event
+            {
+                // Waits until the client is connected to prevent app crash
+                await Task.Delay(HeartBeat.Default);
+                ++retries;
+            }
             _client.SendMessage(Channel, message);
         }
 
@@ -108,6 +119,16 @@ namespace Sakura.Live.Twitch.Core.Services
         {
             Start(Username, AccessToken, Channel);
             return base.StartAsync();
+        }
+
+        /// <summary>
+        /// Change status when client is disconnected
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Twitch_OnDisconnected(object? sender, OnDisconnectedEventArgs e)
+        {
+            Status = ServiceStatus.Error;
         }
     }
 }

@@ -106,7 +106,7 @@ namespace Sakura.Live.OpenAi.Core.Services
 
             _greetedUsers.Add(args.ChatMessage.Username);
             var message = await GreetsAsync(Prompt, args.ChatMessage.Message, args.ChatMessage.DisplayName);
-            _twitchChat.SendMessage(message);
+            _ = _twitchChat.SendMessage(message); // Fire and forget
         }
 
         ///

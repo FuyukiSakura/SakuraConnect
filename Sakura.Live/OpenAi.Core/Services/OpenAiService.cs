@@ -3,7 +3,6 @@ using OpenAI.GPT3.Interfaces;
 using OpenAI.GPT3.Managers;
 using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Helpers;
-using TwitchLib.Communication.Interfaces;
 
 namespace Sakura.Live.OpenAi.Core.Services
 {
