@@ -1,0 +1,38 @@
+﻿@page "/voice"
+@inject IJSRuntime JS
+
+<h3>Voice</h3>
+
+<button type="button" class="btn btn-outline-success" @onclick="StartRecognition_OnClick">Start</button>
+
+<h1>@RecognizedText</h1>
+
+@code {
+    static string RecognizedText { get; set; } = "";
+
+    [JSInvokable]
+    public static Task Recognize_OnResult(string text)
+    {
+        RecognizedText = text;
+        return Task.CompletedTask;
+    }
+
+    ///
+    /// <inheritdoc />
+    ///
+    protected override async Task OnInitializedAsync()
+    {
+        await JS.InvokeAsync<IJSObjectReference>(
+            "import", "./Pages/Voice.razor.js");
+        await base.OnInitializedAsync();
+    }
+
+    /// <summary>
+    /// Starts speech recognition service
+    /// </summary>
+    async void StartRecognition_OnClick()
+    {
+        await JS.InvokeVoidAsync("startRecognition");
+    }
+
+}
