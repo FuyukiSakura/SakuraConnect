@@ -121,6 +121,15 @@ namespace Sakura.Live.Twitch.Core.Services
             return base.StartAsync();
         }
 
+        ///
+        /// <inheritdoc />
+        ///
+        public override Task StopAsync()
+        {
+            _client.Disconnect();
+            return base.StopAsync();
+        }
+
         /// <summary>
         /// Change status when client is disconnected
         /// </summary>
