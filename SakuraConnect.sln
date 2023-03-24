@@ -25,7 +25,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sakura.Live.Cognitive.Trans
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sakura.Live.OpenAi.Core", "Sakura.Live\OpenAi.Core\Sakura.Live.OpenAi.Core.csproj", "{69B519AE-F2DF-4705-B88F-C8BCA855EB21}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sakura.Live.Twitch.Core", "Sakura.Live\Twitch.Core\Sakura.Live.Twitch.Core.csproj", "{7057CFBE-B517-40B1-91AE-CE9646C2A536}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sakura.Live.Twitch.Core", "Sakura.Live\Twitch.Core\Sakura.Live.Twitch.Core.csproj", "{7057CFBE-B517-40B1-91AE-CE9646C2A536}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

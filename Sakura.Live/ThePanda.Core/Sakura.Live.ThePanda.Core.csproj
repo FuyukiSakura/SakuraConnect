@@ -4,6 +4,9 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Company>Sakura Live Studio</Company>
+    <Title>ThePanda Core</Title>
+    <Description>ThePanda reads as Dependa. Which is a dependency stack service for auto running services depended by the other.</Description>
   </PropertyGroup>
 
   <ItemGroup>

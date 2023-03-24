@@ -4,6 +4,8 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Title>OpenAi Core</Title>
+    <Company>Sakura Live Studio</Company>
   </PropertyGroup>
 
   <ItemGroup>
