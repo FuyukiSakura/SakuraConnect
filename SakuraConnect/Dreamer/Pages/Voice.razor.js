@@ -29,3 +29,7 @@ window.startRecognition = () => {
     };
     recognition.start();
 }
+
+window.stopRecognition = () => {
+    recognition.stop();
+}

@@ -10,6 +10,7 @@ namespace Sakura.Live.Obs.Core.Services
     public class ObsSocketService : BasicAutoStartable
     {
         readonly OBSWebsocket _obs = new ();
+        bool _isConnected;
 
         ///
         /// <inheritdoc cref="OBSWebsocket.Connected"/>
@@ -60,12 +61,10 @@ namespace Sakura.Live.Obs.Core.Services
         {
             var settings = ObsWebSocketConnectionInput.Saved;
             ConnectAsync(settings.ConnectionString, settings.Password);
-            if (_obs.IsConnected)
-            {
-                Status = ServiceStatus.Running;
-                await base.StartAsync();
-                await HeartBeatAsync();
-            }
+            _isConnected = true;
+            Status = ServiceStatus.Running;
+            await base.StartAsync();
+            await HeartBeatAsync();
         }
 
         /// <summary>
@@ -84,7 +83,7 @@ namespace Sakura.Live.Obs.Core.Services
         /// <returns></returns>
         async Task HeartBeatAsync()
         {
-            while (_obs.IsConnected)
+            while (_isConnected)
             {
                 LastUpdate = DateTime.Now;
                 await Task.Delay(HeartBeat.Default);
