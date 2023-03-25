@@ -1,0 +1,66 @@
+﻿@using BlazorBootstrap
+@using Microsoft.AspNetCore.Components
+@using Sakura.Live.Cognitive.Translation.Core.Models
+@using Sakura.Live.Connect.Dreamer.Models.Bootstrap
+
+<div class="row">
+    @foreach (var option in Options)
+    {
+        <div class="col-lg-6 col-xl-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="input-group mb-1">
+                        <span class="input-group-text"
+                              id="translation-@option.Language">Language</span>
+                        <Select TValue="string" @bind-SelectedValue="option.Language">
+                            <SelectItem Value="@("zh-Hant")">中文</SelectItem>
+                            <SelectItem Value="@("en")">English</SelectItem>
+                            <SelectItem Value="@("ja")">日本語</SelectItem>
+                        </Select>
+                        <button type="button"
+                                class="btn btn-outline-danger"
+                                @onclick="@(() => RemoveOption(option))">
+                            -
+                        </button>
+                    </div>
+                    <div class="input-group mb-1">
+                        <span class="input-group-text"
+                              id="vmc-sender-ip-@option.Language">OBS Source</span>
+                        <input type="text"
+                               class="form-control"
+                               placeholder="English Subtitle"
+                               @bind-value="option.ObsSource">
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+<ConfirmDialog @ref="_confirmDeleteDialog" />
+
+@code {
+    private ConfirmDialog _confirmDeleteDialog;
+
+    /// <summary>
+    /// List of translation options
+    /// </summary>
+    [Parameter]
+    public List<TranslationOption> Options { get; set; }
+
+    /// <summary>
+    /// Removes the OSC sender
+    /// </summary>
+    /// <param name="option"></param>
+    async Task RemoveOption(TranslationOption option)
+    {
+        var confirmation = await _confirmDeleteDialog.ShowAsync(
+            title: $"Delete '{option.Language}'",
+            message1: "This cannot be undone, are you sure?",
+            confirmDialogOptions: DialogOptions.ConfirmDelete);
+
+        if (confirmation)
+        {
+            Options.Remove(option);
+        }
+    }
+}
