@@ -1,7 +1,11 @@
 ﻿using BlazorBootstrap;
+﻿using Blazorise;
+using Blazorise.Bootstrap;
+using Sakura.Live.Connect.Dreamer.Services;
 using Sakura.Live.Obs.Core;
 using Sakura.Live.Osc.Core;
 using Sakura.Live.ThePanda.Core;
+using Sakura.Live.ThePanda.Core.Interfaces;
 
 namespace Sakura.Live.Connect.Dreamer
 {
@@ -19,10 +23,13 @@ namespace Sakura.Live.Connect.Dreamer
 
             builder.Services.AddMauiBlazorWebView();
             builder.Services.AddBlazorBootstrap();
+            builder.Services.AddBlazorise()
+                .AddBootstrapProviders();
 #if DEBUG
 		    builder.Services.AddBlazorWebViewDeveloperTools();
 #endif
 	        builder.Services.AddThePanda();
+            builder.Services.AddScoped<ISettingsService, SettingsService>();
 	        builder.Services.AddOscCore();
             builder.Services.AddObsCore();
 

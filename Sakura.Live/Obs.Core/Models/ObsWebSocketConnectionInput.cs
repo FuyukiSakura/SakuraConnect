@@ -24,15 +24,5 @@
         /// Gets the connection string of the web socket connection
         /// </summary>
         public string ConnectionString => $"ws://{Url}:{Port}";
-
-        /// <summary>
-        /// Gets the saved OBS connection from settings
-        /// </summary>
-        public static ObsWebSocketConnectionInput Saved => new()
-        {
-            Url = "127.0.0.1",
-            Port = "4455",
-            Password = "Slimness-Studio-Winter-Jittery6-Finlike"
-        };
     }
 }

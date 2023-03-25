@@ -1,19 +1,111 @@
 ﻿@page "/voice"
+@using Sakura.Live.Obs.Core.Services
+@using Sakura.Live.ThePanda.Core
 @inject IJSRuntime JS
+@inject ObsSocketService Obs
+@inject IThePandaMonitor MonitorSvc;
+<h1>Voice</h1>
 
-<h3>Voice</h3>
+<Addons>
+    <Addon AddonType="AddonType.Start">
+        <AddonLabel>Language</AddonLabel>
+    </Addon>
+    <Addon>
+        <TextEdit @bind-Text="@_selectedLanguage" Disabled />
+    </Addon>
+</Addons>
+<Buttons Size="Size.ExtraLarge">
+    <Button Color="Color.Light"
+            Clicked="@(arg => ChangeLanguage("zh-HK"))">
+        廣東話
+    </Button>
+    <Button Color="Color.Light"
+            Clicked="@(arg => ChangeLanguage("zh-TW"))">
+        國語（台灣）
+    </Button>
+    <Button Color="Color.Light"
+            Clicked="@(arg => ChangeLanguage("en-GB"))">
+        English
+    </Button>
+    <Button Color="Color.Light"
+            Clicked="@(arg => ChangeLanguage("ja-JP"))">
+        日本語
+    </Button>
+</Buttons>
+<br />
 
-<button type="button" class="btn btn-outline-success" @onclick="StartRecognition_OnClick">Start</button>
+<Addons>
+    <Addon AddonType="AddonType.Start">
+        <AddonLabel>OBS Source</AddonLabel>
+    </Addon>
+    <Addon AddonType="AddonType.Body">
+        <TextEdit @bind-Text="@_obsSource" />
+    </Addon>
+</Addons>
+<br />
+<h2><ServiceConfigButton Service="@Obs" /> OBS</h2>
+
+<Fields>
+    <Field ColumnSize="ColumnSize.Is4">
+        <FieldLabel>URL</FieldLabel>
+        <TextEdit @bind-Text="@Obs.ObsWsSettings.Url">
+            <FieldHelp>Default: 127.0.0.1</FieldHelp>
+        </TextEdit>
+    </Field>
+    <Field ColumnSize="ColumnSize.Is2">
+        <FieldLabel>Port</FieldLabel>
+        <TextEdit @bind-Text="@Obs.ObsWsSettings.Port">
+            <FieldHelp>Default: 4455</FieldHelp>
+        </TextEdit>
+    </Field>
+    <Field>
+        <FieldLabel>Password</FieldLabel>
+        <TextEdit @bind-Text="Obs.ObsWsSettings.Password">
+            <FieldHelp>OBS Websocket Password</FieldHelp>
+        </TextEdit>
+    </Field>
+</Fields>
+
+<StartStopButton IsRunning="@_isServiceRunning"
+                 @onclick="StartRecognition_OnClick" />
 
 <h1>@RecognizedText</h1>
 
 @code {
+    string _selectedLanguage = "zh-HK";
+    static string _obsSource = "Chinese Subtitle";
     static string RecognizedText { get; set; } = "";
+    static ObsSocketService _obsCore;
 
+    bool _isServiceRunning;
+
+    /// <summary>
+    /// Changes the recognition language
+    /// </summary>
+    /// <param name="lang"></param>
+    async void ChangeLanguage(string lang)
+    {
+        _selectedLanguage = lang;
+
+        if (!_isServiceRunning) return;
+
+        // Restart recognition service to change language
+        // if it is already running
+        await StopRecognitionAsync();
+        await Task.Delay(500);
+        await StartRecognitionAsync();
+    }
+
+    /// <summary>
+    /// Handles the result from speech recognition service
+    /// </summary>
+    /// <param name="text"></param>
+    /// <returns></returns>
     [JSInvokable]
     public static Task Recognize_OnResult(string text)
     {
         RecognizedText = text;
+        _obsCore.SetText(text, _obsSource);
         return Task.CompletedTask;
     }
 
@@ -24,6 +116,7 @@
     {
         await JS.InvokeAsync<IJSObjectReference>(
             "import", "./Pages/Voice.razor.js");
+        _obsCore = Obs;
         await base.OnInitializedAsync();
     }
 
@@ -32,7 +125,36 @@
     /// </summary>
     async void StartRecognition_OnClick()
     {
-        await JS.InvokeVoidAsync("startRecognition");
+        if (_isServiceRunning)
+        {
+            MonitorSvc.Unregister(this);
+            await StopRecognitionAsync();
+            _isServiceRunning = false;
+        }
+        else
+        {
+            MonitorSvc.Register(this, Obs);
+            await StartRecognitionAsync();
+            _isServiceRunning = true;
+        }
+        StateHasChanged();
     }
 
+    /// <summary>
+    /// Starts speech recognition service
+    /// </summary>
+    /// <returns></returns>
+    async Task StartRecognitionAsync()
+    {
+        await JS.InvokeAsync<string>("startRecognition", _selectedLanguage);
+    }
+
+    /// <summary>
+    /// Stops speech recognition service
+    /// </summary>
+    /// <returns></returns>
+    async Task StopRecognitionAsync()
+    {
+        await JS.InvokeVoidAsync("stopRecognition");
+    }
 }

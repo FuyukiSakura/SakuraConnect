@@ -1,36 +1,71 @@
-﻿using Newtonsoft.Json.Linq;
-using OBSWebsocketDotNet;
+﻿using OBSWebsocketDotNet;
 using OBSWebsocketDotNet.Types;
 using Sakura.Live.Obs.Core.Models;
 using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Helpers;
+using Sakura.Live.ThePanda.Core.Interfaces;
 
 namespace Sakura.Live.Obs.Core.Services
 {
+    /// <summary>
+    /// Accesses OBS websocket v5
+    /// </summary>
     public class ObsSocketService : BasicAutoStartable
     {
         readonly OBSWebsocket _obs = new ();
+        readonly ISettingsService _settingsServiceService;
         bool _isConnected;
+
+        /// <summary>
+        /// Gets or sets the OBS websocket settings
+        /// </summary>
+        public ObsWebSocketConnectionInput ObsWsSettings { get; set; } = new ();
 
         ///
         /// <inheritdoc cref="OBSWebsocket.Connected"/>
         ///
-        public EventHandler Connected;
+        public EventHandler? Connected;
 
         ///
         /// <inheritdoc cref="OBSWebsocket.Disconnected"/>
         ///
-        public EventHandler Disconnected;
+        public EventHandler? Disconnected;
 
         /// <summary>
         /// Creates a new instance of <see cref="ObsSocketService" />
         /// </summary>
-        public ObsSocketService()
+        public ObsSocketService(ISettingsService settingService)
         {
+            _settingsServiceService = settingService;
             _obs.Connected += (sender, args) => Connected?.Invoke(sender, args);
             _obs.Disconnected += (sender, args) =>
             {
+                _isConnected = false;
                 Disconnected?.Invoke(sender, EventArgs.Empty);
+            };
+            LoadSettings();
+        }
+
+        /// <summary>
+        /// Saves the OBS websocket settings to the system
+        /// </summary>
+        public void SaveSettings()
+        {
+            _settingsServiceService.Set(ObsPreferenceKeys.Url, ObsWsSettings.Url);
+            _settingsServiceService.Set(ObsPreferenceKeys.Port, ObsWsSettings.Port);
+            _settingsServiceService.Set(ObsPreferenceKeys.Password, ObsWsSettings.Password);
+        }
+
+        /// <summary>
+        /// Loads the OBS websocket settings from the system
+        /// </summary>
+        public void LoadSettings()
+        {
+            ObsWsSettings = new ObsWebSocketConnectionInput
+            {
+                Url = _settingsServiceService.Get(ObsPreferenceKeys.Url, "127.0.0.1"),
+                Port = _settingsServiceService.Get(ObsPreferenceKeys.Port, "4455"),
+                Password = _settingsServiceService.Get(ObsPreferenceKeys.Password, "")
             };
         }
 
@@ -59,8 +94,9 @@ namespace Sakura.Live.Obs.Core.Services
         /// <returns></returns>
         public override async Task StartAsync()
         {
-            var settings = ObsWebSocketConnectionInput.Saved;
-            ConnectAsync(settings.ConnectionString, settings.Password);
+            SaveSettings();
+            ConnectAsync(ObsWsSettings.ConnectionString, ObsWsSettings.Password);
+            
             _isConnected = true;
             Status = ServiceStatus.Running;
             await base.StartAsync();

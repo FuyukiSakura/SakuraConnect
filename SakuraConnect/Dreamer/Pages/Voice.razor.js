@@ -1,8 +1,8 @@
 ﻿const SpeechRecognition=window.webkitSpeechRecognition;    
 var recognition = new SpeechRecognition();
-recognition.lang = 'zh-HK';
 
-window.startRecognition = () => {
+window.startRecognition = (lang) => {
+    recognition.lang = lang;
     recognition.continuous = true;
     recognition.interimResults = true;
     //------------------
