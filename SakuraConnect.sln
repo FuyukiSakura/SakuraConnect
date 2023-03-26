@@ -19,6 +19,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sakura.Live.Web.Ui", "Sakur
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SakuraConnect.Web.Ui", "SakuraConnect\Web.Ui\SakuraConnect.Web.Ui.csproj", "{5E29FED2-0F63-46FF-86A7-0775EC6EC2C6}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sakura.Live.Obs.Core", "Sakura.Live\Obs.Core\Sakura.Live.Obs.Core.csproj", "{B87E8FD2-5241-460E-9494-E98A239713EA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sakura.Live.Cognitive.Translation.Core", "Sakura.Live\Cognitive.Translation.Core\Sakura.Live.Cognitive.Translation.Core.csproj", "{EB304030-835F-4554-A93D-8D26383300B2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -59,6 +63,14 @@ Global
 		{5E29FED2-0F63-46FF-86A7-0775EC6EC2C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5E29FED2-0F63-46FF-86A7-0775EC6EC2C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5E29FED2-0F63-46FF-86A7-0775EC6EC2C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B87E8FD2-5241-460E-9494-E98A239713EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B87E8FD2-5241-460E-9494-E98A239713EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B87E8FD2-5241-460E-9494-E98A239713EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B87E8FD2-5241-460E-9494-E98A239713EA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB304030-835F-4554-A93D-8D26383300B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB304030-835F-4554-A93D-8D26383300B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB304030-835F-4554-A93D-8D26383300B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB304030-835F-4554-A93D-8D26383300B2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

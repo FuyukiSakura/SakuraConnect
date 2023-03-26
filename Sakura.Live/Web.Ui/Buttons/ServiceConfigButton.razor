@@ -1,14 +1,27 @@
 ﻿@using Sakura.Live.ThePanda.Core.Interfaces
 @using Sakura.Live.ThePanda.Core
-<button class="btn @GetClasses()" type="button">&nbsp;@Text&nbsp;</button>
+
+<button class="btn @GetClasses()"
+        type="button"
+        @onclick="Clicked">&nbsp;@Text&nbsp;</button>
 
 @code {
+    /// <summary>
+    /// Gets or sets the service to be monitored
+    /// </summary>
     [Parameter]
     public IAutoStartable? Service { get; set; }
 
     /// <summary>
+    /// Gets or sets the click event handler
+    /// </summary>
+    [Parameter]
+    public EventCallback<MouseEventArgs> Clicked { get; set; }
+
+    /// <summary>
     /// Sets the display text of the button
     /// </summary>
+    [Parameter]
     public string Text { get; set; } = "";
 
     /// <summary>
