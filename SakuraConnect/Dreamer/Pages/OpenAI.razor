@@ -1,12 +1,12 @@
 ﻿@page "/openai"
 @using Sakura.Live.OpenAi.Core.Services
 @using Sakura.Live.Connect.Dreamer.Models.Preferences
-@using Sakura.Live.Twitch.Core.Services
 @inject OpenAiService OpenAiService
 @inject GreetingService GreetingService
-@inject TwitchChatService TwitchChatService
 
 <h1>Open AI</h1>
+
+<TwitchSettingsModal />
 
 <h2>Greetings</h2>
 
@@ -41,42 +41,6 @@
     <NumericEdit TValue="int"
                  Value="GreetingService.Characters"
                  Min="1" />
-</div>
-
-<h2>Twitch</h2>
-
-<div class="input-group mb-3">
-    <ServiceConfigButton Service="@TwitchChatService" />
-    <span class="input-group-text"
-          id="twich-username">Username</span>
-    <input type="text"
-           class="form-control"
-           placeholder="Username"
-           aria-label="Name"
-           aria-describedby="twich-username"
-           @bind-value="TwitchChatService.Username">
-</div>
-
-<div class="input-group mb-3">
-    <span class="input-group-text"
-          id="twich-access-token">Access Token</span>
-    <input type="text"
-           class="form-control"
-           placeholder="AccessToken"
-           aria-label="AccessToken"
-           aria-describedby="twich-access-token"
-           @bind-value="TwitchChatService.AccessToken">
-</div>
-
-<div class="input-group mb-3">
-    <span class="input-group-text"
-          id="twich-channel">Channel</span>
-    <input type="text"
-           class="form-control"
-           placeholder="Channel"
-           aria-label="Channel"
-           aria-describedby="twich-channel"
-           @bind-value="TwitchChatService.Channel">
 </div>
 
 <StartStopButton StartText="Start"

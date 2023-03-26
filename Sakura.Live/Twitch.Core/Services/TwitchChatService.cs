@@ -1,5 +1,7 @@
 ﻿using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Helpers;
+using Sakura.Live.ThePanda.Core.Interfaces;
+using Sakura.Live.Twitch.Core.Models;
 using TwitchLib.Client;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Models;
@@ -14,6 +16,7 @@ namespace Sakura.Live.Twitch.Core.Services
     /// </summary>
     public class TwitchChatService : BasicAutoStartable
     {
+        readonly ISettingsService _settingsService;
         readonly TwitchClient _client;
 
         /// <summary>
@@ -32,6 +35,44 @@ namespace Sakura.Live.Twitch.Core.Services
         public string Channel { get; set; } = "";
 
         /// <summary>
+        /// Creates a new instance of <see cref="TwitchChatService" />
+        /// </summary>
+        public TwitchChatService(ISettingsService settings)
+        {
+            var clientOptions = new ClientOptions
+            {
+                MessagesAllowedInPeriod = 750,
+                ThrottlingPeriod = TimeSpan.FromSeconds(30)
+            };
+            var customClient = new WebSocketClient(clientOptions);
+            _client = new TwitchClient(customClient);
+            _client.OnDisconnected += Twitch_OnDisconnected;
+
+            _settingsService = settings;
+            LoadSettings();
+        }
+
+        /// <summary>
+        /// Saves the Twitch settings to the system
+        /// </summary>
+        void SaveSettings()
+        {
+            _settingsService.Set(TwitchPreferenceKeys.Username, Username);
+            _settingsService.Set(TwitchPreferenceKeys.AccessToken, AccessToken);
+            _settingsService.Set(TwitchPreferenceKeys.Channel, Channel);
+        }
+
+        /// <summary>
+        /// Loads the Twitch settings from the system
+        /// </summary>
+        void LoadSettings()
+        {
+            Username = _settingsService.Get(TwitchPreferenceKeys.AccessToken, "");
+            AccessToken = _settingsService.Get(TwitchPreferenceKeys.AccessToken, "");
+            Channel = _settingsService.Get(TwitchPreferenceKeys.Channel, "");
+        }
+
+        /// <summary>
         /// Is triggered when a message is received
         /// </summary>
         public event EventHandler<OnMessageReceivedArgs> OnMessageReceived
@@ -47,21 +88,6 @@ namespace Sakura.Live.Twitch.Core.Services
         {
             add => _client.OnWhisperReceived += value;
             remove => _client.OnWhisperReceived -= value;
-        }
-
-        /// <summary>
-        /// Creates a new instance of <see cref="TwitchChatService" />
-        /// </summary>
-        public TwitchChatService()
-        {
-            var clientOptions = new ClientOptions
-            {
-                MessagesAllowedInPeriod = 750,
-                ThrottlingPeriod = TimeSpan.FromSeconds(30)
-            };
-            var customClient = new WebSocketClient(clientOptions);
-            _client = new TwitchClient(customClient);
-            _client.OnDisconnected += Twitch_OnDisconnected;
         }
 
         /// <summary>
@@ -117,6 +143,7 @@ namespace Sakura.Live.Twitch.Core.Services
         ///
         public override Task StartAsync()
         {
+            SaveSettings();
             Start(Username, AccessToken, Channel);
             return base.StartAsync();
         }
