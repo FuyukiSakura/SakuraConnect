@@ -38,12 +38,9 @@
 <div class="input-group mb-3">
     <span class="input-group-text"
           id="greeting-character-limit">Max Words</span>
-    <NumberInput class="form-control"
-                 TValue="int"
-                 aria-label="Words"
-                 aria-describedby="greeting-word-limit"
-                 placeholder="Max number of words the greeting can contain."
-                 @bind-Value="@GreetingService.Characters" />
+    <NumericEdit TValue="int"
+                 Value="GreetingService.Characters"
+                 Min="1" />
 </div>
 
 <h2>Twitch</h2>
