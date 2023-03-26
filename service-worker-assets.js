@@ -265,7 +265,7 @@
       "url": "_framework\/System.Threading.ThreadPool.dll"
     },
     {
-      "hash": "sha256-sfBMd+j5KbGxIBi+bVysqWJcezj4KZ8b427uIWiiilg=",
+      "hash": "sha256-7T4GN+gJLK9AkemZybSpLpY5tWA5hXxOtx5ZQ2uPVqE=",
       "url": "SakuraConnect.Client.styles.css"
     },
     {
@@ -357,5 +357,5 @@
       "url": "_content\/SakuraConnect.Web.Ui\/images\/brlias_sakura_icon.png"
     }
   ],
-  "version": "dfxCzTbq"
+  "version": "GSAsfkye"
 };

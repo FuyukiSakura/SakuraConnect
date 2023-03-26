@@ -1,0 +1,73 @@
+﻿@page "/openai"
+@using Sakura.Live.OpenAi.Core.Services
+@inject OpenAiService OpenAiService
+@inject GreetingService GreetingService
+
+<h1>Open AI</h1>
+
+<TwitchSettingsModal />
+
+<h2>Greetings</h2>
+
+<p>Create your own style of greetings dynamically!</p>
+
+<div class="input-group mb-3">
+    <ServiceConfigButton Service="@OpenAiService" />
+    <span class="input-group-text"
+          id="open-ai-key">API Key</span>
+    <input type="text"
+           class="form-control"
+           placeholder="OpenAI API key"
+           aria-label="Name"
+           aria-describedby="open-ai-key"
+           @bind-value="OpenAiService.ApiKey">
+</div>
+
+<div class="input-group mb-3">
+    <span class="input-group-text"
+          id="greeting-prompt">Prompt</span>
+    <input type="text"
+           class="form-control"
+           placeholder="How do you want your bot to behave?"
+           aria-label="Prompt"
+           aria-describedby="greeting-prompt"
+           @bind-value="GreetingService.Prompt">
+</div>
+
+<div class="input-group mb-3">
+    <span class="input-group-text"
+          id="greeting-character-limit">Max Words</span>
+    <NumericEdit TValue="int"
+                 Value="GreetingService.Characters"
+                 Min="1" />
+</div>
+
+<StartStopButton StartText="Start"
+                 StopText="Stop"
+                 IsRunning="@IsServerRunning"
+                 @onclick="StartService_OnClick" />
+
+@code {
+    /// <summary>
+    /// Gets or sets the running status of the VMC server
+    /// </summary>
+    public bool IsServerRunning { get; set; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    async void StartService_OnClick()
+    {
+        // TODO: Use dependency type of start
+        if (IsServerRunning)
+        {
+            await GreetingService.StopAsync();
+            IsServerRunning = false;
+        }
+        else
+        {
+            await GreetingService.StartAsync();
+            IsServerRunning = true;
+        }
+    }
+}

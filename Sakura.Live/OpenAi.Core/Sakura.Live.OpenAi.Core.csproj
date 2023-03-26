@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Title>OpenAi Core</Title>
+    <Company>Sakura Live Studio</Company>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Betalgo.OpenAI.GPT3" Version="6.7.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ThePanda.Core\Sakura.Live.ThePanda.Core.csproj" />
+    <ProjectReference Include="..\Twitch.Core\Sakura.Live.Twitch.Core.csproj" />
+  </ItemGroup>
+
+</Project>
