@@ -1,7 +1,8 @@
-﻿using OpenAI.GPT3.ObjectModels;
-using OpenAI.GPT3.ObjectModels.RequestModels;
+﻿using OpenAI.GPT3.ObjectModels.RequestModels;
+using Sakura.Live.OpenAi.Core.Models;
 using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Helpers;
+using Sakura.Live.ThePanda.Core.Interfaces;
 using Sakura.Live.Twitch.Core.Services;
 using TwitchLib.Client.Events;
 
@@ -26,23 +27,44 @@ namespace Sakura.Live.OpenAi.Core.Services
         public int Characters { get; set; } = 30;
 
         // Dependencies
+        readonly ISettingsService _settingsService;
+        readonly IThePandaMonitor _monitor;
         readonly OpenAiService _service;
         readonly TwitchChatService _twitchChat;
-        readonly IThePandaMonitor _monitor;
 
         /// <summary>
         /// Creates a new instance of <see cref="GreetingService" />
         /// </summary>
+        /// <param name="settingsService"></param>
+        /// <param name="monitor"></param>
         /// <param name="service"></param>
         /// <param name="twitchChat"></param>
-        /// <param name="monitor"></param>
-        public GreetingService(OpenAiService service,
-            TwitchChatService twitchChat,
-            IThePandaMonitor monitor)
+        public GreetingService(ISettingsService settingsService,
+            IThePandaMonitor monitor,
+            OpenAiService service,
+            TwitchChatService twitchChat)
         {
+            _settingsService = settingsService;
             _service = service;
             _twitchChat = twitchChat;
             _monitor = monitor;
+            LoadSettings();
+        }
+
+        /// <summary>
+        /// Saves OpenAI greeting settings to the system
+        /// </summary>
+        void SaveSettings()
+        {
+            _settingsService.Set(OpenAiPreferenceKeys.GreetingPrompt, Prompt);
+        }
+
+        /// <summary>
+        /// Loads OpenAI greeting settings from the system
+        /// </summary>
+        void LoadSettings()
+        {
+            Prompt = _settingsService.Get(OpenAiPreferenceKeys.GreetingPrompt, Prompt);
         }
 
         /// <summary>
@@ -66,7 +88,7 @@ namespace Sakura.Live.OpenAi.Core.Services
                         + $"You can only response within {Characters} words."), // Adds character limits
                     ChatMessage.FromUser($"{username}: {message}"),
                 },
-                Model = Models.ChatGpt3_5Turbo,
+                Model = OpenAI.GPT3.ObjectModels.Models.ChatGpt3_5Turbo,
                 Temperature = 1,
                 MaxTokens = 256
             });
@@ -86,6 +108,7 @@ namespace Sakura.Live.OpenAi.Core.Services
         /// <returns></returns>
         public override Task StartAsync()
         {
+            SaveSettings();
             _twitchChat.OnMessageReceived += TwitchChat_OnMessageReceived;
             _monitor.Register(this, _twitchChat);
             _monitor.Register(this, _service);

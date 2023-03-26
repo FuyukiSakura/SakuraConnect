@@ -1,6 +1,5 @@
 ﻿@page "/openai"
 @using Sakura.Live.OpenAi.Core.Services
-@using Sakura.Live.Connect.Dreamer.Models.Preferences
 @inject OpenAiService OpenAiService
 @inject GreetingService GreetingService
 
@@ -67,41 +66,8 @@
         }
         else
         {
-            SaveOpenAiSettings();
             await GreetingService.StartAsync();
             IsServerRunning = true;
         }
     }
-
-    ///
-    /// <inheritdoc />
-    ///
-    protected override void OnInitialized()
-    {
-        LoadOpenAiSettings();
-        base.OnInitialized();
-    }
-
-    /// <summary>
-    /// Saves Open Ai Settings
-    /// </summary>
-    void SaveOpenAiSettings()
-    {
-        Preferences.Set(
-            OpenAiPreferenceKeys.ApiKey,
-            OpenAiService.ApiKey,
-            OpenAiPreferenceKeys.ContainerKey);
-    }
-
-    /// <summary>
-    /// Loads Open Ai Settings
-    /// </summary>
-    void LoadOpenAiSettings()
-    {
-        OpenAiService.ApiKey = Preferences.Get(
-            OpenAiPreferenceKeys.ApiKey,
-            "",
-            OpenAiPreferenceKeys.ContainerKey);
-    }
-
 }

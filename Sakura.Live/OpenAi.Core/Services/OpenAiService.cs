@@ -1,8 +1,10 @@
 ﻿using OpenAI.GPT3;
 using OpenAI.GPT3.Interfaces;
 using OpenAI.GPT3.Managers;
+using Sakura.Live.OpenAi.Core.Models;
 using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Helpers;
+using Sakura.Live.ThePanda.Core.Interfaces;
 
 namespace Sakura.Live.OpenAi.Core.Services
 {
@@ -11,12 +13,39 @@ namespace Sakura.Live.OpenAi.Core.Services
     /// </summary>
     public class OpenAiService : BasicAutoStartable
     {
+        readonly ISettingsService _settingsService;
         OpenAIService? _openAiService;
 
         /// <summary>
         /// Gets or sets the API key of Open AI
         /// </summary>
         public string ApiKey { get; set; } = "";
+
+        /// <summary>
+        /// Creates a new instance of <see cref="OpenAiService" />
+        /// </summary>
+        /// <param name="settingsService"></param>
+        public OpenAiService(ISettingsService settingsService)
+        {
+            _settingsService = settingsService;
+            LoadSettings();
+        }
+
+        /// <summary>
+        /// Saves OpenAI settings to the system
+        /// </summary>
+        void SaveSettings()
+        {
+            _settingsService.Set(OpenAiPreferenceKeys.ApiKey, ApiKey);
+        }
+
+        /// <summary>
+        /// Loads OpenAI settings from the system
+        /// </summary>
+        void LoadSettings()
+        {
+            ApiKey = _settingsService.Get(OpenAiPreferenceKeys.ApiKey, "");
+        }
 
         /// <summary>
         /// Gets the instance of Open AI service
@@ -60,6 +89,7 @@ namespace Sakura.Live.OpenAi.Core.Services
         ///
         public override async Task StartAsync()
         {
+            SaveSettings();
             Start(ApiKey);
             await base.StartAsync();
         }
