@@ -3,6 +3,7 @@
 @using Sakura.Live.ThePanda.Core
 @using Sakura.Live.Cognitive.Translation.Core.Services
 @using Sakura.Live.Cognitive.Translation.Core.Models
+@using Sakura.Live.Connect.Dreamer.Components.Settings
 @using Sakura.Live.Connect.Dreamer.Components.Voices
 @inject IJSRuntime JS
 @inject IThePandaMonitor MonitorSvc;
@@ -10,6 +11,8 @@
 @inject TranslationService TranslationSvc;
 
 <h1>Voice</h1>
+
+<ObsSettingsModal />
 
 <Addons>
     <Addon AddonType="AddonType.Start">
@@ -48,28 +51,6 @@
     </Addon>
 </Addons>
 <br />
-<h2><ServiceConfigButton Service="@Obs" /> OBS</h2>
-
-<Fields>
-    <Field ColumnSize="ColumnSize.Is4">
-        <FieldLabel>URL</FieldLabel>
-        <TextEdit @bind-Text="@Obs.ObsWsSettings.Url">
-            <FieldHelp>Default: 127.0.0.1</FieldHelp>
-        </TextEdit>
-    </Field>
-    <Field ColumnSize="ColumnSize.Is2">
-        <FieldLabel>Port</FieldLabel>
-        <TextEdit @bind-Text="@Obs.ObsWsSettings.Port">
-            <FieldHelp>Default: 4455</FieldHelp>
-        </TextEdit>
-    </Field>
-    <Field>
-        <FieldLabel>Password</FieldLabel>
-        <TextEdit @bind-Text="Obs.ObsWsSettings.Password">
-            <FieldHelp>OBS Websocket Password</FieldHelp>
-        </TextEdit>
-    </Field>
-</Fields>
 
 <StartStopButton IsRunning="@_isServiceRunning"
                  @onclick="StartRecognition_OnClick" />

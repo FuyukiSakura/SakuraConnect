@@ -1,0 +1,61 @@
+﻿@using Sakura.Live.Obs.Core.Services
+@inject ObsSocketService Obs
+
+<ServiceConfigButton Service="@Obs"
+                     Clicked="ShowModal"
+                     Text="OBS" />
+
+<Modal @ref="ModalRef">
+    <ModalContent Centered>
+        <ModalHeader>
+            <ModalTitle>OBS WebSocket</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            <Fields>
+                <Field ColumnSize="ColumnSize.Is4">
+                    <FieldLabel>URL</FieldLabel>
+                    <TextEdit @bind-Text="@Obs.ObsWsSettings.Url">
+                        <FieldHelp>Default: 127.0.0.1</FieldHelp>
+                    </TextEdit>
+                </Field>
+                <Field ColumnSize="ColumnSize.Is2">
+                    <FieldLabel>Port</FieldLabel>
+                    <TextEdit @bind-Text="@Obs.ObsWsSettings.Port">
+                        <FieldHelp>Default: 4455</FieldHelp>
+                    </TextEdit>
+                </Field>
+                <Field>
+                    <FieldLabel>Password</FieldLabel>
+                    <TextEdit @bind-Text="Obs.ObsWsSettings.Password">
+                        <FieldHelp>OBS Websocket Password</FieldHelp>
+                    </TextEdit>
+                </Field>
+            </Fields>
+        </ModalBody>
+        <ModalFooter>
+            <Button Color="Color.Secondary" Clicked="@HideModal">Close</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+@code {
+    Modal ModalRef { get; set; }
+
+    /// <summary>
+    /// Shows the configuration window
+    /// </summary>
+    /// <returns></returns>
+    private Task ShowModal()
+    {
+        return ModalRef.Show();
+    }
+
+    /// <summary>
+    /// Hides the configuration window
+    /// </summary>
+    /// <returns></returns>
+    private Task HideModal()
+    {
+        return ModalRef.Hide();
+    }
+}
