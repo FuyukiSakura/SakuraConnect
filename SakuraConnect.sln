@@ -21,7 +21,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SakuraConnect.Web.Ui", "Sak
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sakura.Live.Obs.Core", "Sakura.Live\Obs.Core\Sakura.Live.Obs.Core.csproj", "{B87E8FD2-5241-460E-9494-E98A239713EA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sakura.Live.Cognitive.Translation.Core", "Sakura.Live\Cognitive.Translation.Core\Sakura.Live.Cognitive.Translation.Core.csproj", "{EB304030-835F-4554-A93D-8D26383300B2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sakura.Live.Cognitive.Translation.Core", "Sakura.Live\Cognitive.Translation.Core\Sakura.Live.Cognitive.Translation.Core.csproj", "{EB304030-835F-4554-A93D-8D26383300B2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

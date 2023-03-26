@@ -12,8 +12,18 @@
 
 <h1>Voice</h1>
 
-<ObsSettingsModal />
 
+<ObsSettingsModal/>
+<br /><br />
+<Addons>
+    <Addon AddonType="AddonType.Start">
+        <AddonLabel>OBS Source</AddonLabel>
+    </Addon>
+    <Addon AddonType="AddonType.Body">
+        <TextEdit @bind-Text="@ObsSource" />
+    </Addon>
+</Addons>
+<br />
 <Addons>
     <Addon AddonType="AddonType.Start">
         <AddonLabel>Language</AddonLabel>
@@ -42,22 +52,12 @@
 </Buttons>
 <br />
 
-<Addons>
-    <Addon AddonType="AddonType.Start">
-        <AddonLabel>OBS Source</AddonLabel>
-    </Addon>
-    <Addon AddonType="AddonType.Body">
-        <TextEdit @bind-Text="@ObsSource" />
-    </Addon>
-</Addons>
-<br />
-
 <StartStopButton IsRunning="@_isServiceRunning"
                  @onclick="StartRecognition_OnClick" />
 
 <h3>@RecognizedText</h3>
 
-<h3>Azure</h3>
+<h3>Azure Translator</h3>
 
 <div class="col-lg-6 col-xl-4 mb-3">
     <div class="input-group mb-1">
