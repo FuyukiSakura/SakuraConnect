@@ -2,7 +2,7 @@
 namespace Sakura.Live.Obs.Core.Models
 {
     /// <summary>
-    /// Represents all preference keys in the app
+    /// Represents all preference keys of OBS settings in the app
     /// </summary>
     public static class ObsPreferenceKeys
     {

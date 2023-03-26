@@ -23,6 +23,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sakura.Live.Obs.Core", "Sak
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sakura.Live.Cognitive.Translation.Core", "Sakura.Live\Cognitive.Translation.Core\Sakura.Live.Cognitive.Translation.Core.csproj", "{EB304030-835F-4554-A93D-8D26383300B2}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sakura.Live.OpenAi.Core", "Sakura.Live\OpenAi.Core\Sakura.Live.OpenAi.Core.csproj", "{69B519AE-F2DF-4705-B88F-C8BCA855EB21}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sakura.Live.Twitch.Core", "Sakura.Live\Twitch.Core\Sakura.Live.Twitch.Core.csproj", "{7057CFBE-B517-40B1-91AE-CE9646C2A536}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -71,6 +75,14 @@ Global
 		{EB304030-835F-4554-A93D-8D26383300B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EB304030-835F-4554-A93D-8D26383300B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EB304030-835F-4554-A93D-8D26383300B2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{69B519AE-F2DF-4705-B88F-C8BCA855EB21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69B519AE-F2DF-4705-B88F-C8BCA855EB21}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69B519AE-F2DF-4705-B88F-C8BCA855EB21}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69B519AE-F2DF-4705-B88F-C8BCA855EB21}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7057CFBE-B517-40B1-91AE-CE9646C2A536}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7057CFBE-B517-40B1-91AE-CE9646C2A536}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7057CFBE-B517-40B1-91AE-CE9646C2A536}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7057CFBE-B517-40B1-91AE-CE9646C2A536}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
