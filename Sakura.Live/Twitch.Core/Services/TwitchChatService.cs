@@ -67,7 +67,7 @@ namespace Sakura.Live.Twitch.Core.Services
         /// </summary>
         void LoadSettings()
         {
-            Username = _settingsService.Get(TwitchPreferenceKeys.AccessToken, "");
+            Username = _settingsService.Get(TwitchPreferenceKeys.Username, "");
             AccessToken = _settingsService.Get(TwitchPreferenceKeys.AccessToken, "");
             Channel = _settingsService.Get(TwitchPreferenceKeys.Channel, "");
         }
