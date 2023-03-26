@@ -44,7 +44,7 @@
         <AddonLabel>OBS Source</AddonLabel>
     </Addon>
     <Addon AddonType="AddonType.Body">
-        <TextEdit @bind-Text="@_obsSource" />
+        <TextEdit @bind-Text="@ObsSource" />
     </Addon>
 </Addons>
 <br />
@@ -109,8 +109,9 @@
 <TranslationList Options="TranslationSvc.Translations" />
 
 @code {
+    const string ObsSourceDefaultKey = "SCONNECT_VOICE_OBS_SOURCE_DEFAULT";
     string _selectedLanguage = "zh-HK";
-    static string _obsSource = "Chinese Subtitle";
+    static string ObsSource { get; set; }= "Chinese Subtitle";
     static string RecognizedText { get; set; } = "";
     static ObsSocketService _obsCore;
     static TranslationService _translationSvc;
@@ -143,7 +144,7 @@
     public static async Task Recognize_OnResult(string text)
     {
         RecognizedText = text;
-        _obsCore.SetText(text, _obsSource);
+        _obsCore.SetText(text, ObsSource);
 
         var results = await _translationSvc.TranslateAsync(text);
         results.Translations.ForEach(result =>
@@ -161,6 +162,7 @@
             "import", "./Pages/Voice.razor.js");
         _obsCore = Obs;
         _translationSvc = TranslationSvc;
+        ObsSource = Preferences.Get(ObsSourceDefaultKey, ObsSource);
         await base.OnInitializedAsync();
     }
 
@@ -178,6 +180,7 @@
         else
         {
             TranslationSvc.SaveSettings();
+            Preferences.Set(ObsSourceDefaultKey, ObsSource);
             MonitorSvc.Register(this, Obs);
             await StartRecognitionAsync();
             _isServiceRunning = true;
