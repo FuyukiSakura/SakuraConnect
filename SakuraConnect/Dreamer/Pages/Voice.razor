@@ -1,0 +1,198 @@
+﻿@page "/voice"
+@using Sakura.Live.Obs.Core.Services
+@using Sakura.Live.ThePanda.Core
+@using Sakura.Live.Cognitive.Translation.Core.Services
+@using Sakura.Live.Cognitive.Translation.Core.Models
+@using Sakura.Live.Connect.Dreamer.Components.Settings
+@using Sakura.Live.Connect.Dreamer.Components.Voices
+@inject IJSRuntime JS
+@inject IThePandaMonitor MonitorSvc;
+@inject ObsSocketService Obs
+@inject TranslationService TranslationSvc;
+
+<h1>Voice</h1>
+
+
+<ObsSettingsModal/>
+<br /><br />
+<Addons>
+    <Addon AddonType="AddonType.Start">
+        <AddonLabel>OBS Source</AddonLabel>
+    </Addon>
+    <Addon AddonType="AddonType.Body">
+        <TextEdit @bind-Text="@ObsSource" />
+    </Addon>
+</Addons>
+<br />
+<Addons>
+    <Addon AddonType="AddonType.Start">
+        <AddonLabel>Language</AddonLabel>
+    </Addon>
+    <Addon>
+        <TextEdit @bind-Text="@_selectedLanguage" Disabled />
+    </Addon>
+</Addons>
+<Buttons Size="Size.ExtraLarge">
+    <Button Color="Color.Light"
+            Clicked="@(arg => ChangeLanguage("zh-HK"))">
+        廣東話
+    </Button>
+    <Button Color="Color.Light"
+            Clicked="@(arg => ChangeLanguage("zh-TW"))">
+        國語（台灣）
+    </Button>
+    <Button Color="Color.Light"
+            Clicked="@(arg => ChangeLanguage("en-GB"))">
+        English
+    </Button>
+    <Button Color="Color.Light"
+            Clicked="@(arg => ChangeLanguage("ja-JP"))">
+        日本語
+    </Button>
+</Buttons>
+<br />
+
+<StartStopButton IsRunning="@_isServiceRunning"
+                 @onclick="StartRecognition_OnClick" />
+
+<h3>@RecognizedText</h3>
+
+<h3>Azure Translator</h3>
+
+<div class="col-lg-6 col-xl-4 mb-3">
+    <div class="input-group mb-1">
+        <span class="input-group-text"
+              id="translation-location">Location/Region</span>
+        <input type="text"
+               class="form-control"
+               placeholder="asia"
+               @bind-value="TranslationSvc.Location">
+    </div>
+    <div class="input-group mb-1">
+        <span class="input-group-text"
+              id="translation-api-key">API Key</span>
+        <input type="text"
+               class="form-control"
+               placeholder="*****"
+               @bind-value="TranslationSvc.ApiKey">
+    </div>
+</div>
+
+<h2>
+    Translations
+    <button type="button"
+            class="btn btn-outline-success"
+            @onclick="AddOption_OnClick">
+        +
+    </button>
+</h2>
+
+<TranslationList Options="TranslationSvc.Translations" />
+
+@code {
+    const string ObsSourceDefaultKey = "SCONNECT_VOICE_OBS_SOURCE_DEFAULT";
+    string _selectedLanguage = "zh-HK";
+    static string ObsSource { get; set; }= "Chinese Subtitle";
+    static string RecognizedText { get; set; } = "";
+    static ObsSocketService _obsCore;
+    static TranslationService _translationSvc;
+
+    bool _isServiceRunning;
+
+    /// <summary>
+    /// Changes the recognition language
+    /// </summary>
+    /// <param name="lang"></param>
+    async void ChangeLanguage(string lang)
+    {
+        _selectedLanguage = lang;
+
+        if (!_isServiceRunning) return;
+
+        // Restart recognition service to change language
+        // if it is already running
+        await StopRecognitionAsync();
+        await Task.Delay(500);
+        await StartRecognitionAsync();
+    }
+
+    /// <summary>
+    /// Handles the result from speech recognition service
+    /// </summary>
+    /// <param name="text"></param>
+    /// <returns></returns>
+    [JSInvokable]
+    public static async Task Recognize_OnResult(string text)
+    {
+        RecognizedText = text;
+        _obsCore.SetText(text, ObsSource);
+
+        var results = await _translationSvc.TranslateAsync(text);
+        results.Translations.ForEach(result =>
+            _obsCore.SetText(result.Text,
+                _translationSvc.Translations
+                    .First(t => t.Language == result.To).ObsSource));
+    }
+
+    ///
+    /// <inheritdoc />
+    ///
+    protected override async Task OnInitializedAsync()
+    {
+        await JS.InvokeAsync<IJSObjectReference>(
+            "import", "./Pages/Voice.razor.js");
+        _obsCore = Obs;
+        _translationSvc = TranslationSvc;
+        ObsSource = Preferences.Get(ObsSourceDefaultKey, ObsSource);
+        await base.OnInitializedAsync();
+    }
+
+    /// <summary>
+    /// Starts speech recognition service
+    /// </summary>
+    async void StartRecognition_OnClick()
+    {
+        if (_isServiceRunning)
+        {
+            MonitorSvc.Unregister(this);
+            await StopRecognitionAsync();
+            _isServiceRunning = false;
+        }
+        else
+        {
+            TranslationSvc.SaveSettings();
+            Preferences.Set(ObsSourceDefaultKey, ObsSource);
+            MonitorSvc.Register(this, Obs);
+            await StartRecognitionAsync();
+            _isServiceRunning = true;
+        }
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Starts speech recognition service
+    /// </summary>
+    /// <returns></returns>
+    async Task StartRecognitionAsync()
+    {
+        await JS.InvokeAsync<string>("startRecognition", _selectedLanguage);
+    }
+
+    /// <summary>
+    /// Stops speech recognition service
+    /// </summary>
+    /// <returns></returns>
+    async Task StopRecognitionAsync()
+    {
+        await JS.InvokeVoidAsync("stopRecognition");
+    }
+
+    /// <summary>
+    /// Handles add sender button on click
+    /// </summary>
+    /// <exception cref="NotImplementedException"></exception>
+    void AddOption_OnClick()
+    {
+        TranslationSvc.Translations.Add(new TranslationOption());
+    }
+}
