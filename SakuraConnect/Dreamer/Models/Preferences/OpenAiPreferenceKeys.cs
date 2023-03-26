@@ -1,7 +1,7 @@
 ﻿
 namespace Sakura.Live.Connect.Dreamer.Models.Preferences
 {
-    public class OpenAiPreferenceKeys
+    public static class OpenAiPreferenceKeys
     {
         /// <summary>
         /// Gets the container key for Open Ai settings
