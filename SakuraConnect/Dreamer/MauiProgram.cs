@@ -42,6 +42,7 @@ namespace Sakura.Live.Connect.Dreamer
 
             builder.Services.AddOpenAiCore();
             builder.Services.AddTwitchCore();
+            builder.Services.AddScoped<AzureConversationService>();
             
             var app = builder.Build();
             var monitor = app.Services.GetService<IThePandaMonitor>();
