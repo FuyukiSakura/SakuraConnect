@@ -1,7 +1,13 @@
 ﻿@page "/openai"
 @using Sakura.Live.OpenAi.Core.Services
+@using Sakura.Live.Connect.Dreamer.Services
+@using Sakura.Live.Speech.Core.Services
+@using Microsoft.CognitiveServices.Speech
 @inject OpenAiService OpenAiService
 @inject GreetingService GreetingService
+@inject ConversationService ConversationService
+@inject AzureSpeechService AzureSpeechService
+@inject AzureConversationService AzureConversationService
 
 <h1>Open AI</h1>
 
@@ -44,30 +50,139 @@
 
 <StartStopButton StartText="Start"
                  StopText="Stop"
-                 IsRunning="@IsServerRunning"
-                 @onclick="StartService_OnClick" />
+                 IsRunning="@IsGreetingServiceRunning"
+                 @onclick="StartGreetingService_OnClick" />
+
+<h2>Conversational</h2>
+
+<AzureSpeechSettingsModal />
+
+<div class="input-group mb-3">
+    <span class="input-group-text"
+          id="conversational-prompt">Prompt</span>
+    <input type="text"
+           class="form-control"
+           placeholder="How do you want your bot to behave?"
+           aria-label="Prompt"
+           aria-describedby="conversational-prompt"
+           @bind-value="ConversationService.Prompt">
+</div>
+
+<h3>Input</h3>
+<article>
+    @SpeechInput
+</article>
+
+<h3>Response</h3>
+<article>
+    @ConversationResponse
+</article>
+
+<StartStopButton StartText="Start"
+                 StopText="Stop"
+                 IsRunning="@IsConversationServiceRunning"
+                 @onclick="StartConversationService_OnClick" />
 
 @code {
     /// <summary>
-    /// Gets or sets the running status of the VMC server
+    /// Gets or sets the running status of the Greeting service
     /// </summary>
-    public bool IsServerRunning { get; set; }
+    public bool IsGreetingServiceRunning { get; set; }
 
     /// <summary>
-    /// 
+    /// Gets or sets the running status of the Conversation service
     /// </summary>
-    async void StartService_OnClick()
+    public bool IsConversationServiceRunning { get; set; }
+
+    string _speechInput;
+
+    /// <summary>
+    /// Gets or sets the speech input
+    /// </summary>
+    string SpeechInput {
+        get => _speechInput;
+        set {
+            if (_speechInput == value) {
+                return;
+            }
+            _speechInput = value;
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    string _conversationResponse;
+    /// <summary>
+    /// Gets or sets the response output
+    /// </summary>
+    public string ConversationResponse
     {
-        // TODO: Use dependency type of start
-        if (IsServerRunning)
+        get => _conversationResponse;
+        set
+        {
+            if (_conversationResponse == value)
+            {
+                return;
+            }
+
+            _conversationResponse = value;
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    /// <summary>
+    /// Starts or stops the greeting service
+    /// </summary>
+    async void StartGreetingService_OnClick()
+    {
+        if (IsGreetingServiceRunning)
         {
             await GreetingService.StopAsync();
-            IsServerRunning = false;
+            IsGreetingServiceRunning = false;
         }
         else
         {
             await GreetingService.StartAsync();
-            IsServerRunning = true;
+            IsGreetingServiceRunning = true;
         }
+    }
+
+    /// <summary>
+    /// Starts or stops the conversation service
+    /// </summary>
+    void StartConversationService_OnClick()
+    {
+        if (IsConversationServiceRunning)
+        {
+            AzureConversationService.Stop();
+            AzureConversationService.OnResponse -= AzureConversationServiceOnOnResponse;
+            IsConversationServiceRunning = false;
+        }
+        else
+        {
+            AzureSpeechService.Recognized += SpeechRecognized;
+            AzureConversationService.OnResponse += AzureConversationServiceOnOnResponse;
+            AzureConversationService.Start();
+            IsConversationServiceRunning = true;
+        }
+    }
+
+    /// <summary>
+    /// Outputs the speech input from the Azure Speech Service
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    void SpeechRecognized(object sender, SpeechRecognitionEventArgs e)
+    {
+        SpeechInput = e.Result.Text;
+    }
+
+    /// <summary>
+    /// Outputs the response text from the Azure Conversation Service
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    void AzureConversationServiceOnOnResponse(object sender, string e)
+    {
+        ConversationResponse = e;
     }
 }
