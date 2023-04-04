@@ -16,7 +16,11 @@ namespace Sakura.Live.OpenAi.Core.Services
         readonly IThePandaMonitor _monitor;
         readonly OpenAiService _openAiSvc;
         readonly List<ChatMessage> _chatHistory = new();
-        string _messageQueue = "";
+
+        /// <summary>
+        /// Gets the current Message Queue
+        /// </summary>
+        public string MessageQueue { get; private set; }= "";
 
         /// <summary>
         /// Gets or sets the character of the conversational AI
@@ -58,8 +62,8 @@ namespace Sakura.Live.OpenAi.Core.Services
                 Temperature = 1,
                 MaxTokens = 1024
             };
-            var chatMessage = ChatMessage.FromUser(_messageQueue);
-            _messageQueue = ""; // Reset
+            var chatMessage = ChatMessage.FromUser(MessageQueue);
+            MessageQueue = ""; // Reset
             AddChatHistory(chatMessage);
             _chatHistory.ForEach(request.Messages.Add);
             var completionResult = await _openAiSvc.Get().ChatCompletion.CreateCompletion(request);
@@ -76,13 +80,13 @@ namespace Sakura.Live.OpenAi.Core.Services
         /// <param name="message"></param>
         public void Queue(string message)
         {
-            _messageQueue += message;
+            MessageQueue += message;
         }
 
         /// <summary>
         /// Checks if the message queue is empty
         /// </summary>
-        public bool IsQueueEmpty => _messageQueue == "";
+        public bool IsQueueEmpty => MessageQueue == "";
 
         /// <summary>
         /// Adds a chat message to the history

@@ -7,6 +7,7 @@ namespace Sakura.Live.Speech.Core.Services
     /// </summary>
     public class AzureTextToSpeechService
     {
+        // Dependencies
         readonly AzureSpeechSettingsService _settings;
 
         /// <summary>

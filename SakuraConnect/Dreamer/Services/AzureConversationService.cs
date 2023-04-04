@@ -14,6 +14,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
     {
         // Dependencies
         readonly IThePandaMonitor _monitor;
+        readonly ChatLoggingService _chatLoggingService;
         readonly ConversationService _conversationService;
         readonly AzureSpeechService _speechService;
         readonly AzureTextToSpeechService _textToSpeechService;
@@ -30,16 +31,19 @@ namespace Sakura.Live.Connect.Dreamer.Services
         /// Creates a new instance of <see cref="AzureConversationService" />
         /// </summary>
         /// <param name="monitor"></param>
+        /// <param name="chatLoggingService"></param>
         /// <param name="conversationService"></param>
         /// <param name="speechService"></param>
         /// <param name="textToSpeechService"></param>
         public AzureConversationService(
             IThePandaMonitor monitor,
+            ChatLoggingService chatLoggingService,
             ConversationService conversationService,
             AzureSpeechService speechService,
             AzureTextToSpeechService textToSpeechService)
         {
             _monitor = monitor;
+            _chatLoggingService = chatLoggingService;
             _conversationService = conversationService;
             _speechService = speechService;
             _textToSpeechService = textToSpeechService;
@@ -50,7 +54,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void OnSpeechRecognized(object sender, SpeechRecognitionEventArgs e)
+        async void OnSpeechRecognized(object sender, SpeechRecognitionEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(e.Result.Text))
             {
@@ -59,6 +63,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
             }
             _conversationService.Queue(e.Result.Text);
             _lastResponse = DateTime.Now;
+            await _chatLoggingService.LogAsync("Recognized: " + e.Result.Text);
         }
 
         /// <summary>
@@ -75,8 +80,10 @@ namespace Sakura.Live.Connect.Dreamer.Services
                     await Task.Delay(500);
                 }
 
+                _ = _chatLoggingService.LogAsync("Input: " + _conversationService.MessageQueue);
                 var response = await _conversationService.TalkAsync();
                 OnResponse?.Invoke(this, response);
+                _ = _chatLoggingService.LogAsync("AI: " + response + Environment.NewLine);
                 await _textToSpeechService.SpeakAsync(response);
             }
         }
