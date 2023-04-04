@@ -1,0 +1,57 @@
+﻿@using Sakura.Live.Speech.Core.Services
+@inject AzureSpeechService Azure
+
+<ServiceConfigButton Service="@Azure"
+                     Clicked="ShowModal"
+                     Text="Azure Speech-to-text" />
+
+<Modal @ref="ModalRef">
+    <ModalContent Centered>
+        <ModalHeader>
+            <ModalTitle>Azure Speech Service</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            <Fields>
+                <Field>
+                    <FieldLabel>Region</FieldLabel>
+                    <TextEdit @bind-Text="@Azure.Region"
+                              Placeholder="eastasia">
+                        <FieldHelp>Your Azure Speech service region</FieldHelp>
+                    </TextEdit>
+                </Field>
+                <Field>
+                    <FieldLabel>Subscription Key</FieldLabel>
+                    <TextEdit @bind-Text="@Azure.SubscriptionKey"
+                              Role="TextRole.Password">
+                        <FieldHelp>Your Azure Speech service subscription key</FieldHelp>
+                    </TextEdit>
+                </Field>
+            </Fields>
+        </ModalBody>
+        <ModalFooter>
+            <Button Color="Color.Secondary" Clicked="@HideModal">Close</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+@code {
+    Modal ModalRef { get; set; }
+
+    /// <summary>
+    /// Shows the configuration window
+    /// </summary>
+    /// <returns></returns>
+    private Task ShowModal()
+    {
+        return ModalRef.Show();
+    }
+
+    /// <summary>
+    /// Hides the configuration window
+    /// </summary>
+    /// <returns></returns>
+    private Task HideModal()
+    {
+        return ModalRef.Hide();
+    }
+}

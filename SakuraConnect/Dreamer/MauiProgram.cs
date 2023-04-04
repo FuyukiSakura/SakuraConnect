@@ -7,6 +7,7 @@ using Sakura.Live.Connect.Dreamer.Services;
 using Sakura.Live.Obs.Core;
 using Sakura.Live.OpenAi.Core;
 using Sakura.Live.Osc.Core;
+using Sakura.Live.Speech.Core;
 using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Interfaces;
 using Sakura.Live.Twitch.Core;
@@ -36,6 +37,7 @@ namespace Sakura.Live.Connect.Dreamer
             builder.Services.AddScoped<ISettingsService, SettingsService>();
 	        builder.Services.AddOscCore();
             builder.Services.AddObsCore();
+            builder.Services.AddSpeechCore();
             builder.Services.AddTranslationCore();
 
             builder.Services.AddOpenAiCore();
