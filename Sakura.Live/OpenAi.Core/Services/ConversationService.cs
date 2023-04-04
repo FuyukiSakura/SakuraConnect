@@ -16,6 +16,7 @@ namespace Sakura.Live.OpenAi.Core.Services
         readonly IThePandaMonitor _monitor;
         readonly OpenAiService _openAiSvc;
         readonly List<ChatMessage> _chatHistory = new();
+        string _messageQueue = "";
 
         /// <summary>
         /// Gets or sets the character of the conversational AI
@@ -44,9 +45,8 @@ namespace Sakura.Live.OpenAi.Core.Services
         /// Talks to the AI and get a response
         /// based on the conversation
         /// </summary>
-        /// <param name="message"></param>
         /// <returns></returns>
-        public async Task<string> TalkToAsync(string message)
+        public async Task<string> TalkAsync()
         {
             var request = new ChatCompletionCreateRequest
             {
@@ -58,17 +58,31 @@ namespace Sakura.Live.OpenAi.Core.Services
                 Temperature = 1,
                 MaxTokens = 1024
             };
-            var chatMessage = ChatMessage.FromUser(message);
+            var chatMessage = ChatMessage.FromUser(_messageQueue);
+            _messageQueue = ""; // Reset
             AddChatHistory(chatMessage);
             _chatHistory.ForEach(request.Messages.Add);
             var completionResult = await _openAiSvc.Get().ChatCompletion.CreateCompletion(request);
-
             if (!completionResult.Successful) return "Sorry, I didn't get that";
 
             var response = completionResult.Choices.First().Message.Content;
             AddChatHistory(ChatMessage.FromAssistance(response));
             return response;
         }
+
+        /// <summary>
+        /// Queues the sentences
+        /// </summary>
+        /// <param name="message"></param>
+        public void Queue(string message)
+        {
+            _messageQueue += message;
+        }
+
+        /// <summary>
+        /// Checks if the message queue is empty
+        /// </summary>
+        public bool IsQueueEmpty => _messageQueue == "";
 
         /// <summary>
         /// Adds a chat message to the history

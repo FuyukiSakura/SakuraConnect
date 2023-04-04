@@ -18,6 +18,9 @@ namespace Sakura.Live.Connect.Dreamer.Services
         readonly AzureSpeechService _speechService;
         readonly AzureTextToSpeechService _textToSpeechService;
 
+        DateTime _lastResponse = DateTime.Now;
+        bool _isRunning;
+
         /// <summary>
         /// Is fired when the conversation service gets a response
         /// </summary>
@@ -47,16 +50,35 @@ namespace Sakura.Live.Connect.Dreamer.Services
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        async void OnSpeechRecognized(object sender, SpeechRecognitionEventArgs e)
+        void OnSpeechRecognized(object sender, SpeechRecognitionEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(e.Result.Text))
             {
                 // Do not fire for empty inputs
                 return;
             }
-            var response = await _conversationService.TalkToAsync(e.Result.Text);
-            OnResponse?.Invoke(this, response);
-            await _textToSpeechService.SpeakAsync(response);
+            _conversationService.Queue(e.Result.Text);
+            _lastResponse = DateTime.Now;
+        }
+
+        /// <summary>
+        /// Process the user input
+        /// </summary>
+        /// <returns></returns>
+        async Task TalkAsync()
+        {
+            while (_isRunning)
+            {
+                while (_conversationService.IsQueueEmpty
+                       || (DateTime.Now - _lastResponse).TotalSeconds < 3) // 3 Seconds interval
+                {
+                    await Task.Delay(500);
+                }
+
+                var response = await _conversationService.TalkAsync();
+                OnResponse?.Invoke(this, response);
+                await _textToSpeechService.SpeakAsync(response);
+            }
         }
 
         /// <summary>
@@ -67,6 +89,8 @@ namespace Sakura.Live.Connect.Dreamer.Services
             _speechService.Recognized += OnSpeechRecognized;
             _monitor.Register(this, _conversationService);
             _monitor.Register(this, _speechService);
+            _isRunning = true;
+            _ = TalkAsync();
         }
 
         /// <summary>
@@ -74,6 +98,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
         /// </summary>
         public void Stop()
         {
+            _isRunning = false;
             _monitor.Unregister(this);
             _speechService.Recognized -= OnSpeechRecognized;
         }
