@@ -14,6 +14,7 @@ namespace Sakura.Live.Speech.Core
         {
             services.AddSingleton<AzureSpeechSettingsService>();
 			services.AddSingleton<AzureSpeechService>();
+            services.AddSingleton<AzureTextToSpeechService>();
 			return services;
 		}
 	}

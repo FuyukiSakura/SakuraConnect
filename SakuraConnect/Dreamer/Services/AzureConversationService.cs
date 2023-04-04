@@ -16,6 +16,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
         readonly IThePandaMonitor _monitor;
         readonly ConversationService _conversationService;
         readonly AzureSpeechService _speechService;
+        readonly AzureTextToSpeechService _textToSpeechService;
 
         /// <summary>
         /// Is fired when the conversation service gets a response
@@ -28,14 +29,17 @@ namespace Sakura.Live.Connect.Dreamer.Services
         /// <param name="monitor"></param>
         /// <param name="conversationService"></param>
         /// <param name="speechService"></param>
+        /// <param name="textToSpeechService"></param>
         public AzureConversationService(
             IThePandaMonitor monitor,
             ConversationService conversationService,
-            AzureSpeechService speechService)
+            AzureSpeechService speechService,
+            AzureTextToSpeechService textToSpeechService)
         {
             _monitor = monitor;
             _conversationService = conversationService;
             _speechService = speechService;
+            _textToSpeechService = textToSpeechService;
         }
 
         /// <summary>
@@ -52,6 +56,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
             }
             var response = await _conversationService.TalkToAsync(e.Result.Text);
             OnResponse?.Invoke(this, response);
+            await _textToSpeechService.SpeakAsync(response);
         }
 
         /// <summary>
