@@ -4,7 +4,6 @@ using Microsoft.CognitiveServices.Speech.Audio;
 using Sakura.Live.Speech.Core.Models;
 using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Helpers;
-using Sakura.Live.ThePanda.Core.Interfaces;
 
 namespace Sakura.Live.Speech.Core.Services
 {
@@ -14,22 +13,12 @@ namespace Sakura.Live.Speech.Core.Services
     public class AzureSpeechService : BasicAutoStartable
     {
         // Dependencies
-        readonly ISettingsService _settingsService;
+        readonly AzureSpeechSettingsService _settings;
 
         SpeechRecognizer? _recognizer;
-        public EventHandler<SpeechRecognitionEventArgs>? Recognizing;
-        public EventHandler<SpeechRecognitionEventArgs>? Recognized;
-        public EventHandler<SpeechRecognitionCanceledEventArgs>? Canceled;
-
-        /// <summary>
-        /// Gets or sets the subscription key for Azure Speech Service
-        /// </summary>
-        public string SubscriptionKey { get; set; } = "";
-
-        /// <summary>
-        /// Gets or sets the region for Azure Speech Service
-        /// </summary>
-        public string Region { get; set; } = "";
+        public event EventHandler<SpeechRecognitionEventArgs>? Recognizing;
+        public event EventHandler<SpeechRecognitionEventArgs>? Recognized;
+        public event EventHandler<SpeechRecognitionCanceledEventArgs>? Canceled;
 
         /// <summary>
         /// Gets the languages the user is going to speak
@@ -45,11 +34,10 @@ namespace Sakura.Live.Speech.Core.Services
         /// <summary>
         /// Creates a new instance of <see cref="AzureSpeechService" />
         /// </summary>
-        /// <param name="settingsService"></param>
-        public AzureSpeechService(ISettingsService settingsService)
+        /// <param name="settings"></param>
+        public AzureSpeechService(AzureSpeechSettingsService settings)
         {
-            _settingsService = settingsService;
-            LoadSettings();
+            _settings = settings;
         }
 
         /// <summary>
@@ -58,17 +46,17 @@ namespace Sakura.Live.Speech.Core.Services
         /// <returns></returns>
         public override async Task StartAsync()
         {
-            SaveSettings();
+            _settings.Save();
             if (_recognizer != null)
             {
                 await StopAsync();
             }
 
             // Currently the v2 endpoint is required. In a future SDK release you won't need to set it.
-            var endpointString = $"wss://{Region}.stt.speech.microsoft.com/speech/universal/v2";
+            var endpointString = $"wss://{_settings.Region}.stt.speech.microsoft.com/speech/universal/v2";
             var endpointUrl = new Uri(endpointString);
 
-            var config = SpeechConfig.FromEndpoint(endpointUrl, SubscriptionKey);
+            var config = SpeechConfig.FromEndpoint(endpointUrl, _settings.SubscriptionKey);
             var autoDetectSourceLanguageConfig =
                 AutoDetectSourceLanguageConfig.FromLanguages(SpeechLanguages.ToArray());
 
@@ -117,24 +105,6 @@ namespace Sakura.Live.Speech.Core.Services
                 await _recognizer.StopContinuousRecognitionAsync();
             }
             await base.StopAsync();
-        }
-
-        /// <summary>
-        /// Saves Azure Speech settings to the system
-        /// </summary>
-        void SaveSettings()
-        {
-            _settingsService.Set(AzureSpeechPreferenceKeys.SubscriptionKey, SubscriptionKey);
-            _settingsService.Set(AzureSpeechPreferenceKeys.Region, Region);
-        }
-
-        /// <summary>
-        /// Loads Azure Speech settings from the system
-        /// </summary>
-        void LoadSettings()
-        {
-            SubscriptionKey = _settingsService.Get(AzureSpeechPreferenceKeys.SubscriptionKey, "");
-            Region = _settingsService.Get(AzureSpeechPreferenceKeys.Region, "");
         }
 
         /// <summary>

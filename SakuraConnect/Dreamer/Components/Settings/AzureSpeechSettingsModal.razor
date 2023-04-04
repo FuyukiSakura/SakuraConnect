@@ -1,9 +1,10 @@
 ﻿@using Sakura.Live.Speech.Core.Services
-@inject AzureSpeechService Azure
+@inject AzureSpeechSettingsService Settings
+@inject AzureSpeechService SpeechService
 
-<ServiceConfigButton Service="@Azure"
+<ServiceConfigButton Service="@SpeechService"
                      Clicked="ShowModal"
-                     Text="Azure Speech-to-text" />
+                     Text="Azure Speech" />
 
 <Modal @ref="ModalRef">
     <ModalContent Centered>
@@ -15,14 +16,14 @@
             <Fields>
                 <Field>
                     <FieldLabel>Region</FieldLabel>
-                    <TextEdit @bind-Text="@Azure.Region"
+                    <TextEdit @bind-Text="@Settings.Region"
                               Placeholder="eastasia">
                         <FieldHelp>Your Azure Speech service region</FieldHelp>
                     </TextEdit>
                 </Field>
                 <Field>
                     <FieldLabel>Subscription Key</FieldLabel>
-                    <TextEdit @bind-Text="@Azure.SubscriptionKey"
+                    <TextEdit @bind-Text="@Settings.SubscriptionKey"
                               Role="TextRole.Password">
                         <FieldHelp>Your Azure Speech service subscription key</FieldHelp>
                     </TextEdit>
