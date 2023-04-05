@@ -65,7 +65,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
             var languageResult = AutoDetectSourceLanguageResult.FromResult(e.Result);
             _conversationService.Queue(e.Result.Text, languageResult.Language);
             _lastResponse = DateTime.Now;
-            await _chatLoggingService.LogAsync($"Recognized({languageResult}): {e.Result.Text}");
+            await _chatLoggingService.LogAsync($"Recognized({languageResult.Language}): {e.Result.Text}");
         }
 
         /// <summary>
