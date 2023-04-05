@@ -57,6 +57,7 @@ namespace Sakura.Live.Speech.Core.Services
             var endpointUrl = new Uri(endpointString);
 
             var config = SpeechConfig.FromEndpoint(endpointUrl, _settings.SubscriptionKey);
+            config.SetProperty(PropertyId.SpeechServiceConnection_LanguageIdMode, "Continuous");
             var autoDetectSourceLanguageConfig =
                 AutoDetectSourceLanguageConfig.FromLanguages(SpeechLanguages.ToArray());
 
