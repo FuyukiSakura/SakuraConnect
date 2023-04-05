@@ -1,4 +1,5 @@
 ﻿using Microsoft.CognitiveServices.Speech;
+using Sakura.Live.Speech.Core.Models;
 
 namespace Sakura.Live.Speech.Core.Services
 {
@@ -23,14 +24,15 @@ namespace Sakura.Live.Speech.Core.Services
         /// Speaks the specified text
         /// </summary>
         /// <param name="text"></param>
+        /// <param name="language">The language to speak in</param>
         /// <returns></returns>
-        public async Task SpeakAsync(string text)
+        public async Task SpeakAsync(string text, string language)
         {
             var speechConfig = SpeechConfig.FromSubscription(_settings.SubscriptionKey, _settings.Region);
 
             // The language of the voice that speaks.
             using var speechSynthesizer = new SpeechSynthesizer(speechConfig);
-            var speechSynthesisResult = await speechSynthesizer.SpeakSsmlAsync(CreateSsml(text));
+            var speechSynthesisResult = await speechSynthesizer.SpeakSsmlAsync(CreateSsml(text, language));
 #if DEBUG 
             OutputSpeechSynthesisResult(speechSynthesisResult, text);
 #endif
@@ -70,8 +72,25 @@ namespace Sakura.Live.Speech.Core.Services
         /// Creates the SSML script for the specified text
         /// </summary>
         /// <param name="text"></param>
+        /// <param name="language"></param>
         /// <returns></returns>
-        public static string CreateSsml(string text) => 
-            $"<speak version=\"1.0\" xmlns=\"https://www.w3.org/2001/10/synthesis\" xml:lang=\"zh-HK\"><voice name=\"zh-HK-HiuGaaiNeural\"><prosody pitch=\"+700%\" rate=\"+30.00%\">{text}</prosody></voice></speak>";
+        public static string CreateSsml(string text, string language)
+        {
+            var voice = language switch
+            {
+                Languages.Mandarin => "zh-TW-HsiaoChenNeural",
+                Languages.Japanese => "ja-JP-NanamiNeural",
+                Languages.Cantonese => "zh-HK-HiuGaaiNeural",
+                _ => "zh-HK-HiuGaaiNeural"
+            };
+
+            var rate = language switch
+            {
+                Languages.Cantonese => "+50%",
+                Languages.English => "+20%",
+                _ => "+0%"
+            };
+            return $"<speak version=\"1.0\" xmlns=\"https://www.w3.org/2001/10/synthesis\" xml:lang=\"{language}\"><voice name=\"{voice}\"><prosody pitch=\"+700%\" rate=\"{rate}\">{text}</prosody></voice></speak>";
+        }
     }
 }

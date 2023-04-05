@@ -61,9 +61,11 @@ namespace Sakura.Live.Connect.Dreamer.Services
                 // Do not fire for empty inputs
                 return;
             }
-            _conversationService.Queue(e.Result.Text);
+            
+            var languageResult = AutoDetectSourceLanguageResult.FromResult(e.Result);
+            _conversationService.Queue(e.Result.Text, languageResult.Language);
             _lastResponse = DateTime.Now;
-            await _chatLoggingService.LogAsync("Recognized: " + e.Result.Text);
+            await _chatLoggingService.LogAsync($"Recognized({languageResult}): {e.Result.Text}");
         }
 
         /// <summary>
@@ -84,7 +86,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
                 var response = await _conversationService.TalkAsync();
                 OnResponse?.Invoke(this, response);
                 _ = _chatLoggingService.LogAsync("AI: " + response + Environment.NewLine);
-                await _textToSpeechService.SpeakAsync(response);
+                await _textToSpeechService.SpeakAsync(response, _conversationService.ReplyLanguage);
             }
         }
 

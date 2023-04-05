@@ -23,6 +23,11 @@ namespace Sakura.Live.OpenAi.Core.Services
         public string MessageQueue { get; private set; }= "";
 
         /// <summary>
+        /// Gets the reply language
+        /// </summary>
+        public string ReplyLanguage { get; private set; } = "";
+
+        /// <summary>
         /// Gets or sets the character of the conversational AI
         /// </summary>
         public string Prompt { get; set; } = "You are a vtuber.";
@@ -52,11 +57,16 @@ namespace Sakura.Live.OpenAi.Core.Services
         /// <returns></returns>
         public async Task<string> TalkAsync()
         {
+            var prompt = Prompt;
+            if (ReplyLanguage == "zh-HK")
+            {
+                prompt += " Reply in Cantonese";
+            }
             var request = new ChatCompletionCreateRequest
             {
                 Messages = new List<ChatMessage>
                 {
-                    ChatMessage.FromSystem(Prompt)
+                    ChatMessage.FromSystem(prompt)
                 },
                 Model = OpenAI.GPT3.ObjectModels.Models.ChatGpt3_5Turbo,
                 Temperature = 1,
@@ -64,6 +74,7 @@ namespace Sakura.Live.OpenAi.Core.Services
             };
             var chatMessage = ChatMessage.FromUser(MessageQueue);
             MessageQueue = ""; // Reset
+
             AddChatHistory(chatMessage);
             _chatHistory.ForEach(request.Messages.Add);
             var completionResult = await _openAiSvc.Get().ChatCompletion.CreateCompletion(request);
@@ -78,9 +89,11 @@ namespace Sakura.Live.OpenAi.Core.Services
         /// Queues the sentences
         /// </summary>
         /// <param name="message"></param>
-        public void Queue(string message)
+        /// <param name="language">The language in the current message the user said</param>
+        public void Queue(string message, string language)
         {
             MessageQueue += message;
+            ReplyLanguage = language;
         }
 
         /// <summary>
