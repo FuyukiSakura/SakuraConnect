@@ -60,7 +60,7 @@ namespace Sakura.Live.OpenAi.Core.Services
             var prompt = Prompt;
             if (ReplyLanguage == "zh-HK")
             {
-                prompt += " Reply in Cantonese";
+                prompt += ". Respond in Cantonese";
             }
             var request = new ChatCompletionCreateRequest
             {
