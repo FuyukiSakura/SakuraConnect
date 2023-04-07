@@ -152,7 +152,7 @@ AutoTest.Net/
 
 # Web workbench (sass)
 .sass-cache/
-*.razor*.css
+# *.razor*.css
 
 # Installshield output folder
 [Ee]xpress/
