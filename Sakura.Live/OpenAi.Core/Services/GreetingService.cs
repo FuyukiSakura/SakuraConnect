@@ -79,27 +79,20 @@ namespace Sakura.Live.OpenAi.Core.Services
             string message,
             string username)
         {
-            var completionResult = await _service.Get().ChatCompletion.CreateCompletion(new ChatCompletionCreateRequest
+            var request = new ChatCompletionCreateRequest
             {
                 Messages = new List<ChatMessage>
                 {
                     ChatMessage.FromSystem(
-                        prompt 
+                        prompt
                         + $"You can only response within {Characters} words."), // Adds character limits
                     ChatMessage.FromUser($"{username}: {message}"),
                 },
                 Model = OpenAI.GPT3.ObjectModels.Models.ChatGpt3_5Turbo,
                 Temperature = 1,
                 MaxTokens = 256
-            });
-
-            if (completionResult.Successful)
-            {
-                return completionResult.Choices.First().Message.Content;
-            }
-
-            // TODO: Adds fallback message
-            return "";
+            };
+            return await _service.CreateCompletionAsync(request);
         }
 
         /// <summary>
