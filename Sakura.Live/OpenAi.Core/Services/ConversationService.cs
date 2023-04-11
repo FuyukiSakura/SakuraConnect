@@ -15,7 +15,7 @@ namespace Sakura.Live.OpenAi.Core.Services
         readonly ISettingsService _settingsService;
         readonly IThePandaMonitor _monitor;
         readonly OpenAiService _openAiSvc;
-        readonly List<ChatMessage> _chatHistory = new();
+        readonly ChatHistoryService _chatHistoryService;
 
         /// <summary>
         /// Gets the current Message Queue
@@ -35,18 +35,16 @@ namespace Sakura.Live.OpenAi.Core.Services
         /// <summary>
         /// Creates a new instance of <see cref="ConversationService" />
         /// </summary>
-        /// <param name="settingsService"></param>
-        /// <param name="monitor"></param>
-        /// <param name="openAiSvc"></param>
         public ConversationService(
             ISettingsService settingsService,
             IThePandaMonitor monitor,
-            OpenAiService openAiSvc
-        )
-        {
+            OpenAiService openAiSvc,
+            ChatHistoryService chatHistoryService
+        ) {
             _settingsService = settingsService;
             _monitor = monitor;
             _openAiSvc = openAiSvc;
+            _chatHistoryService = chatHistoryService;
             LoadSettings();
         }
 
@@ -75,13 +73,13 @@ namespace Sakura.Live.OpenAi.Core.Services
             var chatMessage = ChatMessage.FromUser(MessageQueue);
             MessageQueue = ""; // Reset
 
-            AddChatHistory(chatMessage);
-            _chatHistory.ForEach(request.Messages.Add);
+            _chatHistoryService.AddChat(chatMessage);
+            _chatHistoryService.GetAllChat().ForEach(request.Messages.Add);
             var completionResult = await _openAiSvc.Get().ChatCompletion.CreateCompletion(request);
             if (!completionResult.Successful) return "Sorry, I didn't get that";
 
             var response = completionResult.Choices.First().Message.Content;
-            AddChatHistory(ChatMessage.FromAssistance(response));
+            _chatHistoryService.AddChat(ChatMessage.FromAssistance(response));
             return response;
         }
 
@@ -100,20 +98,6 @@ namespace Sakura.Live.OpenAi.Core.Services
         /// Checks if the message queue is empty
         /// </summary>
         public bool IsQueueEmpty => MessageQueue == "";
-
-        /// <summary>
-        /// Adds a chat message to the history
-        /// </summary>
-        /// <param name="message"></param>
-        void AddChatHistory(ChatMessage message)
-        {
-            if (_chatHistory.Count > 10)
-            {
-                _chatHistory.RemoveAt(0); // Remove first element if length exceeds max
-            }
-
-            _chatHistory.Add(message);
-        }
 
         /// <summary>
         /// Loads OpenAI conversation settings from the system
