@@ -14,6 +14,7 @@ namespace Sakura.Live.OpenAi.Core
         {
             services.AddSingleton<OpenAiService>();
             services.AddSingleton<GreetingService>();
+            services.AddSingleton<ConversationService>();
             return services;
         }
     }

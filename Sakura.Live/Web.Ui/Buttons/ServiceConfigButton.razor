@@ -53,7 +53,7 @@
         Service.StatusChanged += (sender, args) =>
         {
             Status = Service.Status;
-            StateHasChanged();
+            InvokeAsync(StateHasChanged);
         };
     }
 
