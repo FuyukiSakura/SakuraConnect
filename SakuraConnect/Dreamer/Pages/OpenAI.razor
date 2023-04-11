@@ -8,6 +8,7 @@
 @inject ConversationService ConversationService
 @inject AzureSpeechService AzureSpeechService
 @inject AzureConversationService AzureConversationService
+@inject TwitchChatResponseService TwitchChatResponseService
 
 <h1>Open AI</h1>
 
@@ -68,12 +69,12 @@
            @bind-value="ConversationService.Prompt">
 </div>
 
-<h3>Input</h3>
+<h4>Input</h4>
 <article>
     @SpeechInput
 </article>
 
-<h3>Response</h3>
+<h4>Response</h4>
 <article>
     @ConversationResponse
 </article>
@@ -82,6 +83,12 @@
                  StopText="Stop"
                  IsRunning="@IsConversationServiceRunning"
                  @onclick="StartConversationService_OnClick" />
+
+<h3>Chat response</h3>
+<StartStopButton StartText="Start"
+                 StopText="Stop"
+                 IsRunning="@IsChatServiceRunning"
+                 @onclick="StartChatService_OnClick" />
 
 @code {
     /// <summary>
@@ -93,6 +100,11 @@
     /// Gets or sets the running status of the Conversation service
     /// </summary>
     public bool IsConversationServiceRunning { get; set; }
+
+    /// <summary>
+    /// Gets or sets the running status of the Chat service
+    /// </summary>
+    public bool IsChatServiceRunning { get; set; }
 
     string _speechInput;
 
@@ -184,5 +196,30 @@
     void AzureConversationServiceOnOnResponse(object sender, string e)
     {
         ConversationResponse = e;
+    }
+
+    /// <summary>
+    /// Starts monitoring for chat messages and responding to them
+    /// </summary>
+    void StartChatService_OnClick() {
+        if (IsChatServiceRunning)
+        {
+            TwitchChatResponseService.Stop();
+            IsChatServiceRunning = false;
+        } else
+        {
+            IsChatServiceRunning = true;
+            TwitchChatResponseService.Start();
+        }
+    }
+
+    ///
+    /// <inheritdoc />
+    ///
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        AzureSpeechService.Recognized += SpeechRecognized;
+        AzureConversationService.OnResponse += AzureConversationServiceOnOnResponse;
     }
 }
