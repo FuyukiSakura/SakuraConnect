@@ -14,7 +14,6 @@ namespace Sakura.Live.Connect.Dreamer.Services
     {
         // Dependencies
         readonly IThePandaMonitor _monitor;
-        readonly ChatLoggingService _chatLoggingService;
         readonly ConversationService _conversationService;
         readonly AzureSpeechService _speechService;
         readonly AzureTextToSpeechService _textToSpeechService;
@@ -31,19 +30,16 @@ namespace Sakura.Live.Connect.Dreamer.Services
         /// Creates a new instance of <see cref="AzureConversationService" />
         /// </summary>
         /// <param name="monitor"></param>
-        /// <param name="chatLoggingService"></param>
         /// <param name="conversationService"></param>
         /// <param name="speechService"></param>
         /// <param name="textToSpeechService"></param>
         public AzureConversationService(
             IThePandaMonitor monitor,
-            ChatLoggingService chatLoggingService,
             ConversationService conversationService,
             AzureSpeechService speechService,
             AzureTextToSpeechService textToSpeechService)
         {
             _monitor = monitor;
-            _chatLoggingService = chatLoggingService;
             _conversationService = conversationService;
             _speechService = speechService;
             _textToSpeechService = textToSpeechService;
@@ -65,7 +61,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
             var languageResult = AutoDetectSourceLanguageResult.FromResult(e.Result);
             _conversationService.Queue(e.Result.Text, languageResult.Language);
             _lastResponse = DateTime.Now;
-            await _chatLoggingService.LogAsync($"Recognized({languageResult.Language}): {e.Result.Text}");
+            await ChatLogger.LogAsync($"Recognized({languageResult.Language}): {e.Result.Text}");
         }
 
         /// <summary>
@@ -82,10 +78,10 @@ namespace Sakura.Live.Connect.Dreamer.Services
                     await Task.Delay(500);
                 }
 
-                _ = _chatLoggingService.LogAsync("Input: " + _conversationService.MessageQueue);
+                _ = ChatLogger.LogAsync("Input: " + _conversationService.MessageQueue);
                 var response = await _conversationService.TalkAsync();
                 OnResponse?.Invoke(this, response);
-                _ = _chatLoggingService.LogAsync("AI: " + response + Environment.NewLine);
+                _ = ChatLogger.LogAsync("AI: " + response + Environment.NewLine);
                 await _textToSpeechService.SpeakAsync(response, _conversationService.ReplyLanguage);
             }
         }

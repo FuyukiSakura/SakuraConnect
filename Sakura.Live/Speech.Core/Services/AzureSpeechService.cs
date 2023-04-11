@@ -18,7 +18,6 @@ namespace Sakura.Live.Speech.Core.Services
         SpeechRecognizer? _recognizer;
         public event EventHandler<SpeechRecognitionEventArgs>? Recognizing;
         public event EventHandler<SpeechRecognitionEventArgs>? Recognized;
-        public event EventHandler<SpeechRecognitionCanceledEventArgs>? Canceled;
 
         /// <summary>
         /// Gets the languages the user is going to speak
@@ -67,7 +66,6 @@ namespace Sakura.Live.Speech.Core.Services
             _recognizer.Recognizing += Recognizing;
             _recognizer.Recognized += Recognized;
             _recognizer.Canceled += RecognizerOnCanceled;
-            _recognizer.Canceled += Canceled;
             _recognizer.SessionStopped += RecognizerOnSessionStopped;
 
             // Starts continuous recognition. Uses StopContinuousRecognitionAsync() to stop recognition.
