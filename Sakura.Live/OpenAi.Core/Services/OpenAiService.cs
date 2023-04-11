@@ -1,6 +1,8 @@
 ﻿using OpenAI.GPT3;
 using OpenAI.GPT3.Interfaces;
 using OpenAI.GPT3.Managers;
+using OpenAI.GPT3.ObjectModels.RequestModels;
+using OpenAI.GPT3.ObjectModels.ResponseModels;
 using Sakura.Live.OpenAi.Core.Models;
 using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Helpers;
@@ -54,6 +56,30 @@ namespace Sakura.Live.OpenAi.Core.Services
         public IOpenAIService? Get()
         {
             return _openAiService;
+        }
+
+        ///
+        /// <inheritdoc cref="IChatCompletionService.CreateCompletionAsStream"/>
+        ///
+        public IAsyncEnumerable<ChatCompletionCreateResponse>? CreateCompletionAsStream(ChatCompletionCreateRequest request)
+        {
+            return _openAiService?.ChatCompletion.CreateCompletionAsStream(request);
+        }
+
+        ///
+        /// <inheritdoc cref="IChatCompletionService.CreateCompletionAsStream"/>
+        ///
+        public async Task<string> CreateCompletionAsync(ChatCompletionCreateRequest request)
+        {
+            if (_openAiService == null)
+            {
+                return "Sorry, I didn't get that.";
+            }
+
+            var completionResult = await _openAiService.ChatCompletion.CreateCompletion(request);
+            return completionResult.Successful ?
+                completionResult.Choices.First().Message.Content :
+                "Sorry, I didn't get that.";
         }
 
         /// <summary>

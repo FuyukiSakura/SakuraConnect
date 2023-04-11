@@ -6,6 +6,7 @@ using Sakura.Live.Cognitive.Translation.Core;
 using Sakura.Live.Connect.Dreamer.Services;
 using Sakura.Live.Obs.Core;
 using Sakura.Live.OpenAi.Core;
+using Sakura.Live.OpenAi.Core.Services;
 using Sakura.Live.Osc.Core;
 using Sakura.Live.Speech.Core;
 using Sakura.Live.ThePanda.Core;
@@ -43,6 +44,8 @@ namespace Sakura.Live.Connect.Dreamer
             builder.Services.AddOpenAiCore();
             builder.Services.AddTwitchCore();
             builder.Services.AddScoped<AzureConversationService>();
+            builder.Services.AddScoped<TwitchChatResponseService>();
+            builder.Services.AddScoped<ChatHistoryService>();
 
             var app = builder.Build();
             var monitor = app.Services.GetService<IThePandaMonitor>();
