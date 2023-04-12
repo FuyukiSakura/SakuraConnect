@@ -118,7 +118,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
                 }
 
                 _lastSpoke = DateTime.Now;
-                var response = await ThinkAsync("可以講講你的生活嗎？");
+                var response = await ThinkAsync("Carry on.");
                 await ChatLogger.LogAsync($"Soliloquize: {response}");
                 _speechService.Queue(new SpeechQueueItem(response, SpeechQueueRole.Self));
                 _lastSpoke = DateTime.Now; // Avoid talking too much
@@ -157,7 +157,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
             catch (Exception e)
             {
                 await ChatLogger.LogAsync(e.Message);
-                return "Error.";
+                return "Sorry, my brain stops working.";
             }
         }
 
