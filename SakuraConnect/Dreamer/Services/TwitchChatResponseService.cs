@@ -1,6 +1,7 @@
 ﻿
 using OpenAI.GPT3.ObjectModels.RequestModels;
 using Sakura.Live.OpenAi.Core.Services;
+using Sakura.Live.Speech.Core.Models;
 using Sakura.Live.Speech.Core.Services;
 using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Helpers;
@@ -23,7 +24,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
         readonly IAiCharacterService _characterService;
         readonly OpenAiService _openAiService;
         readonly TwitchChatService _twitchChatService;
-        readonly AzureTextToSpeechService _speechService;
+        readonly SpeechQueueService _speechService;
         readonly ChatHistoryService _chatHistoryService;
 
         /// <summary>
@@ -34,7 +35,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
             IAiCharacterService characterService,
             OpenAiService openAiService,
             TwitchChatService twitchChatService,
-            AzureTextToSpeechService speechService,
+            SpeechQueueService speechService,
             ChatHistoryService chatHistoryService
         ) {
             _openAiService = openAiService;
@@ -78,9 +79,10 @@ namespace Sakura.Live.Connect.Dreamer.Services
                 _lastSpoke = DateTime.Now;
                 _lastRespondedMessage = _chatHistoryService.GetLastUserMessage();
                 var response = await ThinkAsync(
-                    "Summarize the user input above and create an interactive response."
+                    "Create an interactive response base on the user inputs above"
                 );
-                await _speechService.SpeakAsync(response, "zh-TW");
+                await ChatLogger.LogAsync($"Responded: {response}");
+                _speechService.Queue(new SpeechQueueItem(response, SpeechQueueRole.User));
                 _lastSpoke = DateTime.Now; // Avoid talking too much
             }
 
@@ -103,7 +105,8 @@ namespace Sakura.Live.Connect.Dreamer.Services
 
                 _lastSpoke = DateTime.Now;
                 var response = await ThinkAsync("可以講講你的生活嗎？");
-                await _speechService.SpeakAsync(response, "zh-TW");
+                await ChatLogger.LogAsync($"Soliloquize: {response}");
+                _speechService.Queue(new SpeechQueueItem(response, SpeechQueueRole.Self));
                 _lastSpoke = DateTime.Now; // Avoid talking too much
             }
         }
@@ -134,7 +137,6 @@ namespace Sakura.Live.Connect.Dreamer.Services
             try
             {
                 var response = await _openAiService.CreateCompletionAsync(request);
-                await ChatLogger.LogAsync($"{prompt}: {response}");
                 _chatHistoryService.AddChat(ChatMessage.FromAssistance(response));
                 return response;
             }
@@ -199,6 +201,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
             _isRunning = true;
             _monitor.Register(this, _twitchChatService);
             _monitor.Register(this, _openAiService);
+            _monitor.Register(this, _speechService);
             _monitor.Register(this, this);
         }
 

@@ -10,6 +10,7 @@ using Sakura.Live.OpenAi.Core;
 using Sakura.Live.OpenAi.Core.Services;
 using Sakura.Live.Osc.Core;
 using Sakura.Live.Speech.Core;
+using Sakura.Live.Speech.Core.Services;
 using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Interfaces;
 using Sakura.Live.Twitch.Core;
@@ -46,6 +47,7 @@ namespace Sakura.Live.Connect.Dreamer
             builder.Services.AddOpenAiCore();
             builder.Services.AddTwitchCore();
             builder.Services.AddScoped<AzureConversationService>();
+            builder.Services.AddScoped<SpeechQueueService>();
             builder.Services.AddScoped<TwitchChatResponseService>();
             builder.Services.AddScoped<ChatHistoryService>();
 

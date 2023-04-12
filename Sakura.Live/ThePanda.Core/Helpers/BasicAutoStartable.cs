@@ -25,11 +25,26 @@ namespace Sakura.Live.ThePanda.Core.Helpers
 		///
 		public event EventHandler<ServiceStatus>? StatusChanged;
 
+        /// <summary>
+        /// Checks if the thread is still running
+        /// </summary>
+        /// <returns></returns>
+        protected virtual async Task HeartBeatAsync()
+        {
+            Status = ServiceStatus.Running;
+            while (Status == ServiceStatus.Running) // Checks if the client is connected
+            {
+                LastUpdate = DateTime.Now;
+                await Task.Delay(HeartBeat.Default);
+            }
+        }
+
 		///
 		/// <inheritdoc />
 		///
 		public virtual async Task StartAsync()
 		{
+            _ = HeartBeatAsync();
 			Started?.Invoke(this, EventArgs.Empty);
 			await Task.CompletedTask;
 		}
@@ -40,6 +55,7 @@ namespace Sakura.Live.ThePanda.Core.Helpers
 		public virtual async Task StopAsync()
 		{
 			Stopped?.Invoke(this, EventArgs.Empty);
+			Status = ServiceStatus.Stopped;
 			await Task.CompletedTask;
 		}
 
