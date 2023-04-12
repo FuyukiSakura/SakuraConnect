@@ -4,7 +4,6 @@ using OpenAI.GPT3.Managers;
 using OpenAI.GPT3.ObjectModels.RequestModels;
 using OpenAI.GPT3.ObjectModels.ResponseModels;
 using Sakura.Live.OpenAi.Core.Models;
-using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Helpers;
 using Sakura.Live.ThePanda.Core.Interfaces;
 
@@ -93,21 +92,6 @@ namespace Sakura.Live.OpenAi.Core.Services
             {
                 ApiKey =  apiKey
             });
-            _ = HeartBeatAsync();
-        }
-
-        /// <summary>
-        /// Checks if the thread is still running
-        /// </summary>
-        /// <returns></returns>
-        async Task HeartBeatAsync()
-        {
-            Status = ServiceStatus.Running;
-            while (Status == ServiceStatus.Running) // Checks if the client is connected
-            {
-                LastUpdate = DateTime.Now;
-                await Task.Delay(HeartBeat.Default);
-            }
         }
 
         ///
@@ -116,8 +100,8 @@ namespace Sakura.Live.OpenAi.Core.Services
         public override async Task StartAsync()
         {
             SaveSettings();
-            Start(ApiKey);
             await base.StartAsync();
+            Start(ApiKey);
         }
     }
 }

@@ -117,7 +117,7 @@ namespace Sakura.Live.Obs.Core.Services
         /// Updates the heart beat timer when the obs connection is still connected
         /// </summary>
         /// <returns></returns>
-        async Task HeartBeatAsync()
+        protected override async Task HeartBeatAsync()
         {
             while (_isConnected)
             {

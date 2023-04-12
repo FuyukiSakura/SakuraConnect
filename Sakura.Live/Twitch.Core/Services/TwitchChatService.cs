@@ -112,7 +112,7 @@ namespace Sakura.Live.Twitch.Core.Services
         /// Checks if the Twitch client is still connected
         /// </summary>
         /// <returns></returns>
-        async Task HeartBeatAsync()
+        protected override async Task HeartBeatAsync()
         {
             Status = ServiceStatus.Running;
             while (Status == ServiceStatus.Running 
@@ -135,7 +135,6 @@ namespace Sakura.Live.Twitch.Core.Services
             _client.Initialize(credentials, channel);
             _client.Connect();
             Status = ServiceStatus.Running;
-            _ = HeartBeatAsync();
         }
 
         ///
