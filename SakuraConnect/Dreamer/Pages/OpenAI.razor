@@ -102,44 +102,14 @@
     public bool IsConversationServiceRunning { get; set; }
 
     /// <summary>
-    /// Gets or sets the running status of the Chat service
-    /// </summary>
-    public bool IsChatServiceRunning { get; set; }
-
-    string _speechInput;
-
-    /// <summary>
     /// Gets or sets the speech input
     /// </summary>
-    string SpeechInput {
-        get => _speechInput;
-        set {
-            if (_speechInput == value) {
-                return;
-            }
-            _speechInput = value;
-            InvokeAsync(StateHasChanged);
-        }
-    }
+    string SpeechInput { get; set; }
 
-    string _conversationResponse;
     /// <summary>
     /// Gets or sets the response output
     /// </summary>
-    public string ConversationResponse
-    {
-        get => _conversationResponse;
-        set
-        {
-            if (_conversationResponse == value)
-            {
-                return;
-            }
-
-            _conversationResponse = value;
-            InvokeAsync(StateHasChanged);
-        }
-    }
+    public string ConversationResponse { get; set; }
 
     /// <summary>
     /// Starts or stops the greeting service
@@ -183,9 +153,10 @@
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
-    void SpeechRecognized(object sender, SpeechRecognitionEventArgs e)
+    async void SpeechRecognized(object sender, SpeechRecognitionEventArgs e)
     {
         SpeechInput = e.Result.Text;
+        await InvokeAsync(StateHasChanged);
     }
 
     /// <summary>
@@ -193,9 +164,10 @@
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
-    void AzureConversationServiceOnOnResponse(object sender, string e)
+    async void AzureConversationServiceOnOnResponse(object sender, string e)
     {
         ConversationResponse = e;
+        await InvokeAsync(StateHasChanged);
     }
 
     /// <summary>
