@@ -4,6 +4,7 @@ using Blazorise;
 using Blazorise.Bootstrap;
 using Sakura.Live.Cognitive.Translation.Core;
 using Sakura.Live.Connect.Dreamer.Services;
+using Sakura.Live.Connect.Dreamer.Services.Ai;
 using Sakura.Live.Obs.Core;
 using Sakura.Live.OpenAi.Core;
 using Sakura.Live.OpenAi.Core.Services;
@@ -36,6 +37,7 @@ namespace Sakura.Live.Connect.Dreamer
 #endif
 	        builder.Services.AddThePanda();
             builder.Services.AddScoped<ISettingsService, SettingsService>();
+            builder.Services.AddScoped<IAiCharacterService, AiCharacterService>();
 	        builder.Services.AddOscCore();
             builder.Services.AddObsCore();
             builder.Services.AddSpeechCore();

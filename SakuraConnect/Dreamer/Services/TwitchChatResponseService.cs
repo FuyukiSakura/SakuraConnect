@@ -17,17 +17,19 @@ namespace Sakura.Live.Connect.Dreamer.Services
         bool _isRunning;
 
         // Dependencies
+        readonly IThePandaMonitor _monitor;
+        readonly IAiCharacterService _characterService;
         readonly OpenAiService _openAiService;
         readonly TwitchChatService _twitchChatService;
         readonly AzureTextToSpeechService _speechService;
         readonly ChatHistoryService _chatHistoryService;
-        readonly IThePandaMonitor _monitor;
 
         /// <summary>
         /// Creates a new instance of <see cref="TwitchChatResponseService" />
         /// </summary>
         public TwitchChatResponseService(
             IThePandaMonitor monitor,
+            IAiCharacterService characterService,
             OpenAiService openAiService,
             TwitchChatService twitchChatService,
             AzureTextToSpeechService speechService,
@@ -38,6 +40,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
             _speechService = speechService;
             _chatHistoryService = chatHistoryService;
             _monitor = monitor;
+            _characterService = characterService;
             InitializeChat();
         }
 
@@ -84,7 +87,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
                 {
                     Messages = new List<ChatMessage>
                     {
-                        ChatMessage.FromSystem("You are a virtual streamer")
+                        ChatMessage.FromSystem(_characterService.GetPersonalityPrompt())
                     },
                     Model = OpenAI.GPT3.ObjectModels.Models.ChatGpt3_5Turbo, Temperature = 1, MaxTokens = 1024
                 };

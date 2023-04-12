@@ -1,9 +1,7 @@
 ﻿
 using OpenAI.GPT3.ObjectModels.RequestModels;
-using Sakura.Live.OpenAi.Core.Models;
 using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Helpers;
-using Sakura.Live.ThePanda.Core.Interfaces;
 
 namespace Sakura.Live.OpenAi.Core.Services
 {
@@ -12,8 +10,9 @@ namespace Sakura.Live.OpenAi.Core.Services
     /// </summary>
     public class ConversationService : BasicAutoStartable
     {
-        readonly ISettingsService _settingsService;
+        // Dependencies
         readonly IThePandaMonitor _monitor;
+        readonly IAiCharacterService _characterService;
         readonly OpenAiService _openAiSvc;
         readonly ChatHistoryService _chatHistoryService;
 
@@ -28,24 +27,18 @@ namespace Sakura.Live.OpenAi.Core.Services
         public string ReplyLanguage { get; private set; } = "";
 
         /// <summary>
-        /// Gets or sets the character of the conversational AI
-        /// </summary>
-        public string Prompt { get; set; } = "You are a vtuber.";
-
-        /// <summary>
         /// Creates a new instance of <see cref="ConversationService" />
         /// </summary>
         public ConversationService(
-            ISettingsService settingsService,
             IThePandaMonitor monitor,
+            IAiCharacterService characterService,
             OpenAiService openAiSvc,
             ChatHistoryService chatHistoryService
         ) {
-            _settingsService = settingsService;
+            _characterService = characterService;
             _monitor = monitor;
             _openAiSvc = openAiSvc;
             _chatHistoryService = chatHistoryService;
-            LoadSettings();
         }
 
         /// <summary>
@@ -55,7 +48,7 @@ namespace Sakura.Live.OpenAi.Core.Services
         /// <returns></returns>
         public async Task<string> TalkAsync()
         {
-            var prompt = Prompt;
+            var prompt = _characterService.GetPersonalityPrompt();
             if (ReplyLanguage == "zh-HK")
             {
                 prompt += ". Respond in Cantonese";
@@ -99,28 +92,11 @@ namespace Sakura.Live.OpenAi.Core.Services
         /// </summary>
         public bool IsQueueEmpty => MessageQueue == "";
 
-        /// <summary>
-        /// Loads OpenAI conversation settings from the system
-        /// </summary>
-        void LoadSettings()
-        {
-            Prompt = _settingsService.Get(OpenAiPreferenceKeys.ConversationPrompt, Prompt);
-        }
-
-        /// <summary>
-        /// Saves OpenAI conversation settings to the system
-        /// </summary>
-        void SaveSettings()
-        {
-            _settingsService.Set(OpenAiPreferenceKeys.ConversationPrompt, Prompt);
-        }
-
         ///
         /// <inheritdoc />
         ///
         public override async Task StartAsync()
         {
-            SaveSettings();
             _monitor.Register(this, _openAiSvc);
             await base.StartAsync();
         }

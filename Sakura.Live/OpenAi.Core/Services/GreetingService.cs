@@ -1,8 +1,6 @@
 ﻿using OpenAI.GPT3.ObjectModels.RequestModels;
-using Sakura.Live.OpenAi.Core.Models;
 using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Helpers;
-using Sakura.Live.ThePanda.Core.Interfaces;
 using Sakura.Live.Twitch.Core.Services;
 using TwitchLib.Client.Events;
 
@@ -16,18 +14,12 @@ namespace Sakura.Live.OpenAi.Core.Services
         readonly List<string> _greetedUsers = new ();
 
         /// <summary>
-        /// Gets or sets the prompt for generating the customized greet
-        /// </summary>
-        public string Prompt { get; set; } =
-            "You are a vtuber.";
-
-        /// <summary>
         /// Gets or sets the number of characters to be generated
         /// </summary>
         public int Characters { get; set; } = 30;
 
         // Dependencies
-        readonly ISettingsService _settingsService;
+        readonly IAiCharacterService _characterService;
         readonly IThePandaMonitor _monitor;
         readonly OpenAiService _service;
         readonly TwitchChatService _twitchChat;
@@ -35,36 +27,15 @@ namespace Sakura.Live.OpenAi.Core.Services
         /// <summary>
         /// Creates a new instance of <see cref="GreetingService" />
         /// </summary>
-        /// <param name="settingsService"></param>
-        /// <param name="monitor"></param>
-        /// <param name="service"></param>
-        /// <param name="twitchChat"></param>
-        public GreetingService(ISettingsService settingsService,
+        public GreetingService(IAiCharacterService characterService,
             IThePandaMonitor monitor,
             OpenAiService service,
             TwitchChatService twitchChat)
         {
-            _settingsService = settingsService;
+            _characterService = characterService;
             _service = service;
             _twitchChat = twitchChat;
             _monitor = monitor;
-            LoadSettings();
-        }
-
-        /// <summary>
-        /// Saves OpenAI greeting settings to the system
-        /// </summary>
-        void SaveSettings()
-        {
-            _settingsService.Set(OpenAiPreferenceKeys.GreetingPrompt, Prompt);
-        }
-
-        /// <summary>
-        /// Loads OpenAI greeting settings from the system
-        /// </summary>
-        void LoadSettings()
-        {
-            Prompt = _settingsService.Get(OpenAiPreferenceKeys.GreetingPrompt, Prompt);
         }
 
         /// <summary>
@@ -101,7 +72,6 @@ namespace Sakura.Live.OpenAi.Core.Services
         /// <returns></returns>
         public override Task StartAsync()
         {
-            SaveSettings();
             _twitchChat.OnMessageReceived += TwitchChat_OnMessageReceived;
             _monitor.Register(this, _twitchChat);
             _monitor.Register(this, _service);
@@ -121,7 +91,9 @@ namespace Sakura.Live.OpenAi.Core.Services
             }
 
             _greetedUsers.Add(args.ChatMessage.Username);
-            var message = await GreetsAsync(Prompt, args.ChatMessage.Message, args.ChatMessage.DisplayName);
+            var message = await GreetsAsync(_characterService.GetGreetingPrompt(),
+                args.ChatMessage.Message,
+                args.ChatMessage.DisplayName);
             _ = _twitchChat.SendMessage(message); // Fire and forget
         }
 
