@@ -76,17 +76,25 @@ namespace Sakura.Live.Connect.Dreamer.Services
             while (_isRunning)
             {
                 await WaitUserInput();
-                _lastSpoke = DateTime.Now;
                 _lastRespondedMessage = _chatHistoryService.GetLastUserMessage();
-                var response = await ThinkAsync(
-                    "Create an interactive response base on the user inputs above"
-                );
-                await ChatLogger.LogAsync($"Responded: {response}");
-                _speechService.Queue(new SpeechQueueItem(response, SpeechQueueRole.User));
-                _lastSpoke = DateTime.Now; // Avoid talking too much
+                _ = GenerateResponseAsync(); // Fire and forget
+                _lastSpoke = DateTime.Now;
             }
 
             await StopAsync();
+        }
+
+        /// <summary>
+        /// Generates response and add to the queue
+        /// </summary>
+        /// <returns></returns>
+        async Task GenerateResponseAsync()
+        {
+            var response = await ThinkAsync(
+                "Answer within 50 words."
+            );
+            await ChatLogger.LogAsync($"Responded: {response}");
+            _speechService.Queue(new SpeechQueueItem(response, SpeechQueueRole.User));
         }
 
         /// <summary>
