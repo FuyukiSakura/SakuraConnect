@@ -140,6 +140,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
             }
             catch (Exception e)
             {
+                await ChatLogger.LogAsync(e.Message);
                 return "Error.";
             }
         }
