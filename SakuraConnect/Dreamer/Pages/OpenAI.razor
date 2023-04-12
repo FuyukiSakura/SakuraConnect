@@ -3,6 +3,7 @@
 @using Sakura.Live.Connect.Dreamer.Services
 @using Sakura.Live.Speech.Core.Services
 @using Microsoft.CognitiveServices.Speech
+@using Sakura.Live.ThePanda.Core
 @inject OpenAiService OpenAiService
 @inject GreetingService GreetingService
 @inject ConversationService ConversationService
@@ -85,10 +86,9 @@
                  @onclick="StartConversationService_OnClick" />
 
 <h3>Chat response</h3>
-<StartStopButton StartText="Start"
-                 StopText="Stop"
-                 IsRunning="@IsChatServiceRunning"
-                 @onclick="StartChatService_OnClick" />
+<ServiceConfigButton Service="@TwitchChatResponseService"
+                     Text="Start / Stop"
+                     Clicked="StartChatService_OnClick" />
 
 @code {
     /// <summary>
@@ -174,13 +174,12 @@
     /// Starts monitoring for chat messages and responding to them
     /// </summary>
     void StartChatService_OnClick() {
-        if (IsChatServiceRunning)
+        if (TwitchChatResponseService.Status == ServiceStatus.Running)
         {
             TwitchChatResponseService.Stop();
-            IsChatServiceRunning = false;
-        } else
+        }
+        else
         {
-            IsChatServiceRunning = true;
             TwitchChatResponseService.Start();
         }
     }

@@ -14,6 +14,8 @@ namespace Sakura.Live.Connect.Dreamer.Services
     /// </summary>
     public class TwitchChatResponseService : BasicAutoStartable
     {
+        bool _isRunning;
+
         // Dependencies
         readonly OpenAiService _openAiService;
         readonly TwitchChatService _twitchChatService;
@@ -65,6 +67,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
         public override async Task StartAsync()
         {
             await base.StartAsync();
+            _ = HeartBeatAsync();
             _ = ResponseAsync();
         }
 
@@ -74,9 +77,8 @@ namespace Sakura.Live.Connect.Dreamer.Services
         /// <returns></returns>
         public async Task ResponseAsync()
         {
-            while (Status == ServiceStatus.Running)
+            while (_isRunning)
             {
-                LastUpdate = DateTime.Now;
                 await Task.Delay(10_000); // Wait 10 seconds before the next response
                 var request = new ChatCompletionCreateRequest
                 {
@@ -95,6 +97,22 @@ namespace Sakura.Live.Connect.Dreamer.Services
                 _chatHistoryService.AddChat(ChatMessage.FromAssistance(response));
                 await _speechService.SpeakAsync(response, "zh-HK");
             }
+
+            await StopAsync();
+        }
+
+        /// <summary>
+        /// Checks if the thread is still running
+        /// </summary>
+        /// <returns></returns>
+        async Task HeartBeatAsync()
+        {
+            Status = ServiceStatus.Running;
+            while (Status == ServiceStatus.Running) // Checks if the client is connected
+            {
+                LastUpdate = DateTime.Now;
+                await Task.Delay(HeartBeat.Default);
+            }
         }
 
         /// <summary>
@@ -103,6 +121,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
         public void Start()
         {
             _twitchChatService.OnMessageReceived += OnMessageReceived;
+            _isRunning = true;
             _monitor.Register(this, _twitchChatService);
             _monitor.Register(this, _openAiService);
             _monitor.Register(this, this);
@@ -115,6 +134,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
         {
             _monitor.Unregister(this);
             _twitchChatService.OnMessageReceived -= OnMessageReceived;
+            _isRunning = false;
         }
     }
 }
