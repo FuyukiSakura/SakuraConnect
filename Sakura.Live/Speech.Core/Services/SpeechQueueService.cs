@@ -28,6 +28,11 @@ namespace Sakura.Live.Speech.Core.Services
         /// <param name="item"></param>
         public void Queue(SpeechQueueItem item)
         {
+            if (string.IsNullOrEmpty(item.Text) ||
+                item.Text == SpeechQueueItem.TerminationText)
+            {
+                return;
+            }
             _speechQueue.Add(item);
         }
 
@@ -67,8 +72,6 @@ namespace Sakura.Live.Speech.Core.Services
                 _speechQueue.RemoveAll(item => oldMessages.Contains(item));
             }
         }
-
-        
 
         ///
         /// <inheritdoc />

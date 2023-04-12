@@ -7,6 +7,11 @@ namespace Sakura.Live.Speech.Core.Models
     public class SpeechQueueItem
     {
         /// <summary>
+        /// Item is skipped if the text is this
+        /// </summary>
+        public const string TerminationText = "RESPONDED_WITH_ERROR";
+
+        /// <summary>
         /// Creates a new instance of <see cref="SpeechQueueItem" />
         /// </summary>
         /// <param name="text">The text to speak</param>
