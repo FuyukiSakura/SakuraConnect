@@ -44,6 +44,7 @@ namespace Sakura.Live.ThePanda.Core.Helpers
 		///
 		public virtual async Task StartAsync()
 		{
+			Status = ServiceStatus.Running;
             _ = HeartBeatAsync();
 			Started?.Invoke(this, EventArgs.Empty);
 			await Task.CompletedTask;

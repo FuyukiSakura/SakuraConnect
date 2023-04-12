@@ -134,26 +134,25 @@ namespace Sakura.Live.Twitch.Core.Services
             var credentials = new ConnectionCredentials(username, accessToken);
             _client.Initialize(credentials, channel);
             _client.Connect();
-            Status = ServiceStatus.Running;
         }
 
         ///
         /// <inheritdoc />
         ///
-        public override Task StartAsync()
+        public override async Task StartAsync()
         {
             SaveSettings();
             Start(Username, AccessToken, Channel);
-            return base.StartAsync();
+            await base.StartAsync();
         }
 
         ///
         /// <inheritdoc />
         ///
-        public override Task StopAsync()
+        public override async Task StopAsync()
         {
+            await base.StopAsync();
             _client.Disconnect();
-            return base.StopAsync();
         }
 
         /// <summary>
@@ -163,7 +162,11 @@ namespace Sakura.Live.Twitch.Core.Services
         /// <param name="e"></param>
         void Twitch_OnDisconnected(object? sender, OnDisconnectedEventArgs e)
         {
-            Status = ServiceStatus.Error;
+            if (Status == ServiceStatus.Running)
+            {
+                // Only change status if the service is running
+                Status = ServiceStatus.Error;
+            }
         }
     }
 }
