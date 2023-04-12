@@ -72,7 +72,7 @@ namespace Sakura.Live.OpenAi.Core.Services
             if (!completionResult.Successful) return "Sorry, I didn't get that";
 
             var response = completionResult.Choices.First().Message.Content;
-            _chatHistoryService.AddChat(ChatMessage.FromAssistance(response));
+            _chatHistoryService.AddChat(ChatMessage.FromAssistant(response));
             return response;
         }
 

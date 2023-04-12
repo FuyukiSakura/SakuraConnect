@@ -145,7 +145,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
             try
             {
                 var response = await _openAiService.CreateCompletionAsync(request);
-                _chatHistoryService.AddChat(ChatMessage.FromAssistance(response));
+                _chatHistoryService.AddChat(ChatMessage.FromAssistant(response));
                 return response;
             }
             catch (Exception e)
