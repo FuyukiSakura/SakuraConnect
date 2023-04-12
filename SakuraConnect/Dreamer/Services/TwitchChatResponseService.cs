@@ -63,6 +63,12 @@ namespace Sakura.Live.Connect.Dreamer.Services
         /// <param name="e"></param>
         void OnMessageReceived(object sender, OnMessageReceivedArgs e)
         {
+            if (!e.ChatMessage.Message.Contains("following") // Allow moderator for following
+                && (e.ChatMessage.Message.StartsWith("!") // Ignore commands
+                || e.ChatMessage.IsModerator))
+            {
+                return;
+            }
             var msg = ChatMessage.FromUser($"{e.ChatMessage.DisplayName}: {e.ChatMessage.Message}");
             _chatHistoryService.AddChat(msg);
         }
