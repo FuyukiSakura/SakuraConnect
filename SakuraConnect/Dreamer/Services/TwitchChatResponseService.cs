@@ -15,7 +15,8 @@ namespace Sakura.Live.Connect.Dreamer.Services
     public class TwitchChatResponseService : BasicAutoStartable
     {
         bool _isRunning;
-        ChatMessage? _lastResponsedMessage;
+        ChatMessage? _lastRespondedMessage;
+        DateTime _lastSpoke = DateTime.MinValue;
 
         // Dependencies
         readonly IThePandaMonitor _monitor;
@@ -65,16 +66,6 @@ namespace Sakura.Live.Connect.Dreamer.Services
             _chatHistoryService.AddChat(msg);
         }
 
-        ///
-        /// <inheritdoc />
-        ///
-        public override async Task StartAsync()
-        {
-            await base.StartAsync();
-            _ = HeartBeatAsync();
-            _ = ResponseAsync();
-        }
-
         /// <summary>
         /// Monitors and responds to chat log
         /// </summary>
@@ -84,26 +75,73 @@ namespace Sakura.Live.Connect.Dreamer.Services
             while (_isRunning)
             {
                 await WaitUserInput();
-                var request = new ChatCompletionCreateRequest
-                {
-                    Messages = new List<ChatMessage>
-                    {
-                        ChatMessage.FromSystem(_characterService.GetPersonalityPrompt())
-                    },
-                    Model = OpenAI.GPT3.ObjectModels.Models.ChatGpt3_5Turbo, Temperature = 1, MaxTokens = 1024
-                };
-                _chatHistoryService.GetAllChat()
-                    .ForEach(request.Messages.Add);
-                _lastResponsedMessage = _chatHistoryService.GetLastUserMessage();
-                var instruction = ChatMessage.FromUser("Summarize the user input above and create an interactive response.");
-                request.Messages.Add(instruction);
-
-                var response = await _openAiService.CreateCompletionAsync(request);
-                _chatHistoryService.AddChat(ChatMessage.FromAssistance(response));
-                await _speechService.SpeakAsync(response, "zh-HK");
+                _lastSpoke = DateTime.Now;
+                _lastRespondedMessage = _chatHistoryService.GetLastUserMessage();
+                var response = await ThinkAsync(
+                    "Summarize the user input above and create an interactive response."
+                );
+                await _speechService.SpeakAsync(response, "zh-TW");
+                _lastSpoke = DateTime.Now; // Avoid talking too much
             }
 
             await StopAsync();
+        }
+
+        /// <summary>
+        /// Talks to itself if no user input for a while
+        /// </summary>
+        /// <returns></returns>
+        async Task SoliloquizeAsync()
+        {
+            while (_isRunning)
+            {
+                if (DateTime.Now - _lastSpoke < TimeSpan.FromMinutes(1))
+                {
+                    await Task.Delay(30_000);
+                    continue;
+                }
+
+                _lastSpoke = DateTime.Now;
+                var response = await ThinkAsync("可以講講你的生活嗎？");
+                await _speechService.SpeakAsync(response, "zh-TW");
+                _lastSpoke = DateTime.Now; // Avoid talking too much
+            }
+        }
+
+        /// <summary>
+        /// Instructs open ai to think about the chat history
+        /// </summary>
+        /// <param name="prompt"></param>
+        /// <returns></returns>
+        async Task<string> ThinkAsync(string prompt)
+        {
+            var request = new ChatCompletionCreateRequest
+            {
+                Messages = new List<ChatMessage>
+                {
+                    ChatMessage.FromSystem(_characterService.GetPersonalityPrompt())
+                },
+                Model = OpenAI.GPT3.ObjectModels.Models.ChatGpt3_5Turbo,
+                Temperature = 1,
+                MaxTokens = 1024
+            };
+            _chatHistoryService.GetAllChat()
+                .ForEach(request.Messages.Add);
+            var instruction =
+                ChatMessage.FromUser(prompt);
+            request.Messages.Add(instruction);
+
+            try
+            {
+                var response = await _openAiService.CreateCompletionAsync(request);
+                await ChatLogger.LogAsync($"{prompt}: {response}");
+                _chatHistoryService.AddChat(ChatMessage.FromAssistance(response));
+                return response;
+            }
+            catch (Exception e)
+            {
+                return "Error.";
+            }
         }
 
         /// <summary>
@@ -115,12 +153,12 @@ namespace Sakura.Live.Connect.Dreamer.Services
         {
             while (true)
             {
-                if (_lastResponsedMessage != null && _chatHistoryService.GetLastUserMessage() == _lastResponsedMessage)
+                if (_lastRespondedMessage != null // Ignores when the app started
+                    && _chatHistoryService.GetLastUserMessage() == _lastRespondedMessage)
                 {
                     await Task.Delay(10_000);
                     continue;
                 }
-
                 break;
             }
         }
@@ -137,6 +175,18 @@ namespace Sakura.Live.Connect.Dreamer.Services
                 LastUpdate = DateTime.Now;
                 await Task.Delay(HeartBeat.Default);
             }
+        }
+
+        ///
+        /// <inheritdoc />
+        ///
+        public override async Task StartAsync()
+        {
+            await base.StartAsync();
+            _lastSpoke = DateTime.Now;
+            _ = HeartBeatAsync();
+            _ = ResponseAsync();
+            _ = SoliloquizeAsync();
         }
 
         /// <summary>
