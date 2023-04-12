@@ -79,7 +79,7 @@ namespace Sakura.Live.OpenAi.Core.Services
             var completionResult = await _openAiService.ChatCompletion.CreateCompletion(request);
             return completionResult.Successful ?
                 completionResult.Choices.First().Message.Content :
-                "Sorry, I didn't get that.";
+                "RESPONDED_WITH_ERROR";
         }
 
         /// <summary>
