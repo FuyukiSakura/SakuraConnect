@@ -15,6 +15,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
     public class TwitchChatResponseService : BasicAutoStartable
     {
         bool _isRunning;
+        ChatMessage? _lastResponsedMessage;
 
         // Dependencies
         readonly IThePandaMonitor _monitor;
@@ -82,7 +83,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
         {
             while (_isRunning)
             {
-                await Task.Delay(10_000); // Wait 10 seconds before the next response
+                await WaitUserInput();
                 var request = new ChatCompletionCreateRequest
                 {
                     Messages = new List<ChatMessage>
@@ -93,7 +94,8 @@ namespace Sakura.Live.Connect.Dreamer.Services
                 };
                 _chatHistoryService.GetAllChat()
                     .ForEach(request.Messages.Add);
-                var instruction = ChatMessage.FromUser("Summarize the content you haven't responded to yet and create an interactive response.");
+                _lastResponsedMessage = _chatHistoryService.GetLastUserMessage();
+                var instruction = ChatMessage.FromUser("Summarize the user input above and create an interactive response.");
                 request.Messages.Add(instruction);
 
                 var response = await _openAiService.CreateCompletionAsync(request);
@@ -102,6 +104,25 @@ namespace Sakura.Live.Connect.Dreamer.Services
             }
 
             await StopAsync();
+        }
+
+        /// <summary>
+        /// Checks if the last responded message is the same as the last user message
+        /// wait for new user message if it is
+        /// </summary>
+        /// <returns></returns>
+        async Task WaitUserInput()
+        {
+            while (true)
+            {
+                if (_lastResponsedMessage != null && _chatHistoryService.GetLastUserMessage() == _lastResponsedMessage)
+                {
+                    await Task.Delay(10_000);
+                    continue;
+                }
+
+                break;
+            }
         }
 
         /// <summary>

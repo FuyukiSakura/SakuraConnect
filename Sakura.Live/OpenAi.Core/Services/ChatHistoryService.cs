@@ -36,5 +36,14 @@ namespace Sakura.Live.OpenAi.Core.Services
         {
             return _chatHistory;
         }
+
+        /// <summary>
+        /// Gets the last user message
+        /// </summary>
+        /// <returns></returns>
+        public ChatMessage? GetLastUserMessage()
+        {
+           return _chatHistory.LastOrDefault(msg => msg.Role == "user");
+        }
     }
 }
