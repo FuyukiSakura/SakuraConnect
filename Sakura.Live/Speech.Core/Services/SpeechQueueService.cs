@@ -68,7 +68,7 @@ namespace Sakura.Live.Speech.Core.Services
             while (_isRunning)
             {
                 await Task.Delay(TimeSpan.FromMinutes(1));
-                var oldMessages = _speechQueue.Where(item => DateTime.Now - item.TimeStamp > TimeSpan.FromMinutes(3));
+                var oldMessages = _speechQueue.Where(item => DateTime.Now - item.TimeStamp > TimeSpan.FromMinutes(1));
                 _speechQueue.RemoveAll(item => oldMessages.Contains(item));
             }
         }
