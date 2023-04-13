@@ -100,7 +100,6 @@ namespace Sakura.Live.Obs.Core.Services
             _isConnected = true;
             Status = ServiceStatus.Running;
             await base.StartAsync();
-            await HeartBeatAsync();
         }
 
         /// <summary>
