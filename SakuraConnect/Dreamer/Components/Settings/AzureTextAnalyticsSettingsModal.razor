@@ -1,0 +1,59 @@
+﻿@using Sakura.Live.Speech.Core.Services
+@inject AzureTextAnalyticsSettingsService Settings
+@inject AzureTextAnalyticsService TextService
+
+<ServiceConfigButton Service="@TextService"
+                     Clicked="ShowModal"
+                     Text="Azure Text Analytics" />
+
+<Modal @ref="ModalRef">
+    <ModalContent Centered>
+        <ModalHeader>
+            <ModalTitle>Azure Text Analytics Service</ModalTitle>
+            <CloseButton />
+        </ModalHeader>
+        <ModalBody>
+            <Fields>
+                <Field>
+                    <FieldLabel>Endpoint</FieldLabel>
+                    <TextEdit @bind-Text="@Settings.Endpoint"
+                              Placeholder="https://*.cognitiveservices.azure.com/">
+                        <FieldHelp>The endpoint of your Azure Text Analytics service </FieldHelp>
+                    </TextEdit>
+                </Field>
+                <Field>
+                    <FieldLabel>Subscription Key</FieldLabel>
+                    <TextEdit @bind-Text="@Settings.SubscriptionKey"
+                              Role="TextRole.Password">
+                        <FieldHelp>Your subscription key</FieldHelp>
+                    </TextEdit>
+                </Field>
+            </Fields>
+        </ModalBody>
+        <ModalFooter>
+            <Button Color="Color.Secondary" Clicked="@HideModal">Close</Button>
+        </ModalFooter>
+    </ModalContent>
+</Modal>
+@code {
+    Modal ModalRef { get; set; }
+
+    /// <summary>
+    /// Shows the configuration window
+    /// </summary>
+    /// <returns></returns>
+    private Task ShowModal()
+    {
+        return ModalRef.Show();
+    }
+
+    /// <summary>
+    /// Hides the configuration window
+    /// </summary>
+    /// <returns></returns>
+    private Task HideModal()
+    {
+        Settings.Save(); // Save on close
+        return ModalRef.Hide();
+    }
+}

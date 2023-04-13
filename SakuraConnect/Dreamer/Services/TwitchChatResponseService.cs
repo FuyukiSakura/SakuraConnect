@@ -26,6 +26,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
         readonly TwitchChatService _twitchChatService;
         readonly SpeechQueueService _speechService;
         readonly ChatHistoryService _chatHistoryService;
+        readonly AzureTextAnalyticsService _textAnalyticsService;
 
         /// <summary>
         /// Creates a new instance of <see cref="TwitchChatResponseService" />
@@ -36,7 +37,8 @@ namespace Sakura.Live.Connect.Dreamer.Services
             OpenAiService openAiService,
             TwitchChatService twitchChatService,
             SpeechQueueService speechService,
-            ChatHistoryService chatHistoryService
+            ChatHistoryService chatHistoryService,
+            AzureTextAnalyticsService textAnalyticsService
         ) {
             _openAiService = openAiService;
             _twitchChatService = twitchChatService;
@@ -44,6 +46,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
             _chatHistoryService = chatHistoryService;
             _monitor = monitor;
             _characterService = characterService;
+            _textAnalyticsService = textAnalyticsService;
             InitializeChat();
         }
 
@@ -97,10 +100,16 @@ namespace Sakura.Live.Connect.Dreamer.Services
         async Task GenerateResponseAsync()
         {
             var response = await ThinkAsync(
-                "Answer within 50 words."
+                "Answer within 50 words. Try to match the language above."
             );
-            await ChatLogger.LogAsync($"Responded: {response}");
-            _speechService.Queue(new SpeechQueueItem(response, SpeechQueueRole.User));
+            var langCode = _textAnalyticsService.DetectLanguage(response);
+
+            await ChatLogger.LogAsync($"Responded ({langCode}): {response}");
+            _speechService.Queue(new SpeechQueueItem
+            {
+                Language = Languages.GetLanguage(langCode),
+                Text = response
+            });
         }
 
         /// <summary>
@@ -119,8 +128,14 @@ namespace Sakura.Live.Connect.Dreamer.Services
 
                 _lastSpoke = DateTime.Now;
                 var response = await ThinkAsync("Carry on.");
-                await ChatLogger.LogAsync($"Soliloquize: {response}");
-                _speechService.Queue(new SpeechQueueItem(response, SpeechQueueRole.Self));
+                var langCode = _textAnalyticsService.DetectLanguage(response);
+
+                await ChatLogger.LogAsync($"Soliloquize ({langCode}): {response}");
+                _speechService.Queue(new SpeechQueueItem
+                {
+                    Language = Languages.GetLanguage(langCode),
+                    Text = response
+                });
                 _lastSpoke = DateTime.Now; // Avoid talking too much
             }
         }
@@ -180,20 +195,6 @@ namespace Sakura.Live.Connect.Dreamer.Services
             }
         }
 
-        /// <summary>
-        /// Checks if the thread is still running
-        /// </summary>
-        /// <returns></returns>
-        async Task HeartBeatAsync()
-        {
-            Status = ServiceStatus.Running;
-            while (Status == ServiceStatus.Running) // Checks if the client is connected
-            {
-                LastUpdate = DateTime.Now;
-                await Task.Delay(HeartBeat.Default);
-            }
-        }
-
         ///
         /// <inheritdoc />
         ///
@@ -216,6 +217,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
             _monitor.Register(this, _twitchChatService);
             _monitor.Register(this, _openAiService);
             _monitor.Register(this, _speechService);
+            _monitor.Register(this, _textAnalyticsService);
             _monitor.Register(this, this);
         }
 

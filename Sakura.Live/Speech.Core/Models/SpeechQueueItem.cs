@@ -12,25 +12,14 @@ namespace Sakura.Live.Speech.Core.Models
         public const string TerminationText = "RESPONDED_WITH_ERROR";
 
         /// <summary>
-        /// Creates a new instance of <see cref="SpeechQueueItem" />
-        /// </summary>
-        /// <param name="text">The text to speak</param>
-        /// <param name="role">The role of the respondent</param>
-        public SpeechQueueItem(string text, SpeechQueueRole role)
-        {
-            Role = role;
-            Text = text;
-        }
-        
-        /// <summary>
         /// The speaker's role
         /// </summary>
-        public SpeechQueueRole Role { get; set; }
+        public SpeechQueueRole Role { get; set; } = SpeechQueueRole.User;
 
         /// <summary>
         /// The text to speak
         /// </summary>
-        public string Text { get; set; }
+        public string Text { get; set; } = "";
 
         /// <summary>
         /// The language to speak in
