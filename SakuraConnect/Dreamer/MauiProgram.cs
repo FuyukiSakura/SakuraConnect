@@ -37,8 +37,6 @@ namespace Sakura.Live.Connect.Dreamer
 		    builder.Services.AddBlazorWebViewDeveloperTools();
 #endif
 	        builder.Services.AddThePanda();
-            builder.Services.AddScoped<ISettingsService, SettingsService>();
-            builder.Services.AddScoped<IAiCharacterService, AiCharacterService>();
 	        builder.Services.AddOscCore();
             builder.Services.AddObsCore();
             builder.Services.AddSpeechCore();
@@ -46,10 +44,10 @@ namespace Sakura.Live.Connect.Dreamer
 
             builder.Services.AddOpenAiCore();
             builder.Services.AddTwitchCore();
+            builder.Services.AddScoped<ISettingsService, SettingsService>();
+            builder.Services.AddScoped<IAiCharacterService, AiCharacterService>();
             builder.Services.AddScoped<AzureConversationService>();
-            builder.Services.AddScoped<SpeechQueueService>();
             builder.Services.AddScoped<TwitchChatResponseService>();
-            builder.Services.AddScoped<ChatHistoryService>();
 
             var app = builder.Build();
             var monitor = app.Services.GetService<IThePandaMonitor>();

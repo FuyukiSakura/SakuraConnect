@@ -12,10 +12,11 @@ namespace Sakura.Live.Speech.Core
 		/// <returns></returns>
 		public static IServiceCollection AddSpeechCore(this IServiceCollection services)
         {
+            services.AddScoped<SpeechQueueService>();
             services.AddSingleton<AzureSpeechSettingsService>();
 			services.AddSingleton<AzureSpeechService>();
             services.AddSingleton<AzureTextToSpeechService>();
-			return services;
+            return services;
 		}
 	}
 }
