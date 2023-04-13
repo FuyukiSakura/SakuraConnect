@@ -83,7 +83,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
             {
                 await WaitUserInput();
                 _lastRespondedMessage = _chatHistoryService.GetLastUserMessage();
-                _ = GenerateResponseAsync(); // Fire and forget
+                _ = Task.Run(GenerateResponseAsync); // Fire and forget
                 _lastSpoke = DateTime.Now;
             }
 

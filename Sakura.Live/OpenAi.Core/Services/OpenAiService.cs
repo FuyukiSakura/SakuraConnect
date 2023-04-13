@@ -75,10 +75,37 @@ namespace Sakura.Live.OpenAi.Core.Services
                 return "Sorry, I didn't get that.";
             }
 
-            var completionResult = await _openAiService.ChatCompletion.CreateCompletion(request);
-            return completionResult.Successful ?
-                completionResult.Choices.First().Message.Content :
-                "RESPONDED_WITH_ERROR";
+            var completionResult = _openAiService.ChatCompletion.CreateCompletionAsStream(request);
+            return await CombineResponseAsync(completionResult);
+        }
+
+        /// <summary>
+        /// Combines the response from OpenAI
+        /// and return the first chunk of result ASAP
+        /// </summary>
+        /// <param name="completionResult"></param>
+        /// <returns></returns>
+        static async Task<string> CombineResponseAsync(IAsyncEnumerable<ChatCompletionCreateResponse> completionResult)
+        {
+            var response = "";
+            await foreach (var result in completionResult)
+            {
+                if (!result.Successful)
+                {
+                    // Unsuccessful
+                    continue;
+                }
+
+                var choice = result.Choices.FirstOrDefault();
+                if (choice == null)
+                {
+                    // No choices available
+                    continue;
+                }
+
+                response += choice.Message.Content;
+            }
+            return response;
         }
 
         /// <summary>

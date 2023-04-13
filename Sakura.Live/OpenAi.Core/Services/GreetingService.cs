@@ -45,7 +45,7 @@ namespace Sakura.Live.OpenAi.Core.Services
         /// <param name="message">The audience's input</param>
         /// <param name="username">The name of the user to be greeted</param>
         /// <returns></returns>
-        public async Task<string> GreetsAsync(
+        public async Task GreetsAsync(
             string prompt,
             string message,
             string username)
@@ -63,7 +63,8 @@ namespace Sakura.Live.OpenAi.Core.Services
                 Temperature = 1,
                 MaxTokens = 256
             };
-            return await _service.CreateCompletionAsync(request);
+            var response = await _service.CreateCompletionAsync(request);
+            await _twitchChat.SendMessage(response); // Fire and forget
         }
 
         /// <summary>
@@ -91,10 +92,9 @@ namespace Sakura.Live.OpenAi.Core.Services
             }
 
             _greetedUsers.Add(args.ChatMessage.Username);
-            var message = await GreetsAsync(_characterService.GetGreetingPrompt(),
+            _ = Task.Run(() => GreetsAsync(_characterService.GetGreetingPrompt(),
                 args.ChatMessage.Message,
-                args.ChatMessage.DisplayName);
-            _ = _twitchChat.SendMessage(message); // Fire and forget
+                args.ChatMessage.DisplayName));
         }
 
         ///
