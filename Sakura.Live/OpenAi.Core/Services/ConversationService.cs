@@ -1,9 +1,7 @@
 ﻿
 using OpenAI.GPT3.ObjectModels.RequestModels;
-using Sakura.Live.OpenAi.Core.Models;
 using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Helpers;
-using Sakura.Live.ThePanda.Core.Interfaces;
 
 namespace Sakura.Live.OpenAi.Core.Services
 {
@@ -12,10 +10,11 @@ namespace Sakura.Live.OpenAi.Core.Services
     /// </summary>
     public class ConversationService : BasicAutoStartable
     {
-        readonly ISettingsService _settingsService;
+        // Dependencies
         readonly IThePandaMonitor _monitor;
+        readonly IAiCharacterService _characterService;
         readonly OpenAiService _openAiSvc;
-        readonly List<ChatMessage> _chatHistory = new();
+        readonly ChatHistoryService _chatHistoryService;
 
         /// <summary>
         /// Gets the current Message Queue
@@ -28,26 +27,18 @@ namespace Sakura.Live.OpenAi.Core.Services
         public string ReplyLanguage { get; private set; } = "";
 
         /// <summary>
-        /// Gets or sets the character of the conversational AI
-        /// </summary>
-        public string Prompt { get; set; } = "You are a vtuber.";
-
-        /// <summary>
         /// Creates a new instance of <see cref="ConversationService" />
         /// </summary>
-        /// <param name="settingsService"></param>
-        /// <param name="monitor"></param>
-        /// <param name="openAiSvc"></param>
         public ConversationService(
-            ISettingsService settingsService,
             IThePandaMonitor monitor,
-            OpenAiService openAiSvc
-        )
-        {
-            _settingsService = settingsService;
+            IAiCharacterService characterService,
+            OpenAiService openAiSvc,
+            ChatHistoryService chatHistoryService
+        ) {
+            _characterService = characterService;
             _monitor = monitor;
             _openAiSvc = openAiSvc;
-            LoadSettings();
+            _chatHistoryService = chatHistoryService;
         }
 
         /// <summary>
@@ -57,7 +48,7 @@ namespace Sakura.Live.OpenAi.Core.Services
         /// <returns></returns>
         public async Task<string> TalkAsync()
         {
-            var prompt = Prompt;
+            var prompt = _characterService.GetPersonalityPrompt();
             if (ReplyLanguage == "zh-HK")
             {
                 prompt += ". Respond in Cantonese";
@@ -75,13 +66,13 @@ namespace Sakura.Live.OpenAi.Core.Services
             var chatMessage = ChatMessage.FromUser(MessageQueue);
             MessageQueue = ""; // Reset
 
-            AddChatHistory(chatMessage);
-            _chatHistory.ForEach(request.Messages.Add);
+            _chatHistoryService.AddChat(chatMessage);
+            _chatHistoryService.GetAllChat().ForEach(request.Messages.Add);
             var completionResult = await _openAiSvc.Get().ChatCompletion.CreateCompletion(request);
             if (!completionResult.Successful) return "Sorry, I didn't get that";
 
             var response = completionResult.Choices.First().Message.Content;
-            AddChatHistory(ChatMessage.FromAssistance(response));
+            _chatHistoryService.AddChat(ChatMessage.FromAssistant(response));
             return response;
         }
 
@@ -101,42 +92,11 @@ namespace Sakura.Live.OpenAi.Core.Services
         /// </summary>
         public bool IsQueueEmpty => MessageQueue == "";
 
-        /// <summary>
-        /// Adds a chat message to the history
-        /// </summary>
-        /// <param name="message"></param>
-        void AddChatHistory(ChatMessage message)
-        {
-            if (_chatHistory.Count > 10)
-            {
-                _chatHistory.RemoveAt(0); // Remove first element if length exceeds max
-            }
-
-            _chatHistory.Add(message);
-        }
-
-        /// <summary>
-        /// Loads OpenAI conversation settings from the system
-        /// </summary>
-        void LoadSettings()
-        {
-            Prompt = _settingsService.Get(OpenAiPreferenceKeys.ConversationPrompt, Prompt);
-        }
-
-        /// <summary>
-        /// Saves OpenAI conversation settings to the system
-        /// </summary>
-        void SaveSettings()
-        {
-            _settingsService.Set(OpenAiPreferenceKeys.ConversationPrompt, Prompt);
-        }
-
         ///
         /// <inheritdoc />
         ///
         public override async Task StartAsync()
         {
-            SaveSettings();
             _monitor.Register(this, _openAiSvc);
             await base.StartAsync();
         }
