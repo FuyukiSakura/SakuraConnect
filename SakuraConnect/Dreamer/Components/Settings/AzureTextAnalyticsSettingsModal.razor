@@ -1,35 +1,31 @@
-﻿@using Sakura.Live.Obs.Core.Services
-@inject ObsSocketService Obs
+﻿@using Sakura.Live.Speech.Core.Services
+@inject AzureTextAnalyticsSettingsService Settings
+@inject AzureTextAnalyticsService TextService
 
-<ServiceConfigButton Service="@Obs"
+<ServiceConfigButton Service="@TextService"
                      Clicked="ShowModal"
-                     Text="OBS" />
+                     Text="Azure Text Analytics" />
 
 <Modal @ref="ModalRef">
     <ModalContent Centered>
         <ModalHeader>
-            <ModalTitle>OBS WebSocket</ModalTitle>
+            <ModalTitle>Azure Text Analytics Service</ModalTitle>
             <CloseButton />
         </ModalHeader>
         <ModalBody>
             <Fields>
                 <Field>
-                    <FieldLabel>URL</FieldLabel>
-                    <TextEdit @bind-Text="@Obs.ObsWsSettings.Url">
-                        <FieldHelp>Default: 127.0.0.1</FieldHelp>
+                    <FieldLabel>Endpoint</FieldLabel>
+                    <TextEdit @bind-Text="@Settings.Endpoint"
+                              Placeholder="https://*.cognitiveservices.azure.com/">
+                        <FieldHelp>The endpoint of your Azure Text Analytics service </FieldHelp>
                     </TextEdit>
                 </Field>
                 <Field>
-                    <FieldLabel>Port</FieldLabel>
-                    <TextEdit @bind-Text="@Obs.ObsWsSettings.Port">
-                        <FieldHelp>Default: 4455</FieldHelp>
-                    </TextEdit>
-                </Field>
-                <Field>
-                    <FieldLabel>Password</FieldLabel>
-                    <TextEdit @bind-Text="Obs.ObsWsSettings.Password"
+                    <FieldLabel>Subscription Key</FieldLabel>
+                    <TextEdit @bind-Text="@Settings.SubscriptionKey"
                               Role="TextRole.Password">
-                        <FieldHelp>OBS Websocket Password</FieldHelp>
+                        <FieldHelp>Your subscription key</FieldHelp>
                     </TextEdit>
                 </Field>
             </Fields>
@@ -57,6 +53,7 @@
     /// <returns></returns>
     private Task HideModal()
     {
+        Settings.Save(); // Save on close
         return ModalRef.Hide();
     }
 }

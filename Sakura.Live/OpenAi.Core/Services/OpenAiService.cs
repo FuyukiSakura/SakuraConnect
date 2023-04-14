@@ -1,8 +1,9 @@
 ﻿using OpenAI.GPT3;
 using OpenAI.GPT3.Interfaces;
 using OpenAI.GPT3.Managers;
+using OpenAI.GPT3.ObjectModels.RequestModels;
+using OpenAI.GPT3.ObjectModels.ResponseModels;
 using Sakura.Live.OpenAi.Core.Models;
-using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Helpers;
 using Sakura.Live.ThePanda.Core.Interfaces;
 
@@ -56,6 +57,57 @@ namespace Sakura.Live.OpenAi.Core.Services
             return _openAiService;
         }
 
+        ///
+        /// <inheritdoc cref="IChatCompletionService.CreateCompletionAsStream"/>
+        ///
+        public IAsyncEnumerable<ChatCompletionCreateResponse>? CreateCompletionAsStream(ChatCompletionCreateRequest request)
+        {
+            return _openAiService?.ChatCompletion.CreateCompletionAsStream(request);
+        }
+
+        ///
+        /// <inheritdoc cref="IChatCompletionService.CreateCompletionAsStream"/>
+        ///
+        public async Task<string> CreateCompletionAsync(ChatCompletionCreateRequest request)
+        {
+            if (_openAiService == null)
+            {
+                return "Sorry, I didn't get that.";
+            }
+
+            var completionResult = _openAiService.ChatCompletion.CreateCompletionAsStream(request);
+            return await CombineResponseAsync(completionResult);
+        }
+
+        /// <summary>
+        /// Combines the response from OpenAI
+        /// and return the first chunk of result ASAP
+        /// </summary>
+        /// <param name="completionResult"></param>
+        /// <returns></returns>
+        static async Task<string> CombineResponseAsync(IAsyncEnumerable<ChatCompletionCreateResponse> completionResult)
+        {
+            var response = "";
+            await foreach (var result in completionResult)
+            {
+                if (!result.Successful)
+                {
+                    // Unsuccessful
+                    continue;
+                }
+
+                var choice = result.Choices.FirstOrDefault();
+                if (choice == null)
+                {
+                    // No choices available
+                    continue;
+                }
+
+                response += choice.Message.Content;
+            }
+            return response;
+        }
+
         /// <summary>
         /// Creates an instance of OpenAI service of the given API Key
         /// </summary>
@@ -67,21 +119,6 @@ namespace Sakura.Live.OpenAi.Core.Services
             {
                 ApiKey =  apiKey
             });
-            _ = HeartBeatAsync();
-        }
-
-        /// <summary>
-        /// Checks if the thread is still running
-        /// </summary>
-        /// <returns></returns>
-        async Task HeartBeatAsync()
-        {
-            Status = ServiceStatus.Running;
-            while (Status == ServiceStatus.Running) // Checks if the client is connected
-            {
-                LastUpdate = DateTime.Now;
-                await Task.Delay(HeartBeat.Default);
-            }
         }
 
         ///
@@ -90,8 +127,8 @@ namespace Sakura.Live.OpenAi.Core.Services
         public override async Task StartAsync()
         {
             SaveSettings();
-            Start(ApiKey);
             await base.StartAsync();
+            Start(ApiKey);
         }
     }
 }

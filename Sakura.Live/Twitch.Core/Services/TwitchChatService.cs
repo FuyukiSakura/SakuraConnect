@@ -46,7 +46,6 @@ namespace Sakura.Live.Twitch.Core.Services
             };
             var customClient = new WebSocketClient(clientOptions);
             _client = new TwitchClient(customClient);
-            _client.OnDisconnected += Twitch_OnDisconnected;
 
             _settingsService = settings;
             LoadSettings();
@@ -112,7 +111,7 @@ namespace Sakura.Live.Twitch.Core.Services
         /// Checks if the Twitch client is still connected
         /// </summary>
         /// <returns></returns>
-        async Task HeartBeatAsync()
+        protected override async Task HeartBeatAsync()
         {
             Status = ServiceStatus.Running;
             while (Status == ServiceStatus.Running 
@@ -134,37 +133,25 @@ namespace Sakura.Live.Twitch.Core.Services
             var credentials = new ConnectionCredentials(username, accessToken);
             _client.Initialize(credentials, channel);
             _client.Connect();
-            Status = ServiceStatus.Running;
-            _ = HeartBeatAsync();
         }
 
         ///
         /// <inheritdoc />
         ///
-        public override Task StartAsync()
+        public override async Task StartAsync()
         {
             SaveSettings();
             Start(Username, AccessToken, Channel);
-            return base.StartAsync();
+            await base.StartAsync();
         }
 
         ///
         /// <inheritdoc />
         ///
-        public override Task StopAsync()
+        public override async Task StopAsync()
         {
+            await base.StopAsync();
             _client.Disconnect();
-            return base.StopAsync();
-        }
-
-        /// <summary>
-        /// Change status when client is disconnected
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Twitch_OnDisconnected(object? sender, OnDisconnectedEventArgs e)
-        {
-            Status = ServiceStatus.Error;
         }
     }
 }

@@ -3,15 +3,18 @@
 @using Sakura.Live.Connect.Dreamer.Services
 @using Sakura.Live.Speech.Core.Services
 @using Microsoft.CognitiveServices.Speech
+@using Sakura.Live.ThePanda.Core
 @inject OpenAiService OpenAiService
 @inject GreetingService GreetingService
-@inject ConversationService ConversationService
 @inject AzureSpeechService AzureSpeechService
 @inject AzureConversationService AzureConversationService
+@inject TwitchChatResponseService TwitchChatResponseService
 
 <h1>Open AI</h1>
 
+<AiCharacterSettingsModal />
 <TwitchSettingsModal />
+<AzureTextAnalyticsSettingsModal />
 
 <h2>Greetings</h2>
 
@@ -21,23 +24,12 @@
     <ServiceConfigButton Service="@OpenAiService" />
     <span class="input-group-text"
           id="open-ai-key">API Key</span>
-    <input type="text"
+    <input type="password"
            class="form-control"
            placeholder="OpenAI API key"
            aria-label="Name"
            aria-describedby="open-ai-key"
            @bind-value="OpenAiService.ApiKey">
-</div>
-
-<div class="input-group mb-3">
-    <span class="input-group-text"
-          id="greeting-prompt">Prompt</span>
-    <input type="text"
-           class="form-control"
-           placeholder="How do you want your bot to behave?"
-           aria-label="Prompt"
-           aria-describedby="greeting-prompt"
-           @bind-value="GreetingService.Prompt">
 </div>
 
 <div class="input-group mb-3">
@@ -57,23 +49,12 @@
 
 <AzureSpeechSettingsModal />
 
-<div class="input-group mb-3">
-    <span class="input-group-text"
-          id="conversational-prompt">Prompt</span>
-    <input type="text"
-           class="form-control"
-           placeholder="How do you want your bot to behave?"
-           aria-label="Prompt"
-           aria-describedby="conversational-prompt"
-           @bind-value="ConversationService.Prompt">
-</div>
-
-<h3>Input</h3>
+<h4>Input</h4>
 <article>
     @SpeechInput
 </article>
 
-<h3>Response</h3>
+<h4>Response</h4>
 <article>
     @ConversationResponse
 </article>
@@ -82,6 +63,11 @@
                  StopText="Stop"
                  IsRunning="@IsConversationServiceRunning"
                  @onclick="StartConversationService_OnClick" />
+
+<h3>Chat response</h3>
+<ServiceConfigButton Service="@TwitchChatResponseService"
+                     Text="Start / Stop"
+                     Clicked="StartChatService_OnClick" />
 
 @code {
     /// <summary>
@@ -94,40 +80,15 @@
     /// </summary>
     public bool IsConversationServiceRunning { get; set; }
 
-    string _speechInput;
-
     /// <summary>
     /// Gets or sets the speech input
     /// </summary>
-    string SpeechInput {
-        get => _speechInput;
-        set {
-            if (_speechInput == value) {
-                return;
-            }
-            _speechInput = value;
-            InvokeAsync(StateHasChanged);
-        }
-    }
+    string SpeechInput { get; set; }
 
-    string _conversationResponse;
     /// <summary>
     /// Gets or sets the response output
     /// </summary>
-    public string ConversationResponse
-    {
-        get => _conversationResponse;
-        set
-        {
-            if (_conversationResponse == value)
-            {
-                return;
-            }
-
-            _conversationResponse = value;
-            InvokeAsync(StateHasChanged);
-        }
-    }
+    public string ConversationResponse { get; set; }
 
     /// <summary>
     /// Starts or stops the greeting service
@@ -171,9 +132,10 @@
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
-    void SpeechRecognized(object sender, SpeechRecognitionEventArgs e)
+    async void SpeechRecognized(object sender, SpeechRecognitionEventArgs e)
     {
         SpeechInput = e.Result.Text;
+        await InvokeAsync(StateHasChanged);
     }
 
     /// <summary>
@@ -181,8 +143,33 @@
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
-    void AzureConversationServiceOnOnResponse(object sender, string e)
+    async void AzureConversationServiceOnOnResponse(object sender, string e)
     {
         ConversationResponse = e;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    /// <summary>
+    /// Starts monitoring for chat messages and responding to them
+    /// </summary>
+    void StartChatService_OnClick() {
+        if (TwitchChatResponseService.Status == ServiceStatus.Running)
+        {
+            TwitchChatResponseService.Stop();
+        }
+        else
+        {
+            TwitchChatResponseService.Start();
+        }
+    }
+
+    ///
+    /// <inheritdoc />
+    ///
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        AzureSpeechService.Recognized += SpeechRecognized;
+        AzureConversationService.OnResponse += AzureConversationServiceOnOnResponse;
     }
 }

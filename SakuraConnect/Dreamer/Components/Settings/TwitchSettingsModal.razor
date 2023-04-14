@@ -21,7 +21,8 @@
                 </Field>
                 <Field>
                     <FieldLabel>Access Token</FieldLabel>
-                    <TextEdit @bind-Text="@TwitchChatSvc.AccessToken">
+                    <TextEdit @bind-Text="@TwitchChatSvc.AccessToken"
+                              Role="TextRole.Password">
                         <FieldHelp>How to: <a href="https://twitchapps.com/tmi/">Generate a Twitch Chat Token</a></FieldHelp>
                     </TextEdit>
                 </Field>
