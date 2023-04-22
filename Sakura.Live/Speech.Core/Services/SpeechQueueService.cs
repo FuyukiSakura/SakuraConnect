@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using Sakura.Live.Speech.Core.Models;
+using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Helpers;
 
 namespace Sakura.Live.Speech.Core.Services
@@ -13,14 +14,21 @@ namespace Sakura.Live.Speech.Core.Services
         readonly Dictionary<Guid, SpeechQueueItem> _speechQueue = new();
 
         // Dependencies
+        readonly IThePandaMonitor _monitor;
         readonly AzureTextToSpeechService _azureTtsSvc;
+        readonly AzureTextAnalyticsService _textAnalyticsService;
 
         /// <summary>
         /// Creates a new instance of <see cref="SpeechQueueService" />
         /// </summary>
-        public SpeechQueueService(AzureTextToSpeechService azureTtsSvc)
-        {
+        public SpeechQueueService(
+            IThePandaMonitor monitor,
+            AzureTextToSpeechService azureTtsSvc,
+            AzureTextAnalyticsService textAnalyticsService
+        ) {
+            _monitor = monitor;
             _azureTtsSvc = azureTtsSvc;
+            _textAnalyticsService = textAnalyticsService;
         }
 
         /// <summary>
@@ -71,6 +79,7 @@ namespace Sakura.Live.Speech.Core.Services
 
                 // Simply wait for more results before speaking
                 await WaitForText(speechPair.Value);
+                SetLanguage(speechPair.Value);
                 await SpeakAsync(speechPair.Value);
                 _speechQueue.Remove(speechPair.Key);
             }
@@ -92,6 +101,18 @@ namespace Sakura.Live.Speech.Core.Services
                 retries++;
             }
         }
+
+        /// <summary>
+        /// Sets the language of the speech item
+        /// based on the existing text
+        /// </summary>
+        /// <param name="item"></param>
+        void SetLanguage(SpeechQueueItem item)
+        {
+            var langCode = _textAnalyticsService.DetectLanguage(item.Text);
+            var lang = Languages.GetLanguage(langCode);
+            item.Language = lang;
+        } 
 
         /// <summary>
         /// Speaks out the queued item text
@@ -135,6 +156,7 @@ namespace Sakura.Live.Speech.Core.Services
             _isRunning = true;
             _ = MonitorAsync();
             _ = CleanupAsync();
+            _monitor.Register(this, _textAnalyticsService);
             await base.StartAsync();
         }
 
@@ -145,6 +167,7 @@ namespace Sakura.Live.Speech.Core.Services
         {
             await base.StopAsync();
             _isRunning = false;
+            _monitor.Unregister(this);
             _speechQueue.Clear();
         }
     }

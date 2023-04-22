@@ -28,7 +28,6 @@ namespace Sakura.Live.Connect.Dreamer.Services
         readonly TwitchChatService _twitchChatService;
         readonly SpeechQueueService _speechService;
         readonly ChatHistoryService _chatHistoryService;
-        readonly AzureTextAnalyticsService _textAnalyticsService;
 
         /// <summary>
         /// Creates a new instance of <see cref="TwitchChatResponseService" />
@@ -39,8 +38,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
             OpenAiService openAiService,
             TwitchChatService twitchChatService,
             SpeechQueueService speechService,
-            ChatHistoryService chatHistoryService,
-            AzureTextAnalyticsService textAnalyticsService
+            ChatHistoryService chatHistoryService
         ) {
             _openAiService = openAiService;
             _twitchChatService = twitchChatService;
@@ -48,7 +46,6 @@ namespace Sakura.Live.Connect.Dreamer.Services
             _chatHistoryService = chatHistoryService;
             _monitor = monitor;
             _characterService = characterService;
-            _textAnalyticsService = textAnalyticsService;
             InitializeChat();
         }
 
@@ -250,7 +247,6 @@ namespace Sakura.Live.Connect.Dreamer.Services
             _monitor.Register(this, _twitchChatService);
             _monitor.Register(this, _openAiService);
             _monitor.Register(this, _speechService);
-            _monitor.Register(this, _textAnalyticsService);
             _monitor.Register(this, this);
         }
 
