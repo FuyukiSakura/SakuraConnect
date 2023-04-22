@@ -1,5 +1,5 @@
 ﻿
-using Azure.Core;
+using System.Text;
 using OpenAI.GPT3.ObjectModels.RequestModels;
 using OpenAI.GPT3.ObjectModels.ResponseModels;
 using Sakura.Live.OpenAi.Core.Services;
@@ -184,7 +184,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
             IAsyncEnumerable<ChatCompletionCreateResponse> completionResult,
             Guid speechId
         ) {
-            var response = "";
+            var responseBuilder = new StringBuilder();
             await foreach (var result in completionResult)
             {
                 if (!result.Successful)
@@ -201,9 +201,9 @@ namespace Sakura.Live.Connect.Dreamer.Services
                 }
 
                 _speechService.Append(speechId, choice.Message.Content);
-                response += choice.Message.Content;
+                responseBuilder.Append(choice.Message.Content);
             }
-            return response;
+            return responseBuilder.ToString();
         }
 
         /// <summary>
