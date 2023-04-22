@@ -102,7 +102,7 @@ namespace Sakura.Live.Speech.Core.Services
             while (item.Text.Length == 0
                    && retries < 5) // abandon the message if no text received in 5 seconds
             {
-                await Task.Delay(TimeSpan.FromSeconds(1));
+                await Task.Delay(TimeSpan.FromSeconds(2));
                 retries++;
             }
         }
