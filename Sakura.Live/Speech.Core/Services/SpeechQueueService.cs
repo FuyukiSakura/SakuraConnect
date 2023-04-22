@@ -131,8 +131,19 @@ namespace Sakura.Live.Speech.Core.Services
             while (speakIndex < item.Text.Length)
             {
                 var speakText = item.Text[speakIndex..];
+                var translated = speakText.Split("Translation:");
+                if (translated.Length > 1)
+                {
+                    speakText = translated[0];
+                    speakIndex += "Translation:".Length;
+                }
                 Debug.WriteLine("Synthesized: " + speakText);
                 await _azureTtsSvc.SpeakAsync(speakText, item.Language);
+
+                if (translated.Length > 1)
+                {
+                    item.Language = Languages.English;
+                }
                 speakIndex += speakText.Length;
             }
             IsSpeaking = false;
