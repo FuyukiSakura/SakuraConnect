@@ -1,5 +1,7 @@
 ﻿
+using Azure.Core;
 using OpenAI.GPT3.ObjectModels.RequestModels;
+using OpenAI.GPT3.ObjectModels.ResponseModels;
 using Sakura.Live.OpenAi.Core.Services;
 using Sakura.Live.Speech.Core.Models;
 using Sakura.Live.Speech.Core.Services;
@@ -102,14 +104,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
             var response = await ThinkAsync(
                 "Answer within 50 words. Try to match the language above."
             );
-            var langCode = _textAnalyticsService.DetectLanguage(response);
-
-            await ChatLogger.LogAsync($"Responded ({langCode}): {response}");
-            _speechService.Queue(new SpeechQueueItem
-            {
-                Language = Languages.GetLanguage(langCode),
-                Text = response
-            });
+            await ChatLogger.LogAsync($"Responded: {response}");
         }
 
         /// <summary>
@@ -128,14 +123,8 @@ namespace Sakura.Live.Connect.Dreamer.Services
 
                 _lastSpoke = DateTime.Now;
                 var response = await ThinkAsync("Carry on.");
-                var langCode = _textAnalyticsService.DetectLanguage(response);
 
-                await ChatLogger.LogAsync($"Soliloquize ({langCode}): {response}");
-                _speechService.Queue(new SpeechQueueItem
-                {
-                    Language = Languages.GetLanguage(langCode),
-                    Text = response
-                });
+                await ChatLogger.LogAsync($"Soliloquize: {response}");
                 _lastSpoke = DateTime.Now; // Avoid talking too much
             }
         }
@@ -162,10 +151,21 @@ namespace Sakura.Live.Connect.Dreamer.Services
             var instruction =
                 ChatMessage.FromUser(prompt);
             request.Messages.Add(instruction);
+            return await QueueResponse(request);
+        }
 
+        /// <summary>
+        /// Queue the response and return the first chunk of result ASAP
+        /// </summary>
+        /// <returns></returns>
+        async Task<string> QueueResponse(ChatCompletionCreateRequest request)
+        {
             try
             {
-                var response = await _openAiService.CreateCompletionAsync(request);
+                var responses = _openAiService.CreateCompletionAsync(request);
+                var speechId = Guid.NewGuid();
+                _speechService.Queue(speechId, SpeechQueueRole.User);
+                var response = await CombineResponseAsync(responses, speechId);
                 _chatHistoryService.AddChat(ChatMessage.FromAssistant(response));
                 return response;
             }
@@ -174,6 +174,39 @@ namespace Sakura.Live.Connect.Dreamer.Services
                 await ChatLogger.LogAsync(e.Message);
                 return "Sorry, my brain stops working.";
             }
+        }
+
+        /// <summary>
+        /// Combines the response from OpenAI
+        /// and return the first chunk of result ASAP
+        /// </summary>
+        /// <param name="completionResult"></param>
+        /// <param name="speechId">The id of the chat result this response is related to</param>
+        /// <returns></returns>
+        async Task<string> CombineResponseAsync(
+            IAsyncEnumerable<ChatCompletionCreateResponse> completionResult,
+            Guid speechId
+        ) {
+            var response = "";
+            await foreach (var result in completionResult)
+            {
+                if (!result.Successful)
+                {
+                    // Unsuccessful
+                    continue;
+                }
+
+                var choice = result.Choices.FirstOrDefault();
+                if (choice == null)
+                {
+                    // No choices available
+                    continue;
+                }
+
+                _speechService.Append(speechId, choice.Message.Content);
+                response += choice.Message.Content;
+            }
+            return response;
         }
 
         /// <summary>

@@ -1,4 +1,5 @@
-﻿using Sakura.Live.Speech.Core.Models;
+﻿using System.Diagnostics;
+using Sakura.Live.Speech.Core.Models;
 using Sakura.Live.ThePanda.Core.Helpers;
 
 namespace Sakura.Live.Speech.Core.Services
@@ -9,7 +10,7 @@ namespace Sakura.Live.Speech.Core.Services
     public class SpeechQueueService : BasicAutoStartable
     {
         bool _isRunning;
-        readonly List<SpeechQueueItem> _speechQueue = new();
+        readonly Dictionary<Guid, SpeechQueueItem> _speechQueue = new();
 
         // Dependencies
         readonly AzureTextToSpeechService _azureTtsSvc;
@@ -25,37 +26,87 @@ namespace Sakura.Live.Speech.Core.Services
         /// <summary>
         /// Adds a speech item to the queue
         /// </summary>
-        /// <param name="item"></param>
-        public void Queue(SpeechQueueItem item)
+        /// <param name="speechId"></param>
+        /// <param name="role"></param>
+        public void Queue(Guid speechId, SpeechQueueRole role)
         {
-            if (string.IsNullOrEmpty(item.Text) ||
-                item.Text == SpeechQueueItem.TerminationText)
+            _speechQueue.Add(speechId, new SpeechQueueItem
             {
-                return;
-            }
-            _speechQueue.Add(item);
+                Role = role
+            });
         }
 
         /// <summary>
-        /// Speaks an item in the queue
+        /// Appends the text to the speech item
+        /// </summary>
+        /// <param name="speechId"></param>
+        /// <param name="text"></param>
+        public void Append(Guid speechId, string text)
+        {
+            _speechQueue.TryGetValue(speechId, out var item);
+            if (item == null)
+            {
+                // The speech is already terminated or does not exist
+                return;
+            }
+            item.Text += text;
+        }
+
+        /// <summary>
+        /// Monitors the speech queue and speaks out the text if there's input
         /// </summary>
         /// <returns></returns>
-        public async Task SpeakAsync()
+        public async Task MonitorAsync()
         {
             while (_isRunning)
             {
                 // Prioritize user messages
-                var item = _speechQueue.FirstOrDefault(item => item.Role == SpeechQueueRole.User) 
-                           ?? _speechQueue.FirstOrDefault(); // Or get the first item in the queue
-                if (item == null)
+                var speechPair = _speechQueue.FirstOrDefault(item => item.Value.Role == SpeechQueueRole.User);
+                if (speechPair.Key == Guid.Empty)
                 {
-                    // No input, wait 5 seconds
-                    await Task.Delay(TimeSpan.FromSeconds(5));
+                    // No input, wait 2 seconds
+                    await Task.Delay(TimeSpan.FromSeconds(2));
                     continue;
                 }
-                
-                _speechQueue.Remove(item);
-                await _azureTtsSvc.SpeakAsync(item.Text, item.Language);
+
+                // Simply wait for more results before speaking
+                await WaitForText(speechPair.Value);
+                await SpeakAsync(speechPair.Value);
+                _speechQueue.Remove(speechPair.Key);
+            }
+        }
+
+        /// <summary>
+        /// Wait for text being input and release after 5 seconds regardless of text existence
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        static async Task WaitForText(SpeechQueueItem item)
+        {
+            // Simply wait for more results before speaking
+            var retries = 0;
+            while (item.Text.Length == 0
+                   && retries < 5) // abandon the message if no text received in 5 seconds
+            {
+                await Task.Delay(TimeSpan.FromSeconds(1));
+                retries++;
+            }
+        }
+
+        /// <summary>
+        /// Speaks out the queued item text
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        async Task SpeakAsync(SpeechQueueItem item)
+        {
+            var speakIndex = 0;
+            while (speakIndex < item.Text.Length)
+            {
+                var speakText = item.Text[speakIndex..];
+                Debug.WriteLine("Synthesized: " + speakText);
+                await _azureTtsSvc.SpeakAsync(speakText, item.Language);
+                speakIndex += speakText.Length;
             }
         }
 
@@ -68,8 +119,11 @@ namespace Sakura.Live.Speech.Core.Services
             while (_isRunning)
             {
                 await Task.Delay(TimeSpan.FromMinutes(1));
-                var oldMessages = _speechQueue.Where(item => DateTime.Now - item.TimeStamp > TimeSpan.FromMinutes(1));
-                _speechQueue.RemoveAll(item => oldMessages.Contains(item));
+                var oldMessages = _speechQueue.Where(item => DateTime.Now - item.Value.TimeStamp > TimeSpan.FromMinutes(1));
+                foreach (var message in oldMessages)
+                {
+                    _speechQueue.Remove(message.Key);   
+                }
             }
         }
 
@@ -79,7 +133,7 @@ namespace Sakura.Live.Speech.Core.Services
         public override async Task StartAsync()
         {
             _isRunning = true;
-            _ = SpeakAsync();
+            _ = MonitorAsync();
             _ = CleanupAsync();
             await base.StartAsync();
         }
