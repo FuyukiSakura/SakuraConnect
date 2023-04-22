@@ -10,6 +10,11 @@ namespace Sakura.Live.Speech.Core.Services
     /// </summary>
     public class SpeechQueueService : BasicAutoStartable
     {
+        /// <summary>
+        /// Indicates if the speech queue is speaking
+        /// </summary>
+        public bool IsSpeaking { get; private set; }
+
         bool _isRunning;
         readonly Dictionary<Guid, SpeechQueueItem> _speechQueue = new();
 
@@ -121,6 +126,7 @@ namespace Sakura.Live.Speech.Core.Services
         /// <returns></returns>
         async Task SpeakAsync(SpeechQueueItem item)
         {
+            IsSpeaking = true;
             var speakIndex = 0;
             while (speakIndex < item.Text.Length)
             {
@@ -129,6 +135,7 @@ namespace Sakura.Live.Speech.Core.Services
                 await _azureTtsSvc.SpeakAsync(speakText, item.Language);
                 speakIndex += speakText.Length;
             }
+            IsSpeaking = false;
         }
 
         /// <summary>
