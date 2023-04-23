@@ -12,7 +12,7 @@ namespace Sakura.Live.Speech.Core.Models
         public const string TerminationText = "RESPONDED_WITH_ERROR";
 
         /// <summary>
-        /// The speaker's role
+        /// The role of the person requesting the speech
         /// </summary>
         public SpeechQueueRole Role { get; set; } = SpeechQueueRole.User;
 
