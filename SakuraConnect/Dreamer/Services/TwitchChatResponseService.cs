@@ -1,5 +1,4 @@
 ﻿
-using System.Diagnostics;
 using System.Text;
 using OpenAI.GPT3.ObjectModels.RequestModels;
 using OpenAI.GPT3.ObjectModels.ResponseModels;
@@ -73,6 +72,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
                 return;
             }
             var msg = ChatMessage.FromUser($"{e.ChatMessage.DisplayName}: {e.ChatMessage.Message}");
+            _ = ChatLogger.LogAsync(msg.Content, "chat");
             _chatHistoryService.AddChat(msg);
         }
 
@@ -255,7 +255,6 @@ namespace Sakura.Live.Connect.Dreamer.Services
         {
             await base.StartAsync();
             _lastSpoke = DateTime.Now;
-            _ = HeartBeatAsync();
             _ = ResponseAsync();
             _ = SoliloquizeAsync();
         }
