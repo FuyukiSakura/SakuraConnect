@@ -1,7 +1,6 @@
 ﻿
-using System.Text;
 using OpenAI.GPT3.ObjectModels.RequestModels;
-using OpenAI.GPT3.ObjectModels.ResponseModels;
+using Sakura.Live.Connect.Dreamer.Services.Ai;
 using Sakura.Live.OpenAi.Core.Services;
 using Sakura.Live.Speech.Core.Models;
 using Sakura.Live.Speech.Core.Services;
@@ -23,7 +22,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
 
         // Dependencies
         readonly IThePandaMonitor _monitor;
-        readonly IAiCharacterService _characterService;
+        readonly BigBrainService _brainService;
         readonly OpenAiService _openAiService;
         readonly TwitchChatService _twitchChatService;
         readonly SpeechQueueService _speechService;
@@ -34,7 +33,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
         /// </summary>
         public TwitchChatResponseService(
             IThePandaMonitor monitor,
-            IAiCharacterService characterService,
+            BigBrainService brainService,
             OpenAiService openAiService,
             TwitchChatService twitchChatService,
             SpeechQueueService speechService,
@@ -45,7 +44,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
             _speechService = speechService;
             _chatHistoryService = chatHistoryService;
             _monitor = monitor;
-            _characterService = characterService;
+            _brainService = brainService;
             InitializeChat();
         }
 
@@ -100,8 +99,9 @@ namespace Sakura.Live.Connect.Dreamer.Services
         /// <returns></returns>
         async Task GenerateResponseAsync()
         {
-            var response = await ThinkAsync(
-                "Answer within 50 words. Try to match the language above."
+            var response = await _brainService.ThinkAsync(
+                "Answer within 60 words. Try to match the language above.",
+                SpeechQueueRole.User
             );
             await ChatLogger.LogAsync($"Responded: {response}");
         }
@@ -121,91 +121,10 @@ namespace Sakura.Live.Connect.Dreamer.Services
                 }
 
                 _lastSpoke = DateTime.Now;
-                var response = await ThinkAsync("Carry on.");
-
+                var response = await _brainService.ThinkAsync("Carry on.", SpeechQueueRole.Self);
                 await ChatLogger.LogAsync($"Soliloquize: {response}");
                 _lastSpoke = DateTime.Now; // Avoid talking too much
             }
-        }
-
-        /// <summary>
-        /// Instructs open ai to think about the chat history
-        /// </summary>
-        /// <param name="prompt"></param>
-        /// <returns></returns>
-        async Task<string> ThinkAsync(string prompt)
-        {
-            var request = new ChatCompletionCreateRequest
-            {
-                Messages = new List<ChatMessage>
-                {
-                    ChatMessage.FromSystem(_characterService.GetPersonalityPrompt())
-                },
-                Model = OpenAI.GPT3.ObjectModels.Models.ChatGpt3_5Turbo,
-                Temperature = 1,
-                MaxTokens = 1024
-            };
-            _chatHistoryService.GetAllChat()
-                .ForEach(request.Messages.Add);
-            var instruction =
-                ChatMessage.FromUser(prompt);
-            request.Messages.Add(instruction);
-            return await QueueResponse(request);
-        }
-
-        /// <summary>
-        /// Queue the response and return the first chunk of result ASAP
-        /// </summary>
-        /// <returns></returns>
-        async Task<string> QueueResponse(ChatCompletionCreateRequest request)
-        {
-            try
-            {
-                var responses = _openAiService.CreateCompletionAsync(request);
-                var speechId = Guid.NewGuid();
-                _speechService.Queue(speechId, SpeechQueueRole.User);
-                var response = await CombineResponseAsync(responses, speechId);
-                _chatHistoryService.AddChat(ChatMessage.FromAssistant(response));
-                return response;
-            }
-            catch (Exception e)
-            {
-                await ChatLogger.LogAsync(e.Message);
-                return "Sorry, my brain stops working.";
-            }
-        }
-
-        /// <summary>
-        /// Combines the response from OpenAI
-        /// and return the first chunk of result ASAP
-        /// </summary>
-        /// <param name="completionResult"></param>
-        /// <param name="speechId">The id of the chat result this response is related to</param>
-        /// <returns></returns>
-        async Task<string> CombineResponseAsync(
-            IAsyncEnumerable<ChatCompletionCreateResponse> completionResult,
-            Guid speechId
-        ) {
-            var responseBuilder = new StringBuilder();
-            await foreach (var result in completionResult)
-            {
-                if (!result.Successful)
-                {
-                    // Unsuccessful
-                    continue;
-                }
-
-                var choice = result.Choices.FirstOrDefault();
-                if (choice == null)
-                {
-                    // No choices available
-                    continue;
-                }
-
-                _speechService.Append(speechId, choice.Message.Content);
-                responseBuilder.Append(choice.Message.Content);
-            }
-            return responseBuilder.ToString();
         }
 
         /// <summary>

@@ -1,6 +1,8 @@
 ﻿
+using System.Text;
 using Microsoft.CognitiveServices.Speech;
-using Sakura.Live.OpenAi.Core.Services;
+using Sakura.Live.Connect.Dreamer.Services.Ai;
+using Sakura.Live.Speech.Core.Models;
 using Sakura.Live.Speech.Core.Services;
 using Sakura.Live.ThePanda.Core;
 
@@ -12,13 +14,27 @@ namespace Sakura.Live.Connect.Dreamer.Services
     /// </summary>
     public class AzureConversationService
     {
+        /// <summary>
+        /// Records the user spoken input
+        /// </summary>
+        readonly StringBuilder _messageQueue = new();
+
+        /// <summary>
+        /// Records the language of the user input
+        /// </summary>
+        string _replyLanguage = "";
+
+        /// <summary>
+        /// Checks if the message queue is empty
+        /// </summary>
+        bool IsQueueEmpty => _messageQueue.Length == 0;
+
         // Dependencies
         readonly IThePandaMonitor _monitor;
-        readonly ConversationService _conversationService;
+        readonly BigBrainService _bigBrainService;
         readonly AzureSpeechService _speechService;
-        readonly AzureTextToSpeechService _textToSpeechService;
 
-        DateTime _lastResponse = DateTime.Now;
+        DateTime _lastInputTime = DateTime.Now;
         bool _isRunning;
 
         /// <summary>
@@ -29,20 +45,14 @@ namespace Sakura.Live.Connect.Dreamer.Services
         /// <summary>
         /// Creates a new instance of <see cref="AzureConversationService" />
         /// </summary>
-        /// <param name="monitor"></param>
-        /// <param name="conversationService"></param>
-        /// <param name="speechService"></param>
-        /// <param name="textToSpeechService"></param>
         public AzureConversationService(
             IThePandaMonitor monitor,
-            ConversationService conversationService,
-            AzureSpeechService speechService,
-            AzureTextToSpeechService textToSpeechService)
+            BigBrainService bigBrainService,
+            AzureSpeechService speechService)
         {
             _monitor = monitor;
-            _conversationService = conversationService;
+            _bigBrainService = bigBrainService;
             _speechService = speechService;
-            _textToSpeechService = textToSpeechService;
         }
 
         /// <summary>
@@ -59,8 +69,9 @@ namespace Sakura.Live.Connect.Dreamer.Services
             }
             
             var languageResult = AutoDetectSourceLanguageResult.FromResult(e.Result);
-            _conversationService.Queue(e.Result.Text, languageResult.Language);
-            _lastResponse = DateTime.Now;
+            _messageQueue.Append(e.Result.Text);
+            _replyLanguage = languageResult.Language;
+            _lastInputTime = DateTime.Now;
             await ChatLogger.LogAsync($"Recognized({languageResult.Language}): {e.Result.Text}");
         }
 
@@ -72,17 +83,21 @@ namespace Sakura.Live.Connect.Dreamer.Services
         {
             while (_isRunning)
             {
-                while (_conversationService.IsQueueEmpty
-                       || (DateTime.Now - _lastResponse).TotalSeconds < 3) // 3 Seconds interval
+                while (IsQueueEmpty
+                       || (DateTime.Now - _lastInputTime).TotalSeconds < 3) // Wait for 3 seconds of silence
                 {
                     await Task.Delay(500);
                 }
 
-                _ = ChatLogger.LogAsync("Input: " + _conversationService.MessageQueue);
-                var response = await _conversationService.TalkAsync();
+                _ = ChatLogger.LogAsync("Input: " + _messageQueue);
+                var prompt = _messageQueue.ToString();
+                _messageQueue.Clear();
+                if (_replyLanguage == "zh-HK")
+                {
+                    prompt += ". Respond in Cantonese";
+                }
+                var response = await _bigBrainService.ThinkAsync(prompt, SpeechQueueRole.Master);
                 OnResponse?.Invoke(this, response);
-                _ = ChatLogger.LogAsync("AI: " + response + Environment.NewLine);
-                await _textToSpeechService.SpeakAsync(response, _conversationService.ReplyLanguage);
             }
         }
 
@@ -92,7 +107,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
         public void Start()
         {
             _speechService.Recognized += OnSpeechRecognized;
-            _monitor.Register(this, _conversationService);
+            _monitor.Register(this, _bigBrainService);
             _monitor.Register(this, _speechService);
             _isRunning = true;
             _ = TalkAsync();
