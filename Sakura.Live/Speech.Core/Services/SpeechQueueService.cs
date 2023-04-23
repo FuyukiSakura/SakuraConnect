@@ -74,7 +74,7 @@ namespace Sakura.Live.Speech.Core.Services
             while (_isRunning)
             {
                 // Prioritize user messages
-                var speechPair = _speechQueue.FirstOrDefault(item => item.Value.Role == SpeechQueueRole.User);
+                var speechPair = GetNextSpeech();
                 if (speechPair.Key == Guid.Empty)
                 {
                     // No input, wait 2 seconds
@@ -88,6 +88,28 @@ namespace Sakura.Live.Speech.Core.Services
                 await SpeakAsync(speechPair.Value);
                 _speechQueue.Remove(speechPair.Key);
             }
+        }
+
+        /// <summary>
+        /// Gets the next speech item according to input priority
+        /// </summary>
+        /// <returns></returns>
+        KeyValuePair<Guid, SpeechQueueItem> GetNextSpeech()
+        {
+            var speechPair = _speechQueue.FirstOrDefault(item => item.Value.Role == SpeechQueueRole.Master);
+            if (speechPair.Key != Guid.Empty)
+            {
+                // Master has priority
+                return speechPair;
+            }
+
+            speechPair = _speechQueue.FirstOrDefault(item => item.Value.Role == SpeechQueueRole.User);
+            if (speechPair.Key != Guid.Empty)
+            {
+                // User has second priority
+                return speechPair;
+            }
+            return _speechQueue.FirstOrDefault();;
         }
 
         /// <summary>
@@ -131,6 +153,10 @@ namespace Sakura.Live.Speech.Core.Services
             while (speakIndex < item.Text.Length)
             {
                 var speakText = item.Text[speakIndex..];
+                if (speakText.StartsWith("大豆醬"))
+                {
+                    speakText = speakText.Remove(0,3);
+                }
                 var translated = speakText.Split("Translation:");
                 if (translated.Length > 1)
                 {

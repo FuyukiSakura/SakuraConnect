@@ -44,15 +44,25 @@ namespace Sakura.Live.Connect.Dreamer
 
             builder.Services.AddOpenAiCore();
             builder.Services.AddTwitchCore();
-            builder.Services.AddScoped<ISettingsService, SettingsService>();
-            builder.Services.AddScoped<IAiCharacterService, AiCharacterService>();
-            builder.Services.AddScoped<AzureConversationService>();
-            builder.Services.AddScoped<TwitchChatResponseService>();
+            AddDreamerCore(builder);
 
             var app = builder.Build();
             var monitor = app.Services.GetService<IThePandaMonitor>();
             monitor!.StartAsync();
             return app;
+        }
+
+        /// <summary>
+        /// Add the services of the dreamer app
+        /// </summary>
+        /// <param name="builder"></param>
+        static void AddDreamerCore(MauiAppBuilder builder)
+        {
+            builder.Services.AddSingleton<BigBrainService>();
+            builder.Services.AddScoped<ISettingsService, SettingsService>();
+            builder.Services.AddScoped<IAiCharacterService, AiCharacterService>();
+            builder.Services.AddScoped<AzureConversationService>();
+            builder.Services.AddScoped<TwitchChatResponseService>();
         }
     }
 }
