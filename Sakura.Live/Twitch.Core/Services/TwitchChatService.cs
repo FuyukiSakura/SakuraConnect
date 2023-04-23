@@ -108,7 +108,7 @@ namespace Sakura.Live.Twitch.Core.Services
                 await Task.Delay(HeartBeat.Default);
                 if (_client.JoinedChannels.Count > 0)
                 {
-                    return;
+                    continue;
                 }
 
                 await _client.JoinChannelAsync(Channel);
@@ -136,8 +136,8 @@ namespace Sakura.Live.Twitch.Core.Services
         {
             SaveSettings();
             await Start(Username, AccessToken, Channel);
-            _ = ReconnectAsync();
             await base.StartAsync();
+            _ = ReconnectAsync();
         }
 
         ///
