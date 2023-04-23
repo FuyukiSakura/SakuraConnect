@@ -63,7 +63,7 @@ namespace Sakura.Live.OpenAi.Core.Services
                 Temperature = 1,
                 MaxTokens = 256
             };
-            var response = await _service.CreateCompletionAsync(request);
+            var response = await _service.CreateCompletionAndResponseAsync(request);
             await _twitchChat.SendMessage(response); // Fire and forget
         }
 

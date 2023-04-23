@@ -68,15 +68,23 @@ namespace Sakura.Live.OpenAi.Core.Services
         ///
         /// <inheritdoc cref="IChatCompletionService.CreateCompletionAsStream"/>
         ///
-        public async Task<string> CreateCompletionAsync(ChatCompletionCreateRequest request)
+        public async Task<string> CreateCompletionAndResponseAsync(ChatCompletionCreateRequest request)
         {
             if (_openAiService == null)
             {
-                return "Sorry, I didn't get that.";
+                return "Sorry, my brain is not installed.";
             }
 
             var completionResult = _openAiService.ChatCompletion.CreateCompletionAsStream(request);
             return await CombineResponseAsync(completionResult);
+        }
+
+        ///
+        /// <inheritdoc cref="IChatCompletionService.CreateCompletionAsStream"/>
+        ///
+        public IAsyncEnumerable<ChatCompletionCreateResponse>? CreateCompletionAsync(ChatCompletionCreateRequest request)
+        {
+            return _openAiService?.ChatCompletion.CreateCompletionAsStream(request);
         }
 
         /// <summary>
