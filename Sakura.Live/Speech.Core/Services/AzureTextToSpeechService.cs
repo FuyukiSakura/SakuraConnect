@@ -1,20 +1,22 @@
 ﻿using Microsoft.CognitiveServices.Speech;
 using Sakura.Live.Speech.Core.Models;
+using Sakura.Live.ThePanda.Core.Helpers;
 
 namespace Sakura.Live.Speech.Core.Services
 {
     /// <summary>
     /// Accesses Azure text-to-speech services
     /// </summary>
-    public class AzureTextToSpeechService
+    public class AzureTextToSpeechService : BasicAutoStartable
     {
+        SpeechSynthesizer? _speechSynthesizer;
+
         // Dependencies
         readonly AzureSpeechSettingsService _settings;
 
         /// <summary>
         /// Creates a new instance of <see cref="AzureTextToSpeechService" />
         /// </summary>
-        /// <param name="settings"></param>
         public AzureTextToSpeechService(AzureSpeechSettingsService settings)
         {
             _settings = settings;
@@ -28,14 +30,32 @@ namespace Sakura.Live.Speech.Core.Services
         /// <returns></returns>
         public async Task SpeakAsync(string text, string language)
         {
-            var speechConfig = SpeechConfig.FromSubscription(_settings.SubscriptionKey, _settings.Region);
+            if (_speechSynthesizer == null)
+            {
+                // Service not running
+                return;
+            }
 
             // The language of the voice that speaks.
-            using var speechSynthesizer = new SpeechSynthesizer(speechConfig);
-            var speechSynthesisResult = await speechSynthesizer.SpeakSsmlAsync(CreateSsml(text, language));
+            var speechSynthesisResult = await _speechSynthesizer.SpeakSsmlAsync(CreateSsml(text, language));
 #if DEBUG 
             OutputSpeechSynthesisResult(speechSynthesisResult, text);
 #endif
+        }
+
+        /// <summary>
+        /// Interrupts the speech
+        /// </summary>
+        /// <returns></returns>
+        public async Task InterruptAsync()
+        {
+            if (_speechSynthesizer == null)
+            {
+                // Service not running
+                return;
+            }
+
+            await _speechSynthesizer.StopSpeakingAsync();
         }
 
 #if DEBUG 
@@ -91,6 +111,25 @@ namespace Sakura.Live.Speech.Core.Services
                 _ => "+0%"
             };
             return $"<speak version=\"1.0\" xmlns=\"https://www.w3.org/2001/10/synthesis\" xml:lang=\"{language}\"><voice name=\"{voice}\"><prosody pitch=\"+700%\" rate=\"{rate}\">{text}</prosody></voice></speak>";
+        }
+
+        ///
+        /// <inheritdoc />
+        ///
+        public override async Task StartAsync()
+        {
+            var speechConfig = SpeechConfig.FromSubscription(_settings.SubscriptionKey, _settings.Region);
+            _speechSynthesizer = new SpeechSynthesizer(speechConfig);
+            await base.StartAsync();
+        }
+
+        ///
+        /// <inheritdoc />
+        ///
+        public override async Task StopAsync()
+        {
+            await base.StopAsync();
+            _speechSynthesizer = null;
         }
     }
 }
