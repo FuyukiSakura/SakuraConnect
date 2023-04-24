@@ -45,6 +45,7 @@ namespace Sakura.Live.Speech.Core.Services
         /// <returns></returns>
         public override async Task StartAsync()
         {
+            await base.StartAsync();
             _settings.Save();
             if (_recognizer != null)
             {
@@ -70,7 +71,6 @@ namespace Sakura.Live.Speech.Core.Services
 
             // Starts continuous recognition. Uses StopContinuousRecognitionAsync() to stop recognition.
             await _recognizer.StartContinuousRecognitionAsync();
-            await HeartBeatAsync();
         }
 
         /// <summary>
@@ -104,21 +104,6 @@ namespace Sakura.Live.Speech.Core.Services
                 await _recognizer.StopContinuousRecognitionAsync();
             }
             await base.StopAsync();
-        }
-
-        /// <summary>
-        /// Updates the heart beat timer when
-        /// session stop is not detected
-        /// </summary>
-        /// <returns></returns>
-        async Task HeartBeatAsync()
-        {
-            Status = ServiceStatus.Running;
-            while (Status == ServiceStatus.Running)
-            {
-                LastUpdate = DateTime.Now;
-                await Task.Delay(HeartBeat.Default);
-            }
         }
     }
 }

@@ -9,6 +9,12 @@ namespace Sakura.Live.ThePanda.Core.Helpers
 	public abstract class BasicAutoStartable : IAutoStartable
 	{
 		ServiceStatus _status = ServiceStatus.Stopped;
+		readonly SemaphoreSlim _statusLock = new (1,1);
+		
+        ///
+        /// <inheritdoc />
+        ///
+		public CancellationTokenSource CancellationTokenSource { get; protected set; } = new ();
 
 		///
 		/// <inheritdoc />
@@ -39,16 +45,36 @@ namespace Sakura.Live.ThePanda.Core.Helpers
             }
         }
 
+		/// <summary>
+		/// The actual start of the service
+		/// </summary>
+		/// <returns></returns>
+		public virtual Task StartAsync()
+		{
+            _ = HeartBeatAsync();
+            return Task.CompletedTask;
+		}
+
 		///
 		/// <inheritdoc />
 		///
-		public virtual async Task StartAsync()
-		{
-			Status = ServiceStatus.Running;
-            _ = HeartBeatAsync();
-			Started?.Invoke(this, EventArgs.Empty);
-			await Task.CompletedTask;
-		}
+        public async Task StartOnceAsync()
+        {
+			await _statusLock.WaitAsync();
+			CancellationTokenSource.Cancel(); // Cancel the previous thread
+			CancellationTokenSource = new CancellationTokenSource();
+
+            if (Status == ServiceStatus.Running)
+            {
+                _statusLock.Release();
+                return;
+            }
+
+            Status = ServiceStatus.Running;
+            Started?.Invoke(this, EventArgs.Empty);
+            _statusLock.Release();
+			await StartAsync();
+        }
 
 		///
 		/// <inheritdoc />
@@ -57,6 +83,7 @@ namespace Sakura.Live.ThePanda.Core.Helpers
 		{
 			Stopped?.Invoke(this, EventArgs.Empty);
 			Status = ServiceStatus.Stopped;
+			CancellationTokenSource.Cancel();
 			await Task.CompletedTask;
 		}
 

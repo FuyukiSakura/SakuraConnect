@@ -15,7 +15,6 @@ namespace Sakura.Live.Speech.Core.Services
         /// </summary>
         public bool IsSpeaking { get; private set; }
 
-        bool _isRunning;
         readonly Dictionary<Guid, SpeechQueueItem> _speechQueue = new();
 
         // Dependencies
@@ -69,9 +68,10 @@ namespace Sakura.Live.Speech.Core.Services
         /// Monitors the speech queue and speaks out the text if there's input
         /// </summary>
         /// <returns></returns>
-        public async Task MonitorAsync()
+        public async Task MonitorAsync(CancellationToken cancellationToken)
         {
-            while (_isRunning)
+            while (Status == ServiceStatus.Running
+                   || !cancellationToken.IsCancellationRequested)
             {
                 // Prioritize user messages
                 var speechPair = GetNextSpeech();
@@ -179,9 +179,10 @@ namespace Sakura.Live.Speech.Core.Services
         /// Constantly remove old messages from the queue
         /// </summary>
         /// <returns></returns>
-        public async Task CleanupAsync()
+        public async Task CleanupAsync(CancellationToken cancel)
         {
-            while (_isRunning)
+            while (Status == ServiceStatus.Running
+                   || !cancel.IsCancellationRequested)
             {
                 await Task.Delay(TimeSpan.FromMinutes(1));
                 var oldMessages = _speechQueue.Where(item => DateTime.Now - item.Value.TimeStamp > TimeSpan.FromMinutes(1));
@@ -197,11 +198,10 @@ namespace Sakura.Live.Speech.Core.Services
         ///
         public override async Task StartAsync()
         {
-            _isRunning = true;
-            _ = MonitorAsync();
-            _ = CleanupAsync();
-            _monitor.Register(this, _textAnalyticsService);
             await base.StartAsync();
+            _ = MonitorAsync(CancellationTokenSource.Token);
+            _ = CleanupAsync(CancellationTokenSource.Token);
+            _monitor.Register(this, _textAnalyticsService);
         }
 
         /// <summary>
@@ -210,7 +210,6 @@ namespace Sakura.Live.Speech.Core.Services
         public override async Task StopAsync()
         {
             await base.StopAsync();
-            _isRunning = false;
             _monitor.Unregister(this);
             _speechQueue.Clear();
         }

@@ -5,6 +5,7 @@ using Sakura.Live.ThePanda.Core.Interfaces;
 using Sakura.Live.Twitch.Core.Models;
 using TwitchLib.Client;
 using TwitchLib.Client.Events;
+using TwitchLib.Client.Exceptions;
 using TwitchLib.Client.Models;
 
 namespace Sakura.Live.Twitch.Core.Services
@@ -15,7 +16,7 @@ namespace Sakura.Live.Twitch.Core.Services
     public class TwitchChatService : BasicAutoStartable
     {
         readonly ISettingsService _settingsService;
-        readonly TwitchClient _client;
+        TwitchClient? _client;
 
         /// <summary>
         /// Gets or sets the Twitch username for login
@@ -42,9 +43,6 @@ namespace Sakura.Live.Twitch.Core.Services
         /// </summary>
         public TwitchChatService(ISettingsService settings)
         {
-            _client = new TwitchClient();
-            _client.OnLog += ClientOnOnLog;
-            _client.OnMessageReceived += (sender, args) => OnMessageReceived?.Invoke(sender, args);
             _settingsService = settings;
             LoadSettings();
         }
@@ -85,6 +83,12 @@ namespace Sakura.Live.Twitch.Core.Services
         /// <param name="message"></param>
         public async Task SendMessage(string message)
         {
+            if (_client == null)
+            {
+                // Service not started
+                return;
+            }
+
             var retries = 0;
             while ((!_client.IsConnected 
                    || Status != ServiceStatus.Running)
@@ -101,18 +105,26 @@ namespace Sakura.Live.Twitch.Core.Services
         /// Checks if the Twitch client is still connected
         /// </summary>
         /// <returns></returns>
-        async Task ReconnectAsync()
+        async Task ReconnectAsync(CancellationToken cancellationToken)
         {
-            while (Status == ServiceStatus.Running) // Checks if the client is connected
+            while (Status == ServiceStatus.Running 
+                   || !cancellationToken.IsCancellationRequested) // Checks if the client is connected
             {
                 await Task.Delay(HeartBeat.Default);
-                if (_client.JoinedChannels.Count > 0)
+                if (_client!.JoinedChannels.Count > 0)
                 {
                     continue;
                 }
 
-                await _client.JoinChannelAsync(Channel);
-                Debug.WriteLine("Twitch client reconnected");
+                try
+                {
+                    await _client.JoinChannelAsync(Channel);
+                    Debug.WriteLine("Twitch client reconnected");
+                }
+                catch (ClientNotConnectedException e)
+                {
+                    Debug.WriteLine(e);
+                }
             }
         }
 
@@ -125,8 +137,21 @@ namespace Sakura.Live.Twitch.Core.Services
         async Task Start(string username, string accessToken, string channel)
         {
             var credentials = new ConnectionCredentials(username, accessToken);
+            _client = new TwitchClient();
+            _client.OnLog += ClientOnOnLog;
+            _client.OnMessageReceived += TwitchMessageReceived;
             _client.Initialize(credentials, channel);
             await _client.ConnectAsync();
+        }
+
+        /// <summary>
+        /// Sends the received message to the subscribers
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void TwitchMessageReceived(object? sender, OnMessageReceivedArgs e)
+        {
+            OnMessageReceived?.Invoke(sender, e);
         }
 
         ///
@@ -134,10 +159,10 @@ namespace Sakura.Live.Twitch.Core.Services
         ///
         public override async Task StartAsync()
         {
+            await base.StartAsync();
             SaveSettings();
             await Start(Username, AccessToken, Channel);
-            await base.StartAsync();
-            _ = ReconnectAsync();
+            _ = ReconnectAsync(CancellationTokenSource.Token);
         }
 
         ///
@@ -146,7 +171,15 @@ namespace Sakura.Live.Twitch.Core.Services
         public override async Task StopAsync()
         {
             await base.StopAsync();
+            if (_client == null)
+            {
+                // Service not started
+                return;
+            }
+
             await _client.DisconnectAsync();
+            _client.OnMessageReceived -= TwitchMessageReceived;
+            _client.OnLog -= ClientOnOnLog;
         }
     }
 }
