@@ -109,7 +109,7 @@ namespace Sakura.Live.Speech.Core.Services
                 // User has second priority
                 return speechPair;
             }
-            return _speechQueue.FirstOrDefault();;
+            return _speechQueue.FirstOrDefault();
         }
 
         /// <summary>
