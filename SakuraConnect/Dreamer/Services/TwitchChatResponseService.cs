@@ -72,6 +72,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
                 return;
             }
             var msg = ChatMessage.FromUser($"{e.ChatMessage.DisplayName}: {e.ChatMessage.Message}");
+            _ = ChatLogger.LogAsync(msg.Content, "chat");
             _chatHistoryService.AddChat(msg);
         }
 
@@ -85,6 +86,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
             {
                 await WaitUserInput();
                 _lastRespondedMessage = _chatHistoryService.GetLastUserMessage();
+                await ChatLogger.LogAsync("Started responding to: " + _lastRespondedMessage?.Content);
                 _ = Task.Run(GenerateResponseAsync); // Fire and forget
                 _lastSpoke = DateTime.Now;
             }
@@ -213,16 +215,37 @@ namespace Sakura.Live.Connect.Dreamer.Services
         /// <returns></returns>
         async Task WaitUserInput()
         {
-            while (true)
+            var started = DateTime.Now;
+            while (IsUserInputting(started)) 
             {
-                if (_lastRespondedMessage != null // Ignores when the app started
-                    && _chatHistoryService.GetLastUserMessage() == _lastRespondedMessage)
+                if (_lastRespondedMessage == null)
                 {
-                    await Task.Delay(10_000);
-                    continue;
+                    // Ignores when the app started
+                    break;
                 }
-                break;
+
+                await Task.Delay(1_000);
             }
+        }
+
+        /// <summary>
+        /// Checks if the last responded message is the same as the last user message
+        /// </summary>
+        /// <param name="started"></param>
+        /// <returns></returns>
+        bool IsUserInputting(DateTime started)
+        {
+            var waitForSeconds = 10; // Wait for 10 seconds of input before responding
+            if (_speechService.IsSpeaking)
+            {
+                // Wait for 30 seconds of input if the bot is speaking
+                waitForSeconds = 30;
+            }
+            
+            var noNewUserInput = _chatHistoryService.GetLastUserMessage() == _lastRespondedMessage;
+            var notWaitedFor = (DateTime.Now - started).TotalSeconds < waitForSeconds;
+            return noNewUserInput
+                   || notWaitedFor;
         }
 
         ///
@@ -232,7 +255,6 @@ namespace Sakura.Live.Connect.Dreamer.Services
         {
             await base.StartAsync();
             _lastSpoke = DateTime.Now;
-            _ = HeartBeatAsync();
             _ = ResponseAsync();
             _ = SoliloquizeAsync();
         }
