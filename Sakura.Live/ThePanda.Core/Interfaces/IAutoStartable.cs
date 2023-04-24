@@ -21,11 +21,16 @@ namespace Sakura.Live.ThePanda.Core.Interfaces
 		/// </summary>
 		event EventHandler<ServiceStatus> StatusChanged;
 
+        /// <summary>
+        /// Is used for cancelling the unmanaged dependency services
+        /// </summary>
+        CancellationTokenSource CancellationTokenSource { get; }
+
 		/// <summary>
 		/// Starts the service
 		/// </summary>
 		/// <returns></returns>
-		Task StartAsync();
+		Task StartOnceAsync();
 
 		/// <summary>
 		/// Stops the service

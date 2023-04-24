@@ -34,7 +34,7 @@ namespace Sakura.Live.ThePanda.Core
             {
                 // Only starts a service that is not running
                 // let the monitor handle if it's in Error
-                _ = service.StartAsync();
+                _ = service.StartOnceAsync();
             }
 
             if (_services.ContainsKey(service))
@@ -104,7 +104,7 @@ namespace Sakura.Live.ThePanda.Core
                     if (!((now - autoStartable.LastUpdate).TotalSeconds > TimeoutIn)) continue;
 
                     autoStartable.Status = ServiceStatus.Error;
-                    _ = autoStartable.StartAsync();
+                    _ = autoStartable.StartOnceAsync();
                 }
 
                 await Task.Delay(MonitorInterval);
