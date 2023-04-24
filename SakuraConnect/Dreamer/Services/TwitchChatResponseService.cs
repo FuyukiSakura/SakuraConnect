@@ -86,24 +86,14 @@ namespace Sakura.Live.Connect.Dreamer.Services
                 await WaitUserInput();
                 _lastRespondedMessage = _chatHistoryService.GetLastUserMessage();
                 await ChatLogger.LogAsync("Started responding to: " + _lastRespondedMessage?.Content);
-                _ = Task.Run(GenerateResponseAsync); // Fire and forget
+                _ = Task.Run(() => GenerateResponseAsync(
+                    "Try to match the language above.",
+                    SpeechQueueRole.User,
+                    "Responded")); // Fire and forget
                 _lastSpoke = DateTime.Now;
             }
 
             await StopAsync();
-        }
-
-        /// <summary>
-        /// Generates response and add to the queue
-        /// </summary>
-        /// <returns></returns>
-        async Task GenerateResponseAsync()
-        {
-            var response = await _brainService.ThinkAsync(
-                "Answer within 60 words. Try to match the language above.",
-                SpeechQueueRole.User
-            );
-            await ChatLogger.LogAsync($"Responded: {response}");
         }
 
         /// <summary>
@@ -121,10 +111,21 @@ namespace Sakura.Live.Connect.Dreamer.Services
                 }
 
                 _lastSpoke = DateTime.Now;
-                var response = await _brainService.ThinkAsync("Carry on.", SpeechQueueRole.Self);
-                await ChatLogger.LogAsync($"Soliloquize: {response}");
-                _lastSpoke = DateTime.Now; // Avoid talking too much
+                _ = Task.Run(() => GenerateResponseAsync("Carry on.", SpeechQueueRole.Self, "Soliloquize")); // Fire and forget
             }
+        }
+
+        /// <summary>
+        /// Generates response and add to the queue
+        /// </summary>
+        /// <param name="prompt">The prompt to think for</param>
+        /// <param name="role">The role of the requester</param>
+        /// <param name="logPrefix">The prefix of the log item</param>
+        /// <returns></returns>
+        async Task GenerateResponseAsync(string prompt, SpeechQueueRole role, string logPrefix)
+        {
+            var response = await _brainService.ThinkAsync(prompt, role);
+            await ChatLogger.LogAsync($"{logPrefix}: {response}");
         }
 
         /// <summary>
