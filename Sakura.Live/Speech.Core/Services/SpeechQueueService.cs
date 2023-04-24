@@ -10,6 +10,11 @@ namespace Sakura.Live.Speech.Core.Services
     /// </summary>
     public class SpeechQueueService : BasicAutoStartable
     {
+        /// <summary>
+        /// Indicates if the speech queue is speaking
+        /// </summary>
+        public bool IsSpeaking { get; private set; }
+
         bool _isRunning;
         readonly Dictionary<Guid, SpeechQueueItem> _speechQueue = new();
 
@@ -97,7 +102,7 @@ namespace Sakura.Live.Speech.Core.Services
             while (item.Text.Length == 0
                    && retries < 5) // abandon the message if no text received in 5 seconds
             {
-                await Task.Delay(TimeSpan.FromSeconds(1));
+                await Task.Delay(TimeSpan.FromSeconds(2));
                 retries++;
             }
         }
@@ -121,14 +126,27 @@ namespace Sakura.Live.Speech.Core.Services
         /// <returns></returns>
         async Task SpeakAsync(SpeechQueueItem item)
         {
+            IsSpeaking = true;
             var speakIndex = 0;
             while (speakIndex < item.Text.Length)
             {
                 var speakText = item.Text[speakIndex..];
+                var translated = speakText.Split("Translation:");
+                if (translated.Length > 1)
+                {
+                    speakText = translated[0];
+                    speakIndex += "Translation:".Length;
+                }
                 Debug.WriteLine("Synthesized: " + speakText);
                 await _azureTtsSvc.SpeakAsync(speakText, item.Language);
+
+                if (translated.Length > 1)
+                {
+                    item.Language = Languages.English;
+                }
                 speakIndex += speakText.Length;
             }
+            IsSpeaking = false;
         }
 
         /// <summary>
