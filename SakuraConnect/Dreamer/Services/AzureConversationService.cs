@@ -33,6 +33,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
         readonly IThePandaMonitor _monitor;
         readonly BigBrainService _bigBrainService;
         readonly AzureSpeechService _speechService;
+        readonly AzureTextToSpeechService _ttsService;
 
         DateTime _lastInputTime = DateTime.Now;
         bool _isRunning;
@@ -48,11 +49,13 @@ namespace Sakura.Live.Connect.Dreamer.Services
         public AzureConversationService(
             IThePandaMonitor monitor,
             BigBrainService bigBrainService,
-            AzureSpeechService speechService)
+            AzureSpeechService speechService,
+            AzureTextToSpeechService ttsService)
         {
             _monitor = monitor;
             _bigBrainService = bigBrainService;
             _speechService = speechService;
+            _ttsService = ttsService;
         }
 
         /// <summary>
@@ -62,7 +65,8 @@ namespace Sakura.Live.Connect.Dreamer.Services
         /// <param name="e"></param>
         async void OnSpeechRecognized(object sender, SpeechRecognitionEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(e.Result.Text))
+            if (string.IsNullOrWhiteSpace(e.Result.Text)
+                || e.Result.Text.Length < 5) // Ignore short inputs
             {
                 // Do not fire for empty inputs
                 return;
@@ -94,11 +98,27 @@ namespace Sakura.Live.Connect.Dreamer.Services
                 _messageQueue.Clear();
                 if (_replyLanguage == "zh-HK")
                 {
-                    prompt += ". Respond in Cantonese";
+                    // prompt += ". Respond in Cantonese";
                 }
                 var response = await _bigBrainService.ThinkAsync(prompt, SpeechQueueRole.Master);
                 OnResponse?.Invoke(this, response);
             }
+        }
+
+        /// <summary>
+        /// Interrupts the AI speech when user has spoken for 5 seconds
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        async void OnSpeechRecognizing(object sender, SpeechRecognitionEventArgs e)
+        {
+            if (e.Result.Reason != ResultReason.RecognizingSpeech
+                || e.Result.Duration < TimeSpan.FromSeconds(2))
+            {
+                return;
+            }
+            
+            await _ttsService.InterruptAsync();
         }
 
         /// <summary>
@@ -107,6 +127,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
         public void Start()
         {
             _speechService.Recognized += OnSpeechRecognized;
+            _speechService.Recognizing += OnSpeechRecognizing;
             _monitor.Register(this, _bigBrainService);
             _monitor.Register(this, _speechService);
             _isRunning = true;
