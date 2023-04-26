@@ -83,13 +83,15 @@ namespace Sakura.Live.Speech.Core.Services
                 }
 
                 // Simply wait for more results before speaking
+                speechPair.Value.IsSpeaking = true;
                 await WaitForText(speechPair.Value);
-                _speechQueue.Remove(speechPair.Key);
+                
                 if (speechPair.Value.Text != "OUT_OF_CONTEXT")
                 {
                     SetLanguage(speechPair.Value);
                     await SpeakAsync(speechPair.Value);
                 }
+                _speechQueue.Remove(speechPair.Key);
             }
         }
 
@@ -99,14 +101,16 @@ namespace Sakura.Live.Speech.Core.Services
         /// <returns></returns>
         KeyValuePair<Guid, SpeechQueueItem> GetNextSpeech()
         {
-            var speechPair = _speechQueue.FirstOrDefault(item => item.Value.Role == SpeechQueueRole.Master);
+            var speechPair = _speechQueue.FirstOrDefault(item => 
+                item.Value is { Role: SpeechQueueRole.Master, IsSpeaking: false });
             if (speechPair.Key != Guid.Empty)
             {
                 // Master has priority
                 return speechPair;
             }
 
-            speechPair = _speechQueue.FirstOrDefault(item => item.Value.Role == SpeechQueueRole.User);
+            speechPair = _speechQueue.FirstOrDefault(item => 
+                item.Value is { Role: SpeechQueueRole.User, IsSpeaking: false });
             if (speechPair.Key != Guid.Empty)
             {
                 // User has second priority
