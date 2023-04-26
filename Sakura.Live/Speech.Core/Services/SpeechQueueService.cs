@@ -84,9 +84,12 @@ namespace Sakura.Live.Speech.Core.Services
 
                 // Simply wait for more results before speaking
                 await WaitForText(speechPair.Value);
-                SetLanguage(speechPair.Value);
-                await SpeakAsync(speechPair.Value);
                 _speechQueue.Remove(speechPair.Key);
+                if (speechPair.Value.Text != "OUT_OF_CONTEXT")
+                {
+                    SetLanguage(speechPair.Value);
+                    await SpeakAsync(speechPair.Value);
+                }
             }
         }
 
