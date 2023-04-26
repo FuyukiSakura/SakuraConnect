@@ -92,6 +92,9 @@ namespace Sakura.Live.Speech.Core.Services
                     await SpeakAsync(speechPair.Value);
                 }
                 _speechQueue.Remove(speechPair.Key);
+
+                // Take short brake before next speech
+                await Task.Delay(500);
             }
         }
 
