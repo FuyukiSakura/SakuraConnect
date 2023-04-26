@@ -100,9 +100,20 @@ namespace Sakura.Live.Connect.Dreamer.Services
                 {
                     // prompt += ". Respond in Cantonese";
                 }
-                var response = await _bigBrainService.ThinkAsync(prompt, SpeechQueueRole.Master);
-                OnResponse?.Invoke(this, response);
+                _ = Task.Run(() => GenerateResponseAsync(prompt, SpeechQueueRole.Master));
             }
+        }
+
+        /// <summary>
+        /// Generates a response from the AI
+        /// </summary>
+        /// <param name="prompt"></param>
+        /// <param name="role"></param>
+        /// <returns></returns>
+        async Task GenerateResponseAsync(string prompt, SpeechQueueRole role)
+        {
+            var response = await _bigBrainService.ThinkAsync(prompt, role);
+            OnResponse?.Invoke(this, response);
         }
 
         /// <summary>
