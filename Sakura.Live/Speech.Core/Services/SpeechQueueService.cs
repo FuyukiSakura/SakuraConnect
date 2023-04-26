@@ -156,7 +156,8 @@ namespace Sakura.Live.Speech.Core.Services
             while (speakIndex < item.Text.Length)
             {
                 var speakText = item.Text[speakIndex..];
-                if (speakText.StartsWith("大豆醬"))
+                if (speakText.StartsWith("大豆醬")
+                    || speakText.StartsWith("大豆酱")) // Simplified chinese
                 {
                     speakText = speakText.Remove(0,3);
                 }
