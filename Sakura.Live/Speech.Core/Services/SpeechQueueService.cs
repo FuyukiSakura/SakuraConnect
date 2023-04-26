@@ -166,8 +166,12 @@ namespace Sakura.Live.Speech.Core.Services
                     speakText = translated[0];
                     speakIndex += "Translation:".Length;
                 }
-                Debug.WriteLine("Synthesized: " + speakText);
-                await _azureTtsSvc.SpeakAsync(speakText, item.Language);
+
+                if (!string.IsNullOrWhiteSpace(speakText)) // Do not speak empty text
+                {
+                    Debug.WriteLine("Synthesized: " + speakText);
+                    await _azureTtsSvc.SpeakAsync(speakText, item.Language);
+                }
 
                 if (translated.Length > 1)
                 {
