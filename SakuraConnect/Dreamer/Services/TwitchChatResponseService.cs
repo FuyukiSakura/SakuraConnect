@@ -87,7 +87,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
                 _lastRespondedMessage = _chatHistoryService.GetLastUserMessage();
                 await ChatLogger.LogAsync("Started responding to: " + _lastRespondedMessage?.Content);
                 _ = Task.Run(() => GenerateResponseAsync(
-                    "Try to match the language above.",
+                    "Try to match the language from previous input.",
                     SpeechQueueRole.User,
                     "Responded")); // Fire and forget
                 _lastSpoke = DateTime.Now;
