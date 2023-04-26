@@ -164,6 +164,7 @@ namespace Sakura.Live.Speech.Core.Services
                     || speakText.StartsWith("大豆酱")) // Simplified chinese
                 {
                     speakText = speakText.Remove(0,3);
+                    speakIndex += 3;
                 }
                 var translated = speakText.Split("Translation:");
                 if (translated.Length > 1)
