@@ -1,4 +1,4 @@
-﻿using OpenAI.GPT3.ObjectModels.RequestModels;
+using OpenAI.ObjectModels.RequestModels;
 
 namespace Sakura.Live.OpenAi.Core.Services
 {

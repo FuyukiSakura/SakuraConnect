@@ -1,10 +1,10 @@
 ﻿
-using OpenAI.GPT3.ObjectModels.RequestModels;
-using OpenAI.GPT3.ObjectModels.ResponseModels;
 using Sakura.Live.OpenAi.Core.Services;
 using Sakura.Live.Speech.Core.Models;
 using Sakura.Live.Speech.Core.Services;
 using System.Text;
+using OpenAI.ObjectModels.RequestModels;
+using OpenAI.ObjectModels.ResponseModels;
 using Sakura.Live.Connect.Dreamer.Models.OpenAi;
 using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Helpers;
@@ -55,7 +55,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
                 {
                     ChatMessage.FromSystem(_characterService.GetPersonalityPrompt())
                 },
-                Model = OpenAI.GPT3.ObjectModels.Models.ChatGpt3_5Turbo,
+                Model = OpenAI.ObjectModels.Models.Gpt_3_5_Turbo_16k_0613,
                 Temperature = 1,
                 MaxTokens = 1024
             };

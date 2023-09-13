@@ -1,5 +1,5 @@
 ﻿
-using OpenAI.GPT3.ObjectModels.RequestModels;
+using OpenAI.ObjectModels.RequestModels;
 using Sakura.Live.Connect.Dreamer.Services.Ai;
 using Sakura.Live.OpenAi.Core.Services;
 using Sakura.Live.Speech.Core.Models;

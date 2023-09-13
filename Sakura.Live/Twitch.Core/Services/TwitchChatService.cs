@@ -48,16 +48,6 @@ namespace Sakura.Live.Twitch.Core.Services
         }
 
         /// <summary>
-        /// Shows the Twitch client log
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        static void ClientOnOnLog(object? sender, OnLogArgs e)
-        {
-            Debug.WriteLine(e.Data);
-        }
-
-        /// <summary>
         /// Saves the Twitch settings to the system
         /// </summary>
         void SaveSettings()
@@ -98,7 +88,7 @@ namespace Sakura.Live.Twitch.Core.Services
                 await Task.Delay(HeartBeat.Default);
                 ++retries;
             }
-            await _client.SendMessageAsync(Channel, message);
+            _client.SendMessage(Channel, message);
         }
 
         /// <summary>
@@ -118,7 +108,7 @@ namespace Sakura.Live.Twitch.Core.Services
 
                 try
                 {
-                    await _client.JoinChannelAsync(Channel);
+                    await _client.JoinChannelAsync(Channel, true);
                     Debug.WriteLine("Twitch client reconnected");
                 }
                 catch (ClientNotConnectedException e)
@@ -138,7 +128,6 @@ namespace Sakura.Live.Twitch.Core.Services
         {
             var credentials = new ConnectionCredentials(username, accessToken);
             _client = new TwitchClient();
-            _client.OnLog += ClientOnOnLog;
             _client.OnMessageReceived += TwitchMessageReceived;
             _client.Initialize(credentials, channel);
             await _client.ConnectAsync();
@@ -149,9 +138,10 @@ namespace Sakura.Live.Twitch.Core.Services
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void TwitchMessageReceived(object? sender, OnMessageReceivedArgs e)
+        Task TwitchMessageReceived(object? sender, OnMessageReceivedArgs e)
         {
             OnMessageReceived?.Invoke(sender, e);
+            return Task.CompletedTask;
         }
 
         ///
@@ -179,7 +169,6 @@ namespace Sakura.Live.Twitch.Core.Services
 
             await _client.DisconnectAsync();
             _client.OnMessageReceived -= TwitchMessageReceived;
-            _client.OnLog -= ClientOnOnLog;
         }
     }
 }

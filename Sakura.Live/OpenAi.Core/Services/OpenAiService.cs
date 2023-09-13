@@ -1,8 +1,8 @@
-﻿using OpenAI.GPT3;
-using OpenAI.GPT3.Interfaces;
-using OpenAI.GPT3.Managers;
-using OpenAI.GPT3.ObjectModels.RequestModels;
-using OpenAI.GPT3.ObjectModels.ResponseModels;
+﻿using OpenAI;
+using OpenAI.Interfaces;
+using OpenAI.Managers;
+using OpenAI.ObjectModels.RequestModels;
+using OpenAI.ObjectModels.ResponseModels;
 using Sakura.Live.OpenAi.Core.Models;
 using Sakura.Live.ThePanda.Core.Helpers;
 using Sakura.Live.ThePanda.Core.Interfaces;

@@ -1,4 +1,4 @@
-﻿using OpenAI.GPT3.ObjectModels.RequestModels;
+﻿using OpenAI.ObjectModels.RequestModels;
 using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Helpers;
 using Sakura.Live.Twitch.Core.Services;
@@ -59,7 +59,7 @@ namespace Sakura.Live.OpenAi.Core.Services
                         + $"You can only response within {Characters} words."), // Adds character limits
                     ChatMessage.FromUser($"{username}: {message}"),
                 },
-                Model = OpenAI.GPT3.ObjectModels.Models.ChatGpt3_5Turbo,
+                Model = OpenAI.ObjectModels.Models.Gpt_3_5_Turbo_16k_0613,
                 Temperature = 1,
                 MaxTokens = 256
             };
