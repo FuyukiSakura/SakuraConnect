@@ -1,3 +1,4 @@
+﻿using System.Text;
 using OpenAI.ObjectModels.RequestModels;
 
 namespace Sakura.Live.OpenAi.Core.Services
@@ -35,6 +36,20 @@ namespace Sakura.Live.OpenAi.Core.Services
         public List<ChatMessage> GetAllChat()
         {
             return _chatHistory;
+        }
+
+        /// <summary>
+        /// Generates a chat log as a multi-line string
+        /// </summary>
+        /// <returns></returns>
+        public string GenerateChatLog()
+        {
+            var sb = new StringBuilder();
+            foreach (var msg in _chatHistory)
+            {
+                sb.AppendLine(msg.Content);
+            }
+            return sb.ToString();
         }
 
         /// <summary>

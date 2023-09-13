@@ -86,10 +86,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
                 await WaitUserInput();
                 _lastRespondedMessage = _chatHistoryService.GetLastUserMessage();
                 await ChatLogger.LogAsync("Started responding to: " + _lastRespondedMessage?.Content);
-                _ = Task.Run(() => GenerateResponseAsync(
-                    "Try to match the language from previous input.",
-                    SpeechQueueRole.User,
-                    "Responded")); // Fire and forget
+                _ = Task.Run(() => GenerateResponseAsync(SpeechQueueRole.User, "Responded")); // Fire and forget
                 _lastSpoke = DateTime.Now;
             }
 
@@ -111,20 +108,19 @@ namespace Sakura.Live.Connect.Dreamer.Services
                 }
 
                 _lastSpoke = DateTime.Now;
-                _ = Task.Run(() => GenerateResponseAsync("Carry on.", SpeechQueueRole.Self, "Soliloquize")); // Fire and forget
+                _ = Task.Run(() => GenerateResponseAsync(SpeechQueueRole.Self, "Soliloquize")); // Fire and forget
             }
         }
 
         /// <summary>
         /// Generates response and add to the queue
         /// </summary>
-        /// <param name="prompt">The prompt to think for</param>
         /// <param name="role">The role of the requester</param>
         /// <param name="logPrefix">The prefix of the log item</param>
         /// <returns></returns>
-        async Task GenerateResponseAsync(string prompt, SpeechQueueRole role, string logPrefix)
+        async Task GenerateResponseAsync(SpeechQueueRole role, string logPrefix)
         {
-            var response = await _brainService.ThinkAsync(prompt, role);
+            var response = await _brainService.ThinkAsync(role);
             await ChatLogger.LogAsync($"{logPrefix}: {response}");
         }
 

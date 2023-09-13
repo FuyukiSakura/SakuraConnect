@@ -44,25 +44,24 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         /// <summary>
         /// Instructs open ai to think about the chat history
         /// </summary>
-        /// <param name="prompt"></param>
         /// <param name="forRole">Which role is the speaker</param>
         /// <returns></returns>
-        public async Task<string> ThinkAsync(string prompt, SpeechQueueRole forRole)
+        public async Task<string> ThinkAsync(SpeechQueueRole forRole)
         {
             var request = new ChatCompletionCreateRequest
             {
                 Messages = new List<ChatMessage>
                 {
-                    ChatMessage.FromSystem(_characterService.GetPersonalityPrompt())
+                    ChatMessage.FromSystem(
+                        _characterService.GetPersonalityPrompt()
+                    )
                 },
                 Model = OpenAI.ObjectModels.Models.Gpt_3_5_Turbo_16k_0613,
                 Temperature = 1,
                 MaxTokens = 1024
             };
-            _chatHistoryService.GetAllChat()
-                .ForEach(request.Messages.Add);
-            var instruction = ChatMessage.FromUser(prompt);
-            request.Messages.Add(instruction);
+            var chatlog = _chatHistoryService.GenerateChatLog();
+            request.Messages.Add(ChatMessage.FromUser(chatlog));
             return await QueueResponse(request, forRole);
         }
 

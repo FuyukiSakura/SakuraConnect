@@ -112,7 +112,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
         /// <returns></returns>
         async Task GenerateResponseAsync(string prompt, SpeechQueueRole role)
         {
-            var response = await _bigBrainService.ThinkAsync(prompt, role);
+            var response = await _bigBrainService.ThinkAsync(role);
             OnResponse?.Invoke(this, response);
         }
 
