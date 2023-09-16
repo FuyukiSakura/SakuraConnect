@@ -3,14 +3,14 @@
 @using Sakura.Live.Connect.Dreamer.Services
 @using Sakura.Live.Speech.Core.Services
 @using Microsoft.CognitiveServices.Speech
+@using Sakura.Live.Connect.Dreamer.Services.Twitch
 @using Sakura.Live.ThePanda.Core
-@using Sakura.Live.Twitch.Core.Services
 @inject IThePandaMonitor Monitor
 @inject OpenAiService OpenAiService
 @inject GreetingService GreetingService
 @inject AzureSpeechService AzureSpeechService
 @inject AzureConversationService AzureConversationService
-@inject TwitchChatService TwitchChatService
+@inject TwitchChatMonitorService TwitchChatMonitorService
 @inject TwitchChatResponseService TwitchChatResponseService
 
 <h1>Open AI</h1>
@@ -71,7 +71,7 @@
 <ServiceConfigButton Service="@TwitchChatResponseService"
                      Text="Start / Stop"
                      Clicked="StartChatService_OnClick" />
-<ServiceConfigButton Service="@TwitchChatService"
+<ServiceConfigButton Service="@TwitchChatMonitorService"
                      Text="Monitor Chat"
                      Clicked="MonitorChat_OnClick" />
 
@@ -174,7 +174,7 @@
     /// </summary>
     void MonitorChat_OnClick()
     {
-        Monitor.Register(this, TwitchChatService);
+        Monitor.Register(this, TwitchChatMonitorService);
     }
 
     ///

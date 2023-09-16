@@ -55,7 +55,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
                 },
                 Model = OpenAI.ObjectModels.Models.Gpt_3_5_Turbo_16k_0613,
                 Temperature = 1,
-                MaxTokens = 1024
+                MaxTokens = 512
             };
             var chatlog = _chatHistoryService.GenerateChatLog();
             request.Messages.Add(ChatMessage.FromUser(chatlog));

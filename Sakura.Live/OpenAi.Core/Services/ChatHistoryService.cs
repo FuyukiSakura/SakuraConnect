@@ -30,15 +30,6 @@ namespace Sakura.Live.OpenAi.Core.Services
         }
 
         /// <summary>
-        /// Gets all chat messages
-        /// </summary>
-        /// <returns></returns>
-        public List<ChatMessage> GetAllChat()
-        {
-            return _chatHistory;
-        }
-
-        /// <summary>
         /// Generates a chat log as a multi-line string
         /// </summary>
         /// <returns></returns>

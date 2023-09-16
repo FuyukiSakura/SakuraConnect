@@ -5,6 +5,7 @@ using Blazorise.Bootstrap;
 using Sakura.Live.Cognitive.Translation.Core;
 using Sakura.Live.Connect.Dreamer.Services;
 using Sakura.Live.Connect.Dreamer.Services.Ai;
+using Sakura.Live.Connect.Dreamer.Services.Twitch;
 using Sakura.Live.Obs.Core;
 using Sakura.Live.OpenAi.Core;
 using Sakura.Live.OpenAi.Core.Services;
@@ -62,6 +63,7 @@ namespace Sakura.Live.Connect.Dreamer
             builder.Services.AddScoped<ISettingsService, SettingsService>();
             builder.Services.AddSingleton<IAiCharacterService, AiCharacterService>();
             builder.Services.AddScoped<AzureConversationService>();
+            builder.Services.AddSingleton<TwitchChatMonitorService>();
             builder.Services.AddScoped<TwitchChatResponseService>();
         }
     }
