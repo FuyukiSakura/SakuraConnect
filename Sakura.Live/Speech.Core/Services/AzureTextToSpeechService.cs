@@ -96,21 +96,7 @@ namespace Sakura.Live.Speech.Core.Services
         /// <returns></returns>
         public static string CreateSsml(string text, string language)
         {
-            var voice = language switch
-            {
-                Languages.Mandarin => "zh-TW-HsiaoChenNeural",
-                Languages.Japanese => "ja-JP-NanamiNeural",
-                Languages.Cantonese => "zh-HK-HiuGaaiNeural",
-                _ => "zh-HK-HiuGaaiNeural"
-            };
-
-            var rate = language switch
-            {
-                Languages.Cantonese => "+50%",
-                Languages.English => "+20%",
-                _ => "+0%"
-            };
-            return $"<speak version=\"1.0\" xmlns=\"https://www.w3.org/2001/10/synthesis\" xml:lang=\"{language}\"><voice name=\"{voice}\"><prosody pitch=\"+700%\" rate=\"{rate}\">{text}</prosody></voice></speak>";
+            return $"<speak version=\"1.0\" xmlns=\"https://www.w3.org/2001/10/synthesis\" xml:lang=\"en-US\"><voice name=\"en-US-JennyMultilingualV2Neural\"><prosody pitch=\"+300%\" rate=\"+20%\">{text}</prosody></voice></speak>";
         }
 
         ///
