@@ -58,7 +58,6 @@
     <ItemGroup>
       <PackageReference Include="Blazorise.Bootstrap" Version="1.2.2" />
       <PackageReference Include="Blazor.Bootstrap" Version="1.5.0" />
-      <PackageReference Include="TwitchLib" Version="3.5.3" />
     </ItemGroup>
 
     <ItemGroup>
