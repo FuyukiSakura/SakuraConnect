@@ -5,7 +5,6 @@ using Sakura.Live.Speech.Core.Services;
 using System.Text;
 using OpenAI.ObjectModels.RequestModels;
 using OpenAI.ObjectModels.ResponseModels;
-using Sakura.Live.Connect.Dreamer.Models.OpenAi;
 using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Helpers;
 
@@ -52,9 +51,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
             {
                 Messages = new List<ChatMessage>
                 {
-                    ChatMessage.FromSystem(
-                        _characterService.GetPersonalityPrompt()
-                    )
+                    ChatMessage.FromSystem(_characterService.GetPersonalityPrompt())
                 },
                 Model = OpenAI.ObjectModels.Models.Gpt_3_5_Turbo_16k_0613,
                 Temperature = 1,
@@ -77,7 +74,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
                 var speechId = Guid.NewGuid();
                 _speechQueueService.Queue(speechId, forRole);
                 var response = await QueueAndCombineResponseAsync(responses, speechId);
-                    _chatHistoryService.AddChat(ChatMessage.FromAssistant(response));
+                _chatHistoryService.AddChat(ChatMessage.FromAssistant($"{_characterService.Name}: {response}"));
                 return response;
             }
             catch (Exception e)

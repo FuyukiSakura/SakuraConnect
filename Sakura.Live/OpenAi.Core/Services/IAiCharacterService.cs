@@ -4,6 +4,11 @@ namespace Sakura.Live.OpenAi.Core.Services
     public interface IAiCharacterService
     {
         /// <summary>
+        /// The AI's name
+        /// </summary>
+        string Name { get; set; }
+
+        /// <summary>
         /// Defines the character of the ai
         /// </summary>
         string Character { get; set; }

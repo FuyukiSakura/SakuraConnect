@@ -15,6 +15,13 @@
         <ModalBody>
             <Fields>
                 <Field>
+                    <FieldLabel>Name</FieldLabel>
+                    <TextEdit @bind-Text="@CharacterService.Name"
+                              Placeholder="Sakura">
+                        <FieldHelp>What is her name?</FieldHelp>
+                    </TextEdit>
+                </Field>
+                <Field>
                     <FieldLabel>Personality</FieldLabel>
                     <TextEdit @bind-Text="@CharacterService.Character"
                               Placeholder="You're a vtuber.'">

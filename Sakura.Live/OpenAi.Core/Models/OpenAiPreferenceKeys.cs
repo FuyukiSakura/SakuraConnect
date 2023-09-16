@@ -6,6 +6,11 @@ namespace Sakura.Live.OpenAi.Core.Models
         /// <summary>
         /// Gets the system preference key for OpenAI greeting prompt
         /// </summary>
+        public const string AiName = "SCONNECT_OPENAI_AI_NAME";
+
+        /// <summary>
+        /// Gets the system preference key for OpenAI greeting prompt
+        /// </summary>
         public const string GreetingPrompt = "SCONNECT_OPENAI_GREETING_PROMPT";
 
         /// <summary>
