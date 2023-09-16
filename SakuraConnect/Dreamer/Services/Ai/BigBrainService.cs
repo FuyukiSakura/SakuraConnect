@@ -77,11 +77,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
                 var speechId = Guid.NewGuid();
                 _speechQueueService.Queue(speechId, forRole);
                 var response = await QueueAndCombineResponseAsync(responses, speechId);
-                if (!response.Contains(SpecialResponses.OutOfContext))
-                {
-                    // Do not add to history if the response is out of context
                     _chatHistoryService.AddChat(ChatMessage.FromAssistant(response));
-                }
                 return response;
             }
             catch (Exception e)
