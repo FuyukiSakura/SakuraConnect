@@ -18,7 +18,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
     {
         bool _isRunning;
         ChatMessage? _lastRespondedMessage;
-        DateTime _lastSpoke = DateTime.MinValue;
+        DateTime _entryReceived = DateTime.MinValue;
 
         // Dependencies
         readonly IThePandaMonitor _monitor;
@@ -84,10 +84,10 @@ namespace Sakura.Live.Connect.Dreamer.Services
             while (_isRunning)
             {
                 await WaitUserInput();
+                _entryReceived = DateTime.Now;
                 _lastRespondedMessage = _chatHistoryService.GetLastUserMessage();
                 await ChatLogger.LogAsync("Started responding to: " + _lastRespondedMessage?.Content);
                 _ = Task.Run(() => GenerateResponseAsync(SpeechQueueRole.User, "Responded")); // Fire and forget
-                _lastSpoke = DateTime.Now;
             }
 
             await StopAsync();
@@ -101,13 +101,13 @@ namespace Sakura.Live.Connect.Dreamer.Services
         {
             while (_isRunning)
             {
-                if (DateTime.Now - _lastSpoke < TimeSpan.FromMinutes(1))
+                if (DateTime.Now - _entryReceived < TimeSpan.FromSeconds(20))
                 {
-                    await Task.Delay(30_000);
+                    await Task.Delay(10_000);
                     continue;
                 }
 
-                _lastSpoke = DateTime.Now;
+                _entryReceived = DateTime.Now;
                 _ = Task.Run(() => GenerateResponseAsync(SpeechQueueRole.Self, "Soliloquize")); // Fire and forget
             }
         }
@@ -170,7 +170,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
         public override async Task StartAsync()
         {
             await base.StartAsync();
-            _lastSpoke = DateTime.Now;
+            _entryReceived = DateTime.Now;
             _ = ResponseAsync();
             _ = SoliloquizeAsync();
         }
