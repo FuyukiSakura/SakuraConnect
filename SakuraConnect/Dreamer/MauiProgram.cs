@@ -60,7 +60,7 @@ namespace Sakura.Live.Connect.Dreamer
         {
             builder.Services.AddSingleton<BigBrainService>();
             builder.Services.AddScoped<ISettingsService, SettingsService>();
-            builder.Services.AddScoped<IAiCharacterService, AiCharacterService>();
+            builder.Services.AddSingleton<IAiCharacterService, AiCharacterService>();
             builder.Services.AddScoped<AzureConversationService>();
             builder.Services.AddScoped<TwitchChatResponseService>();
         }
