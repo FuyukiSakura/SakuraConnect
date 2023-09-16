@@ -96,7 +96,7 @@ namespace Sakura.Live.Speech.Core.Services
         /// <returns></returns>
         public static string CreateSsml(string text, string language)
         {
-            return $"<speak version=\"1.0\" xmlns=\"https://www.w3.org/2001/10/synthesis\" xml:lang=\"en-US\"><voice name=\"en-US-JennyMultilingualV2Neural\"><prosody pitch=\"+300%\" rate=\"+20%\">{text}</prosody></voice></speak>";
+            return $"<speak version=\"1.0\" xmlns=\"https://www.w3.org/2001/10/synthesis\" xml:lang=\"en-US\"><voice name=\"en-US-JennyMultilingualV2Neural\"><prosody pitch=\"+150%\">{text}</prosody></voice></speak>";
         }
 
         ///
