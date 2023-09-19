@@ -163,8 +163,8 @@ namespace Sakura.Live.Speech.Core.Services
                 if (speakText.StartsWith("大豆醬")
                     || speakText.StartsWith("大豆酱")) // Simplified chinese
                 {
-                    speakText = speakText.Remove(0,3);
-                    speakIndex += 3;
+                    speakText = speakText.Remove(0,5);
+                    speakIndex += 5;
                 }
                 var translated = speakText.Split("Translation:");
                 if (translated.Length > 1)
