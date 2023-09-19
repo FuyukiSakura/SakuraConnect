@@ -21,6 +21,12 @@ namespace Sakura.Live.OpenAi.Core.Services
         /// <param name="message"></param>
         public void AddChat(ChatMessage message)
         {
+            if (_chatHistory.Any() 
+                && _chatHistory.Last().Content == message.Content)
+            {
+                return; // Ignore duplicate messages
+            }
+
             if (_chatHistory.Count > MaxHistoryLength)
             {
                 _chatHistory.RemoveAt(0); // Remove first element if length exceeds max
