@@ -7,6 +7,7 @@ using TwitchLib.Client;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Exceptions;
 using TwitchLib.Client.Models;
+using TwitchLib.Communication.Clients;
 
 namespace Sakura.Live.Twitch.Core.Services
 {
@@ -127,7 +128,8 @@ namespace Sakura.Live.Twitch.Core.Services
         async Task Start(string username, string accessToken, string channel)
         {
             var credentials = new ConnectionCredentials(username, accessToken);
-            _client = new TwitchClient();
+            var customClient = new WebSocketClient();
+            _client = new TwitchClient(customClient);
             _client.OnMessageReceived += TwitchMessageReceived;
             _client.Initialize(credentials, channel);
             await _client.ConnectAsync();

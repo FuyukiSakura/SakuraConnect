@@ -72,4 +72,8 @@
       <ProjectReference Include="..\Web.Ui\SakuraConnect.Web.Ui.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Models\OpenAi\" />
+    </ItemGroup>
+
 </Project>

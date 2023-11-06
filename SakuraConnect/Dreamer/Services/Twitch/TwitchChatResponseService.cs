@@ -87,6 +87,13 @@ namespace Sakura.Live.Connect.Dreamer.Services.Twitch
         {
             while (_isRunning)
             {
+                if (_speechService.IsSpeaking)
+                {
+                    // Don't queue if the bot is speaking
+                    await Task.Delay(10_000);
+                    continue;
+                }
+
                 if (DateTime.Now - _entryReceived < TimeSpan.FromSeconds(20))
                 {
                     await Task.Delay(10_000);
