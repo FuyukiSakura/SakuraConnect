@@ -7,6 +7,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSignalR();
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+// Add services to the container.
+
+var myAllowSpecificOrigins = "_myAllowSpecificOrigins";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: myAllowSpecificOrigins,
+        policy  =>
+        {
+            policy.WithOrigins("https://connect.sakura.live/");
+        });
+});
 
 var app = builder.Build();
 
