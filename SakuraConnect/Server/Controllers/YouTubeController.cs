@@ -8,7 +8,7 @@ namespace SakuraConnect.Server.Controllers
     /// Helps with YouTube API
     /// </summary>
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class YouTubeController : ControllerBase
     {
         readonly ILogger<YouTubeController> _logger;

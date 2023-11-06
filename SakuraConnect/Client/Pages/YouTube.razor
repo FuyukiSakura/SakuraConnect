@@ -1,0 +1,56 @@
+﻿@page "/youtube"
+@page "/youtube/livestream/{channelId}"
+@page "/youtube/livestream/{channelId}/popout"
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<PageTitle>YouTube</PageTitle>
+
+<h1>YouTube</h1>
+
+@if(_liveNotFound)
+{
+    <div class="alert alert-danger" role="alert">
+        The channel is not streaming
+    </div>
+}
+
+<p>Gets latest live video automatically</p>
+
+@code {
+    /// <summary>
+    /// The channel id to redirect to
+    /// </summary>
+    [Parameter]
+    public string ChannelId { get; set; } = "";
+
+    bool _liveNotFound;
+
+    /// <summary>
+    /// Redirects to the corresponding page
+    /// </summary>
+    /// <returns></returns>
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrWhiteSpace(ChannelId))
+        {
+            // No redirection requested
+            return;
+        }
+
+        var videoId = await Http.GetStringAsync($"api/YouTube/LiveStream/?channelId={ChannelId}");
+        if (videoId == "NOT_FOUND")
+        {
+            // The channel is not streaming
+            _liveNotFound = true;
+            return;
+        }
+        
+        var url = "https://www.youtube.com/watch?v=";
+        if (NavigationManager.Uri.EndsWith("popout"))
+        {
+            url = "https://www.youtube.com/live_chat?is_popout=1&v=";
+        }
+        NavigationManager.NavigateTo($"{url}{videoId}");
+    }
+}
