@@ -73,7 +73,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Twitch
                 _entryReceived = DateTime.Now;
                 _lastRespondedMessage = _chatHistoryService.GetLastUserMessage();
                 await ChatLogger.LogAsync("Started responding to: " + _lastRespondedMessage?.Content);
-                _ = Task.Run(() => GenerateResponseAsync(SpeechQueueRole.User, "Responded")); // Fire and forget
+                await GenerateResponseAsync(SpeechQueueRole.User, "Responded");
             }
 
             await StopAsync();
@@ -101,7 +101,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Twitch
                 }
 
                 _entryReceived = DateTime.Now;
-                _ = Task.Run(() => GenerateResponseAsync(SpeechQueueRole.Self, "Soliloquize")); // Fire and forget
+                await GenerateResponseAsync(SpeechQueueRole.Self, "Soliloquize");
             }
         }
 
@@ -164,8 +164,8 @@ namespace Sakura.Live.Connect.Dreamer.Services.Twitch
         {
             await base.StartAsync();
             _entryReceived = DateTime.Now;
-            _ = ResponseAsync();
-            _ = SoliloquizeAsync();
+            _ = Task.Run(ResponseAsync);
+            _ = Task.Run(SoliloquizeAsync);
         }
 
         /// <summary>
