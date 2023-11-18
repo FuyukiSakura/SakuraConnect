@@ -53,10 +53,9 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
                 {
                     ChatMessage.FromSystem(_characterService.GetPersonalityPrompt())
                 },
-                Model = OpenAI.ObjectModels.Models.Gpt_3_5_Turbo_0613,
+                Model = OpenAI.ObjectModels.Models.Gpt_4_1106_preview,
                 Temperature = 1,
-                MaxTokens = 512,
-                FrequencyPenalty = 1f,
+                MaxTokens = 512
             };
             var chatlog = _chatHistoryService.GenerateChatLog();
             request.Messages.Add(ChatMessage.FromUser(chatlog));
@@ -75,11 +74,6 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
                 var speechId = Guid.NewGuid();
                 _speechQueueService.Queue(speechId, forRole);
                 var response = await QueueAndCombineResponseAsync(responses, speechId);
-                if (response.StartsWith("大豆醬")
-                    || response.StartsWith("大豆酱")) // Simplified chinese
-                {
-                    response = response.Remove(0,5);
-                }
                 _chatHistoryService.AddChat(ChatMessage.FromAssistant($"{_characterService.Name}: {response}"));
                 return response;
             }
