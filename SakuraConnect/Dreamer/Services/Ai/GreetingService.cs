@@ -1,10 +1,11 @@
 ﻿using OpenAI.ObjectModels.RequestModels;
+using Sakura.Live.OpenAi.Core.Services;
 using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Helpers;
 using Sakura.Live.Twitch.Core.Services;
 using TwitchLib.Client.Events;
 
-namespace Sakura.Live.OpenAi.Core.Services
+namespace Sakura.Live.Connect.Dreamer.Services.Ai
 {
     /// <summary>
     /// Greets the user with a message

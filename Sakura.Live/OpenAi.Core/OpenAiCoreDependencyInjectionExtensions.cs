@@ -13,7 +13,6 @@ namespace Sakura.Live.OpenAi.Core
         public static IServiceCollection AddOpenAiCore(this IServiceCollection services)
         {
             services.AddSingleton<OpenAiService>();
-            services.AddSingleton<GreetingService>();
             services.AddSingleton<ChatHistoryService>();
             return services;
         }

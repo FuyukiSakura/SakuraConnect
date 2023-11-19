@@ -29,7 +29,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sakura.Live.Twitch.Core", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sakura.Live.Speech.Core", "Sakura.Live\Speech.Core\Sakura.Live.Speech.Core.csproj", "{57C66238-B686-4B5A-BE52-D7A60833CA39}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SakuraConnect.Streamer", "SakuraConnect\Streamer\SakuraConnect.Streamer.csproj", "{E1B2A7C2-C45D-41A5-921A-00BCB503E413}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SakuraConnect.Streamer", "SakuraConnect\Streamer\SakuraConnect.Streamer.csproj", "{E1B2A7C2-C45D-41A5-921A-00BCB503E413}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

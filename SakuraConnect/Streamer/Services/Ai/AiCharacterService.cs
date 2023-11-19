@@ -1,8 +1,7 @@
 ﻿
-using Sakura.Live.OpenAi.Core.Models;
 using Sakura.Live.ThePanda.Core.Interfaces;
 
-namespace Sakura.Live.Connect.Dreamer.Services.Ai
+namespace SakuraConnect.Streamer.Services.Ai
 {
     /// <summary>
     /// Defines the character of the ai
@@ -64,9 +63,6 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         ///
         public void SaveSettings()
         {
-            _settingsService.Set(OpenAiPreferenceKeys.AiName, Name);
-            _settingsService.Set(OpenAiPreferenceKeys.CharacterPrompt, Character);
-            _settingsService.Set(OpenAiPreferenceKeys.GreetingPrompt, GreetingStyle);
         }
 
         ///
@@ -74,9 +70,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         ///
         public void LoadSettings()
         {
-            Name = _settingsService.Get(OpenAiPreferenceKeys.AiName, "");
-            Character = _settingsService.Get(OpenAiPreferenceKeys.CharacterPrompt, "You are a vtuber");
-            GreetingStyle = _settingsService.Get(OpenAiPreferenceKeys.GreetingPrompt, "Act cute");
+         
         }
     }
 }

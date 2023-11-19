@@ -2,6 +2,12 @@
 using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
 using Microsoft.Extensions.Logging;
+using Sakura.Live.OpenAi.Core;
+using Sakura.Live.ThePanda.Core;
+using Sakura.Live.ThePanda.Core.Interfaces;
+using Sakura.Live.Twitch.Core;
+using SakuraConnect.Streamer.Services;
+using SakuraConnect.Streamer.Services.Ai;
 
 namespace SakuraConnect.Streamer
 {
@@ -30,8 +36,15 @@ namespace SakuraConnect.Streamer
     		builder.Services.AddBlazorWebViewDeveloperTools();
     		builder.Logging.AddDebug();
 #endif
-
-            return builder.Build();
+            builder.Services.AddThePanda()
+                .AddTwitchCore()
+                .AddOpenAiCore();
+            builder.Services.AddTransient<ISettingsService, SettingsService>();
+            builder.Services.AddSingleton<IAiCharacterService, AiCharacterService>();
+            var app = builder.Build();
+            var monitor = app.Services.GetService<IThePandaMonitor>();
+            monitor!.StartAsync();
+            return app;
         }
     }
 }

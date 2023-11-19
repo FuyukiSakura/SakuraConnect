@@ -71,6 +71,13 @@
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\..\Sakura.Live\OpenAi.Core\Sakura.Live.OpenAi.Core.csproj" />
+      <ProjectReference Include="..\..\Sakura.Live\ThePanda.Core\Sakura.Live.ThePanda.Core.csproj" />
+      <ProjectReference Include="..\..\Sakura.Live\Twitch.Core\Sakura.Live.Twitch.Core.csproj" />
+      <ProjectReference Include="..\..\Sakura.Live\Web.Ui\Sakura.Live.Web.Ui.csproj" />
+    </ItemGroup>
+
 	<Target Name="CheckForNpm" BeforeTargets="NpmInstall">
 		<Exec Command="npm -v" ContinueOnError="true">
 			<Output TaskParameter="ExitCode" PropertyName="ErrorCode" />

@@ -1,5 +1,5 @@
 ﻿
-namespace Sakura.Live.OpenAi.Core.Services
+namespace Sakura.Live.Connect.Dreamer.Services.Ai
 {
     public interface IAiCharacterService
     {
