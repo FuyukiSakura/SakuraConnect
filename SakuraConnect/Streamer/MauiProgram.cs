@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Blazorise;
+using Blazorise.Bootstrap;
+using Blazorise.Icons.FontAwesome;
+using Microsoft.Extensions.Logging;
 
 namespace SakuraConnect.Streamer
 {
@@ -15,6 +18,13 @@ namespace SakuraConnect.Streamer
                 });
 
             builder.Services.AddMauiBlazorWebView();
+            builder.Services
+                .AddBlazorise( options =>
+                {
+                    options.Immediate = true;
+                } )
+                .AddBootstrapProviders()
+                .AddFontAwesomeIcons();
 
 #if DEBUG
     		builder.Services.AddBlazorWebViewDeveloperTools();
