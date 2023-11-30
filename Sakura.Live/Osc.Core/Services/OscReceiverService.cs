@@ -1,7 +1,9 @@
 ﻿using System.Net.Sockets;
 using Sakura.Live.Osc.Core.Events;
+using Sakura.Live.Osc.Core.Models;
 using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Helpers;
+using Sakura.Live.ThePanda.Core.Interfaces;
 
 namespace Sakura.Live.Osc.Core.Services
 {
@@ -10,11 +12,23 @@ namespace Sakura.Live.Osc.Core.Services
     /// </summary>
     public class OscReceiverService : BasicAutoStartable
     {
+        // Dependencies
+        readonly ISettingsService _settingsSvc;
+
         /// <summary>
         /// Sets the port number the service will listen to
         /// </summary>
         // TODO: Restarts service if port changed
 	    public int Port { get; set; } = 39550;
+
+        /// <summary>
+        /// Creates a new instance of <see cref="OscReceiverService" />
+        /// </summary>
+        public OscReceiverService(ISettingsService settingsSvc)
+        {
+            _settingsSvc = settingsSvc;
+            LoadSettings();
+        }
 
         CancellationTokenSource? _stopListeningToken;
 
@@ -72,6 +86,7 @@ namespace Sakura.Live.Osc.Core.Services
         ///
         public override async Task StartAsync()
         {
+            SaveSettings();
             _ = StartAsync(Port);
             await base.StartAsync();
         }
@@ -83,6 +98,22 @@ namespace Sakura.Live.Osc.Core.Services
         {
             _stopListeningToken?.Cancel();
             await base.StopAsync();
+        }
+
+        /// <summary>
+        /// Saves settings to the system
+        /// </summary>
+        void SaveSettings()
+        {
+            _settingsSvc.Set(VmcPreferenceKeys.Port, Port.ToString());
+        }
+
+        /// <summary>
+        /// Loads settings from the system
+        /// </summary>
+        void LoadSettings()
+        {
+            Port = int.Parse(_settingsSvc.Get(VmcPreferenceKeys.Port, "39550"));
         }
     }
 }

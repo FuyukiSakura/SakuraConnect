@@ -48,7 +48,6 @@ namespace Sakura.Live.Osc.Core.Services
         /// </summary>
         void SaveSettings()
         {
-            _settingsSvc.Set(VmcPreferenceKeys.Port, _receiverService.Port.ToString());
             var jsonSettingString = JsonSerializer.Serialize(Senders);
             _settingsSvc.Set(VmcPreferenceKeys.Duplicators, jsonSettingString);
         }
@@ -58,7 +57,6 @@ namespace Sakura.Live.Osc.Core.Services
         /// </summary>
         void LoadSettings()
         {
-            _receiverService.Port = int.Parse(_settingsSvc.Get(VmcPreferenceKeys.Port, "39550"));
             var jsonSettingString = _settingsSvc.Get(VmcPreferenceKeys.Duplicators,
                 OscSender.Default);
             var settings = JsonSerializer
@@ -78,7 +76,7 @@ namespace Sakura.Live.Osc.Core.Services
         {
             SaveSettings();
             _receiverService.OscReceived += ReceiverService_OnOscReceived;
-            _monitorSvc.Register(this, _receiverService);
+            _monitorSvc.Register<OscReceiverService>(this);
             await Task.CompletedTask;
         }
 

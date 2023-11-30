@@ -214,8 +214,8 @@ namespace Sakura.Live.Speech.Core.Services
             await base.StartAsync();
             _ = MonitorAsync(CancellationTokenSource.Token);
             _ = CleanupAsync(CancellationTokenSource.Token);
-            _monitor.Register(this, _textAnalyticsService);
-            _monitor.Register(this, _azureTtsSvc);
+            _monitor.Register<AzureTextAnalyticsService>(this);
+            _monitor.Register<AzureTextToSpeechService>(this);
         }
 
         /// <summary>

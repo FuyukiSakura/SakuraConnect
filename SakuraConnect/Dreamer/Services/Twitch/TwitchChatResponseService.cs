@@ -7,7 +7,6 @@ using Sakura.Live.Speech.Core.Services;
 using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Helpers;
 using Sakura.Live.Twitch.Core.Services;
-using TwitchLib.Client.Events;
 
 namespace Sakura.Live.Connect.Dreamer.Services.Twitch
 {
@@ -174,11 +173,11 @@ namespace Sakura.Live.Connect.Dreamer.Services.Twitch
         public void Start()
         {
             _isRunning = true;
-            _monitor.Register(this, _twitchChatService);
-            _monitor.Register(this, _twitchChatMonitorService);
-            _monitor.Register(this, _openAiService);
-            _monitor.Register(this, _speechService);
-            _monitor.Register(this, this);
+            _monitor.Register<TwitchChatService>(this);
+            _monitor.Register<TwitchChatMonitorService>(this);
+            _monitor.Register<OpenAiService>(this);
+            _monitor.Register<SpeechQueueService>(this);
+            _monitor.Register<TwitchChatResponseService>(this);
         }
 
         /// <summary>

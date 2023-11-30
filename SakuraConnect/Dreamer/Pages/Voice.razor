@@ -160,7 +160,7 @@
         {
             TranslationSvc.SaveSettings();
             Preferences.Set(ObsSourceDefaultKey, ObsSource);
-            MonitorSvc.Register(this, Obs);
+            MonitorSvc.Register<ObsSocketService>(this);
             await StartRecognitionAsync();
             _isServiceRunning = true;
         }

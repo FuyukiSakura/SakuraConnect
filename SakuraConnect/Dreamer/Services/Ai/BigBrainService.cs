@@ -122,8 +122,8 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         ///
         public override Task StartAsync()
         {
-            _monitor.Register(this, _openAiService);
-            _monitor.Register(this, _speechQueueService);
+            _monitor.Register<OpenAiService>(this);
+            _monitor.Register<SpeechQueueService>(this);
             return base.StartAsync();
         }
 

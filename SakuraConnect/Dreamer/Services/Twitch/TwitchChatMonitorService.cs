@@ -54,7 +54,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Twitch
         public override Task StartAsync()
         {
             _twitchChatService.OnMessageReceived += OnMessageReceived;
-            _monitor.Register(this, _twitchChatService);
+            _monitor.Register<TwitchChatService>(this);
             return base.StartAsync();
         }
 

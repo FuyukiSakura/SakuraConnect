@@ -7,6 +7,9 @@ namespace Sakura.Live.ThePanda.Core
     /// </summary>
     internal class ThePandaMonitor : IThePandaMonitor
     {
+        // Dependencies
+        readonly IServiceProvider _serviceProvider;
+
         /// <summary>
         /// Sets how many seconds before a service is considered dead without response
         /// </summary>
@@ -20,6 +23,14 @@ namespace Sakura.Live.ThePanda.Core
         readonly SemaphoreSlim _serviceLock = new (1,1);
         readonly Dictionary<IAutoStartable, HashSet<object>> _services = new ();
 
+        /// <summary>
+        /// Creates a new instance of <see cref="ThePandaMonitor"/>
+        /// </summary>
+        public ThePandaMonitor(IServiceProvider serviceProvider)
+        {
+            _serviceProvider = serviceProvider;
+        }
+
         ///
         /// <inheritdoc />
         ///
@@ -28,8 +39,14 @@ namespace Sakura.Live.ThePanda.Core
         ///
         /// <inheritdoc />
         ///
-        public void Register(object sender, IAutoStartable service)
+        public void Register<T>(object sender) where T:IAutoStartable
         {
+            var service = (IAutoStartable)_serviceProvider.GetService(typeof(T));
+            if (service == null)
+            {
+                throw new NullReferenceException($"Service {typeof(T).Name} is not registered");
+            }
+
             if (service.Status == ServiceStatus.Stopped)
             {
                 // Only starts a service that is not running

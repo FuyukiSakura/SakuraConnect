@@ -8,10 +8,8 @@ using Sakura.Live.Connect.Dreamer.Services.Ai;
 using Sakura.Live.Connect.Dreamer.Services.Twitch;
 using Sakura.Live.Obs.Core;
 using Sakura.Live.OpenAi.Core;
-using Sakura.Live.OpenAi.Core.Services;
 using Sakura.Live.Osc.Core;
 using Sakura.Live.Speech.Core;
-using Sakura.Live.Speech.Core.Services;
 using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Interfaces;
 using Sakura.Live.Twitch.Core;
@@ -60,6 +58,7 @@ namespace Sakura.Live.Connect.Dreamer
         static void AddDreamerCore(MauiAppBuilder builder)
         {
             builder.Services.AddSingleton<BigBrainService>();
+            builder.Services.AddSingleton<GreetingService>();
             builder.Services.AddScoped<ISettingsService, SettingsService>();
             builder.Services.AddSingleton<IAiCharacterService, AiCharacterService>();
             builder.Services.AddScoped<AzureConversationService>();

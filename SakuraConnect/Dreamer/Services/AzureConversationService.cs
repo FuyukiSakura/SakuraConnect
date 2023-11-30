@@ -139,8 +139,8 @@ namespace Sakura.Live.Connect.Dreamer.Services
         {
             _speechService.Recognized += OnSpeechRecognized;
             _speechService.Recognizing += OnSpeechRecognizing;
-            _monitor.Register(this, _bigBrainService);
-            _monitor.Register(this, _speechService);
+            _monitor.Register<BigBrainService>(this);
+            _monitor.Register<AzureSpeechService>(this);
             _isRunning = true;
             _ = TalkAsync();
         }

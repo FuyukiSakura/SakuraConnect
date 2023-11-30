@@ -175,7 +175,7 @@
     /// </summary>
     void MonitorChat_OnClick()
     {
-        Monitor.Register(this, TwitchChatMonitorService);
+        Monitor.Register<TwitchChatMonitorService>(this);
     }
 
     ///
