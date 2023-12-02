@@ -13,6 +13,7 @@ namespace Sakura.Live.Osc.Core.Services
     public class OscReceiverService : BasicAutoStartable
     {
         // Dependencies
+        readonly IPandaMessenger _messenger;
         readonly ISettingsService _settingsSvc;
 
         /// <summary>
@@ -24,18 +25,14 @@ namespace Sakura.Live.Osc.Core.Services
         /// <summary>
         /// Creates a new instance of <see cref="OscReceiverService" />
         /// </summary>
-        public OscReceiverService(ISettingsService settingsSvc)
+        public OscReceiverService(ISettingsService settingsSvc, IPandaMessenger messenger)
         {
             _settingsSvc = settingsSvc;
             LoadSettings();
+            _messenger = messenger;
         }
 
         CancellationTokenSource? _stopListeningToken;
-
-        /// <summary>
-        /// Is triggered when a OSC buffer is received
-        /// </summary>
-        public event EventHandler<OscEventArgs>? OscReceived;
 
         /// <summary>
         /// Starts listening and duplicating OSC requests
@@ -53,7 +50,7 @@ namespace Sakura.Live.Osc.Core.Services
                 while (!_stopListeningToken.IsCancellationRequested)
                 {
                     var result = await listener.ReceiveAsync(_stopListeningToken.Token);
-                    OscReceived?.Invoke(this, new OscEventArgs
+                    _messenger.Send(new OscEventArgs
                     {
                         OscData = result.Buffer,
                         CreatedAt = DateTime.Now

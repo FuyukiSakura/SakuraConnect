@@ -24,22 +24,19 @@ namespace Sakura.Live.Osc.Core.Services
         // Dependencies
         readonly ISettingsService _settingsSvc;
         readonly IThePandaMonitor _monitorSvc;
-        readonly OscReceiverService _receiverService;
+        readonly IPandaMessenger _messenger;
 
         /// <summary>
         /// Creates a new instance of <see cref="OscDuplicateService" />
         /// </summary>
-        /// <param name="settingsSvc"></param>
-        /// <param name="monitorSvc"></param>
-        /// <param name="receiverSvc"></param>
         public OscDuplicateService(
             ISettingsService settingsSvc,
 	        IThePandaMonitor monitorSvc,
-            OscReceiverService receiverSvc)
+            IPandaMessenger messenger)
         {
             _settingsSvc = settingsSvc;
             _monitorSvc = monitorSvc;
-            _receiverService = receiverSvc;
+            _messenger = messenger;
             LoadSettings();
         }
 
@@ -75,7 +72,7 @@ namespace Sakura.Live.Osc.Core.Services
         public async Task StartAsync() 
         {
             SaveSettings();
-            _receiverService.OscReceived += ReceiverService_OnOscReceived;
+            _messenger.Register<OscEventArgs>(this, ReceiverService_OnOscReceived);
             _monitorSvc.Register<OscReceiverService>(this);
             await Task.CompletedTask;
         }
@@ -83,9 +80,8 @@ namespace Sakura.Live.Osc.Core.Services
         /// <summary>
         /// Handles Osc received event
         /// </summary>
-        /// <param name="sender"></param>
         /// <param name="e"></param>
-        void ReceiverService_OnOscReceived(object? sender, OscEventArgs e)
+        void ReceiverService_OnOscReceived(OscEventArgs e)
         {
             foreach (var oscSender in Senders)
             {
@@ -98,7 +94,7 @@ namespace Sakura.Live.Osc.Core.Services
         /// </summary>
         public void Stop()
         {
-            _receiverService.OscReceived -= ReceiverService_OnOscReceived;
+            _messenger.UnregisterAll(this);
             _monitorSvc.Unregister(this);
         }
     }
