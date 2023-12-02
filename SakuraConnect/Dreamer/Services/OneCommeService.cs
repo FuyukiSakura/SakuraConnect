@@ -1,6 +1,6 @@
-﻿using System.Diagnostics;
-using Sakura.Live.Connect.Dreamer.Models.Chat;
+﻿using Sakura.Live.Connect.Dreamer.Models.Chat;
 using Sakura.Live.Connect.Dreamer.Models.OneComme;
+using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Helpers;
 using Sakura.Live.ThePanda.Core.Interfaces;
 
@@ -35,6 +35,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
             _socket.MessageReceived += Socket_OnMessageReceived;
             await _socket.ConnectAsync();
         }
+
         ///
         /// <inheritdoc />
         ///
@@ -43,6 +44,20 @@ namespace Sakura.Live.Connect.Dreamer.Services
             _socket.Closed -= Reconnect_OnClosed;
             _socket.MessageReceived -= Socket_OnMessageReceived;
             return base.StopAsync();
+        }
+
+        ///
+        /// <inheritdoc />
+        ///
+        protected override async Task HeartBeatAsync()
+        {
+            Status = ServiceStatus.Running;
+            while (_socket.IsConnected) // Checks if the client is connected
+            {
+                LastUpdate = DateTime.Now;
+                await Task.Delay(HeartBeat.Default);
+            }
+            Status = ServiceStatus.Error;
         }
 
         /// <summary>
@@ -78,6 +93,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
         /// <param name="e"></param>
         async void Reconnect_OnClosed(object sender, string e)
         {
+            Status = ServiceStatus.Error;
             await _socket.ReconnectAsync();
         }
     }
