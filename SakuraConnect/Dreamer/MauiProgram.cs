@@ -2,6 +2,7 @@
 using BlazorBootstrap;
 using Blazorise;
 using Blazorise.Bootstrap;
+using CommunityToolkit.Maui;
 using Sakura.Live.Cognitive.Translation.Core;
 using Sakura.Live.Connect.Dreamer.Services;
 using Sakura.Live.Connect.Dreamer.Services.Ai;
@@ -23,9 +24,11 @@ namespace Sakura.Live.Connect.Dreamer
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
+                .UseMauiCommunityToolkit()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+                    fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
 
             builder.Services.AddMauiBlazorWebView();
@@ -62,6 +65,7 @@ namespace Sakura.Live.Connect.Dreamer
             builder.Services.AddScoped<ISettingsService, SettingsService>();
             builder.Services.AddSingleton<IAiCharacterService, AiCharacterService>();
             builder.Services.AddSingleton<IPandaMessenger, SimpleMessenger>();
+            builder.Services.AddSingleton<OneCommeService>();
             builder.Services.AddScoped<AzureConversationService>();
             builder.Services.AddSingleton<TwitchChatMonitorService>();
             builder.Services.AddScoped<TwitchChatResponseService>();
