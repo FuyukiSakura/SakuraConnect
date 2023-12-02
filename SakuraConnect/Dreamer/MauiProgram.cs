@@ -61,6 +61,7 @@ namespace Sakura.Live.Connect.Dreamer
             builder.Services.AddSingleton<GreetingService>();
             builder.Services.AddScoped<ISettingsService, SettingsService>();
             builder.Services.AddSingleton<IAiCharacterService, AiCharacterService>();
+            builder.Services.AddSingleton<IPandaMessenger, SimpleMessenger>();
             builder.Services.AddScoped<AzureConversationService>();
             builder.Services.AddSingleton<TwitchChatMonitorService>();
             builder.Services.AddScoped<TwitchChatResponseService>();
