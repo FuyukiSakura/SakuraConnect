@@ -102,6 +102,7 @@ namespace Sakura.Live.Speech.Core.Services
         ///
         public override async Task StartAsync()
         {
+	        _settings.Save();
             var speechConfig = SpeechConfig.FromSubscription(_settings.SubscriptionKey, _settings.Region);
             _speechSynthesizer = new SpeechSynthesizer(speechConfig);
             await base.StartAsync();
