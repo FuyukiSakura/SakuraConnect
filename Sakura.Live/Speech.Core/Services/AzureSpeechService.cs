@@ -16,6 +16,7 @@ namespace Sakura.Live.Speech.Core.Services
         readonly AzureSpeechSettingsService _settings;
 
         SpeechRecognizer? _recognizer;
+        bool _isRecognizing;
         public event EventHandler<SpeechRecognitionEventArgs>? Recognizing;
         public event EventHandler<SpeechRecognitionEventArgs>? Recognized;
 
@@ -45,11 +46,14 @@ namespace Sakura.Live.Speech.Core.Services
         /// <returns></returns>
         public override async Task StartAsync()
         {
+            _isRecognizing = true;
             await base.StartAsync();
             _settings.Save();
             if (_recognizer != null)
             {
                 await StopAsync();
+                _recognizer.Dispose();
+                _recognizer = null;
             }
 
             // Currently the v2 endpoint is required. In a future SDK release you won't need to set it.
@@ -104,6 +108,20 @@ namespace Sakura.Live.Speech.Core.Services
                 await _recognizer.StopContinuousRecognitionAsync();
             }
             await base.StopAsync();
+        }
+
+        ///
+        /// <inheritdoc />
+        ///
+        protected override async Task HeartBeatAsync()
+        {
+            Status = ServiceStatus.Running;
+	        while (_isRecognizing 
+	               && Status == ServiceStatus.Running)
+	        {
+		        LastUpdate = DateTime.Now;
+				await Task.Delay(HeartBeat.Default);
+			}
         }
     }
 }

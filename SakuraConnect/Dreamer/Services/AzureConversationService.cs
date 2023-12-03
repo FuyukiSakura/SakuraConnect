@@ -1,10 +1,13 @@
 ﻿
 using System.Text;
 using Microsoft.CognitiveServices.Speech;
+using Sakura.Live.Connect.Dreamer.Models.Chat;
 using Sakura.Live.Connect.Dreamer.Services.Ai;
+using Sakura.Live.Connect.Dreamer.Services.Twitch;
 using Sakura.Live.Speech.Core.Models;
 using Sakura.Live.Speech.Core.Services;
 using Sakura.Live.ThePanda.Core;
+using Sakura.Live.ThePanda.Core.Interfaces;
 
 namespace Sakura.Live.Connect.Dreamer.Services
 {
@@ -31,7 +34,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
 
         // Dependencies
         readonly IThePandaMonitor _monitor;
-        readonly BigBrainService _bigBrainService;
+        readonly IPandaMessenger _messenger;
         readonly AzureSpeechService _speechService;
         readonly AzureTextToSpeechService _ttsService;
 
@@ -48,12 +51,12 @@ namespace Sakura.Live.Connect.Dreamer.Services
         /// </summary>
         public AzureConversationService(
             IThePandaMonitor monitor,
-            BigBrainService bigBrainService,
+            IPandaMessenger messenger,
             AzureSpeechService speechService,
             AzureTextToSpeechService ttsService)
         {
             _monitor = monitor;
-            _bigBrainService = bigBrainService;
+            _messenger = messenger;
             _speechService = speechService;
             _ttsService = ttsService;
         }
@@ -83,7 +86,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
         /// Process the user input
         /// </summary>
         /// <returns></returns>
-        async Task TalkAsync()
+        async Task ListenAsync()
         {
             while (_isRunning)
             {
@@ -94,26 +97,24 @@ namespace Sakura.Live.Connect.Dreamer.Services
                 }
 
                 _ = ChatLogger.LogAsync("Input: " + _messageQueue);
-                var prompt = _messageQueue.ToString();
+                var speech = _messageQueue.ToString();
                 _messageQueue.Clear();
                 if (_replyLanguage == "zh-HK")
                 {
-                    // prompt += ". Respond in Cantonese";
+                    speech += "(In Cantonese)";
                 }
-                _ = Task.Run(() => GenerateResponseAsync(prompt, SpeechQueueRole.Master));
+                _messenger.Send(new CommentReceivedEventArg
+                {
+                    Comments = new List<CommentData>
+                    {
+	                    new ()
+	                    {
+		                    Comment = speech,
+		                    Username = "冬雪桜"
+	                    }
+                    }
+                });
             }
-        }
-
-        /// <summary>
-        /// Generates a response from the AI
-        /// </summary>
-        /// <param name="prompt"></param>
-        /// <param name="role"></param>
-        /// <returns></returns>
-        async Task GenerateResponseAsync(string prompt, SpeechQueueRole role)
-        {
-            var response = await _bigBrainService.ThinkAsync(role);
-            OnResponse?.Invoke(this, response);
         }
 
         /// <summary>
@@ -139,10 +140,11 @@ namespace Sakura.Live.Connect.Dreamer.Services
         {
             _speechService.Recognized += OnSpeechRecognized;
             _speechService.Recognizing += OnSpeechRecognizing;
+            _monitor.Register<ChatMonitorService>(this);
             _monitor.Register<BigBrainService>(this);
             _monitor.Register<AzureSpeechService>(this);
             _isRunning = true;
-            _ = TalkAsync();
+            _ = ListenAsync();
         }
 
         /// <summary>
