@@ -61,7 +61,8 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
                 {
                     ChatMessage.FromSystem(_characterService.GetPersonalityPrompt() + " "
                         + SystemPrompts.SeparateLanguageForTts + " "
-	                    + SystemPrompts.OutputJson)
+	                    + SystemPrompts.OutputJson + " "
+                        + SystemPrompts.EmotionAndLanguage)
                 },
                 Model = OpenAI.ObjectModels.Models.Gpt_4_1106_preview,
                 Temperature = 1,
