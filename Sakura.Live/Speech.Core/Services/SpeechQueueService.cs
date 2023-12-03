@@ -204,6 +204,7 @@ namespace Sakura.Live.Speech.Core.Services
         {
             await base.StopAsync();
             _monitor.Unregister(this);
+            _messenger.UnregisterAll(this);
             _speechQueue.Clear();
         }
     }
