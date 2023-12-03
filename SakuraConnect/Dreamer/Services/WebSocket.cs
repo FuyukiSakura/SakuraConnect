@@ -108,17 +108,18 @@ namespace Sakura.Live.Connect.Dreamer.Services
         /// <returns>Socket message</returns>
         async Task<string> ReceiveAsync()
         {
-            var ms = new MemoryStream();
-            WebSocketReceiveResult result;
-            do
-            {
-                var messageBuffer = System.Net.WebSockets.WebSocket.CreateClientBuffer(1024, 16);
-                result = await _ws.ReceiveAsync(messageBuffer, CancellationToken.None);
-                ms.Write(messageBuffer.Array!, messageBuffer.Offset, result.Count);
-            }
-            while (!result.EndOfMessage);
-
-            return Encoding.UTF8.GetString(ms.ToArray());
+            var buffer = new byte[1024];
+			var message = new StringBuilder();
+			while (true)
+			{
+				var result = await _ws.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+				message.Append(Encoding.UTF8.GetString(buffer, 0, result.Count));
+				if (result.EndOfMessage)
+				{
+					break;
+				}
+			}
+			return message.ToString();
         }
 
         /// <summary>

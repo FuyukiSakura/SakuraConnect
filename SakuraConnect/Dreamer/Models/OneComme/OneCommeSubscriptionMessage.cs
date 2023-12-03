@@ -1,6 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using System.Text.Json;
 using System.Diagnostics;
+using SakuraConnect.Shared.Models.Messaging;
 
 namespace Sakura.Live.Connect.Dreamer.Models.OneComme
 {
@@ -15,17 +16,6 @@ namespace Sakura.Live.Connect.Dreamer.Models.OneComme
         public const string Comments = "comments";
 
         /// <summary>
-        /// Gets the default SerializerOptions
-        /// </summary>
-        public static readonly JsonSerializerOptions SerializerOptions = new()
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            Converters ={
-                new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
-            },
-        };
-
-        /// <summary>
         /// Serialize json string returned OneComme
         /// returns null when serialize error occurs
         /// </summary>
@@ -35,7 +25,7 @@ namespace Sakura.Live.Connect.Dreamer.Models.OneComme
         {
             try
             {
-                return JsonSerializer.Deserialize<OneCommeEvent>(jsonString, SerializerOptions);
+                return JsonSerializer.Deserialize<OneCommeEvent>(jsonString, Json.DefaultSerializerOptions);
             }
             catch (JsonException ex)
             {

@@ -1,51 +1,48 @@
 ﻿using OpenAI.ObjectModels.RequestModels;
+using Sakura.Live.Connect.Dreamer.Models.Chat;
 using Sakura.Live.OpenAi.Core.Services;
 using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Helpers;
-using Sakura.Live.Twitch.Core.Services;
-using TwitchLib.Client.Events;
+using Sakura.Live.ThePanda.Core.Interfaces;
 
 namespace Sakura.Live.Connect.Dreamer.Services.Twitch
 {
     /// <summary>
     /// Monitors the twitch chat and log the chat history
     /// </summary>
-    public class TwitchChatMonitorService : BasicAutoStartable
+    public class ChatMonitorService : BasicAutoStartable
     {
         // Dependencies
         readonly IThePandaMonitor _monitor;
-        readonly TwitchChatService _twitchChatService;
+        readonly IPandaMessenger _messenger;
         readonly ChatHistoryService _chatHistoryService;
 
         /// <summary>
-        /// Creates a new instance of <see cref="TwitchChatMonitorService" />
+        /// Creates a new instance of <see cref="ChatMonitorService" />
         /// </summary>
-        public TwitchChatMonitorService(
+        public ChatMonitorService(
             IThePandaMonitor monitor,
-            TwitchChatService twitchChatService,
+            IPandaMessenger messenger,
             ChatHistoryService chatHistoryService)
         {
             _monitor = monitor;
-            _twitchChatService = twitchChatService;
+            _messenger = messenger;
             _chatHistoryService = chatHistoryService;
         }
 
         /// <summary>
         /// Adds a chat message to the history when twitch chat message received
         /// </summary>
-        /// <param name="sender"></param>
         /// <param name="e"></param>
-        void OnMessageReceived(object sender, OnMessageReceivedArgs e)
+        void OnMessageReceived(CommentReceivedEventArg e)
         {
-            if (!e.ChatMessage.Message.Contains("following") // Allow moderator for following
-                && (e.ChatMessage.Message.StartsWith("!") // Ignore commands
-                    || e.ChatMessage.IsModerator))
+            foreach (var chat in from data in e.Comments 
+                     where !data.Comment.StartsWith("!") 
+                     select ChatMessage.FromUser($"{data.Username}: {data.Comment}"))
             {
-                return;
+                _ = ChatLogger.LogAsync(chat.Content, "chat");
+                _chatHistoryService.AddChat(chat);
             }
-            var msg = ChatMessage.FromUser($"{e.ChatMessage.DisplayName}: {e.ChatMessage.Message}");
-            _ = ChatLogger.LogAsync(msg.Content, "chat");
-            _chatHistoryService.AddChat(msg);
         }
 
         ///
@@ -53,8 +50,8 @@ namespace Sakura.Live.Connect.Dreamer.Services.Twitch
         ///
         public override Task StartAsync()
         {
-            _twitchChatService.OnMessageReceived += OnMessageReceived;
-            _monitor.Register<TwitchChatService>(this);
+            _messenger.Register<CommentReceivedEventArg>(this, OnMessageReceived);
+            _monitor.Register<OneCommeService>(this);
             return base.StartAsync();
         }
 
@@ -64,7 +61,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Twitch
         public override Task StopAsync()
         {
             _monitor.Unregister(this);
-            _twitchChatService.OnMessageReceived -= OnMessageReceived;
+            _messenger.UnregisterAll(this);
             return base.StopAsync();
         }
     }

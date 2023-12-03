@@ -1,12 +1,15 @@
 ﻿
+using System.Text.Json;
 using Sakura.Live.OpenAi.Core.Services;
 using Sakura.Live.Speech.Core.Models;
 using Sakura.Live.Speech.Core.Services;
-using System.Text;
 using OpenAI.ObjectModels.RequestModels;
-using OpenAI.ObjectModels.ResponseModels;
+using Sakura.Live.Connect.Dreamer.Models.Chat;
 using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Helpers;
+using Sakura.Live.ThePanda.Core.Interfaces;
+using SakuraConnect.Shared.Models.Messaging;
+using SakuraConnect.Shared.Models.Messaging.Ai;
 
 namespace Sakura.Live.Connect.Dreamer.Services.Ai
 {
@@ -16,28 +19,32 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
     /// </summary>
     public class BigBrainService : BasicAutoStartable
     {
+        SemaphoreSlim _thinkLock = new(1, 1);
+        bool _isWaitingForResponse;
+
+        // Dependencies
         readonly IThePandaMonitor _monitor;
+        readonly IPandaMessenger _messenger;
         readonly IAiCharacterService _characterService;
         readonly OpenAiService _openAiService;
         readonly ChatHistoryService _chatHistoryService;
-        readonly SpeechQueueService _speechQueueService;
 
         /// <summary>
         /// Creates a new instance of <see cref="BigBrainService" />
         /// </summary>
         public BigBrainService(
             IThePandaMonitor monitor,
+            IPandaMessenger messenger,
             IAiCharacterService characterService,
             OpenAiService openAiService,
-            ChatHistoryService chatHistoryService,
-            SpeechQueueService speechQueueService
+            ChatHistoryService chatHistoryService
         )
         {
             _monitor = monitor;
+            _messenger = messenger;
             _characterService = characterService;
             _openAiService = openAiService;
             _chatHistoryService = chatHistoryService;
-            _speechQueueService = speechQueueService;
         }
 
         /// <summary>
@@ -51,10 +58,12 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
             {
                 Messages = new List<ChatMessage>
                 {
-                    ChatMessage.FromSystem(_characterService.GetPersonalityPrompt())
+                    ChatMessage.FromSystem(_characterService.GetPersonalityPrompt() + " "
+	                    + SystemPrompts.OutputJson)
                 },
                 Model = OpenAI.ObjectModels.Models.Gpt_4_1106_preview,
                 Temperature = 1,
+                ResponseFormat = new ResponseFormat { Type="json_object" },
                 MaxTokens = 512
             };
             var chatlog = _chatHistoryService.GenerateChatLog();
@@ -70,12 +79,15 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         {
             try
             {
-                var responses = _openAiService.CreateCompletionAsync(request);
-                var speechId = Guid.NewGuid();
-                _speechQueueService.Queue(speechId, forRole);
-                var response = await QueueAndCombineResponseAsync(responses, speechId);
-                _chatHistoryService.AddChat(ChatMessage.FromAssistant($"{_characterService.Name}: {response}"));
-                return response;
+                var response = await _openAiService.CreateCompletionAndResponseAsync(request);
+                var jsonObj = JsonSerializer.Deserialize<OpenAiJsonObject<List<Comment>>>(response, Json.DefaultSerializerOptions);
+                var plainComment = string.Join("\n", jsonObj.Data.Select(x => x.Text));
+                _messenger.Send(new ThinkResultEventArgs
+                {
+                    Comments = jsonObj.Data
+                });
+                _chatHistoryService.AddChat(ChatMessage.FromAssistant(plainComment));
+                return plainComment;
             }
             catch (Exception e)
             {
@@ -84,47 +96,38 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
             }
         }
 
-        /// <summary>
-        /// Combines the response from OpenAI
-        /// and return the first chunk of result ASAP
-        /// </summary>
-        /// <param name="completionResult"></param>
-        /// <param name="speechId">The id of the chat result this response is related to</param>
-        /// <returns></returns>
-        async Task<string> QueueAndCombineResponseAsync(
-            IAsyncEnumerable<ChatCompletionCreateResponse> completionResult,
-            Guid speechId
-        ) {
-            var responseBuilder = new StringBuilder();
-            await foreach (var result in completionResult)
-            {
-                if (!result.Successful)
-                {
-                    // Unsuccessful
-                    continue;
-                }
-
-                var choice = result.Choices.FirstOrDefault();
-                if (choice == null)
-                {
-                    // No choices available
-                    continue;
-                }
-
-                _speechQueueService.Append(speechId, choice.Message.Content);
-                responseBuilder.Append(choice.Message.Content);
-            }
-            return responseBuilder.ToString();
-        }
-
         ///
         /// <inheritdoc />
         ///
         public override Task StartAsync()
         {
-            _monitor.Register<OpenAiService>(this);
+            _messenger.Register<CommentReceivedEventArg>(this, ThinkOnCommentReceived);
             _monitor.Register<SpeechQueueService>(this);
             return base.StartAsync();
+        }
+
+        /// <summary>
+        /// Triggers the think process when a comment is received
+        /// </summary>
+        /// <param name="obj"></param>
+        async void ThinkOnCommentReceived(CommentReceivedEventArg obj)
+        {
+	        if (_isWaitingForResponse)
+	        {
+                // Do not start new threads if the AI is still thinking
+                // and a new comment is already queued
+		        return;
+	        }
+
+	        if (_thinkLock.CurrentCount == 0)
+	        {
+                // Thinking is already in progress
+                _isWaitingForResponse = true;
+	        }
+            await _thinkLock.WaitAsync();
+	        await ThinkAsync(SpeechQueueRole.User);
+            _thinkLock.Release();
+            _isWaitingForResponse = false;
         }
 
         ///

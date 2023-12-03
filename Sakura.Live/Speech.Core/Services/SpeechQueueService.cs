@@ -1,7 +1,9 @@
 ﻿using System.Diagnostics;
+using Sakura.Live.Connect.Dreamer.Services.Ai;
 using Sakura.Live.Speech.Core.Models;
 using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Helpers;
+using Sakura.Live.ThePanda.Core.Interfaces;
 
 namespace Sakura.Live.Speech.Core.Services
 {
@@ -19,6 +21,7 @@ namespace Sakura.Live.Speech.Core.Services
 
         // Dependencies
         readonly IThePandaMonitor _monitor;
+        readonly IPandaMessenger _messenger;
         readonly AzureTextToSpeechService _azureTtsSvc;
         readonly AzureTextAnalyticsService _textAnalyticsService;
 
@@ -27,10 +30,12 @@ namespace Sakura.Live.Speech.Core.Services
         /// </summary>
         public SpeechQueueService(
             IThePandaMonitor monitor,
+            IPandaMessenger messenger,
             AzureTextToSpeechService azureTtsSvc,
             AzureTextAnalyticsService textAnalyticsService
         ) {
             _monitor = monitor;
+	        _messenger = messenger;
             _azureTtsSvc = azureTtsSvc;
             _textAnalyticsService = textAnalyticsService;
         }
@@ -39,12 +44,14 @@ namespace Sakura.Live.Speech.Core.Services
         /// Adds a speech item to the queue
         /// </summary>
         /// <param name="speechId"></param>
+        /// <param name="text"></param>
         /// <param name="role"></param>
-        public void Queue(Guid speechId, SpeechQueueRole role)
+        public void Queue(Guid speechId, string text, SpeechQueueRole role)
         {
             _speechQueue.Add(speechId, new SpeechQueueItem
             {
-                Role = role
+                Role = role,
+                Text = text,
             });
         }
 
@@ -84,9 +91,7 @@ namespace Sakura.Live.Speech.Core.Services
 
                 // Simply wait for more results before speaking
                 speechPair.Value.IsSpeaking = true;
-                await WaitForText(speechPair.Value);
-                
-                SetLanguage(speechPair.Value);
+                // await WaitForText(speechPair.Value);
                 await SpeakAsync(speechPair.Value);
                 _speechQueue.Remove(speechPair.Key);
 
@@ -137,18 +142,6 @@ namespace Sakura.Live.Speech.Core.Services
         }
 
         /// <summary>
-        /// Sets the language of the speech item
-        /// based on the existing text
-        /// </summary>
-        /// <param name="item"></param>
-        void SetLanguage(SpeechQueueItem item)
-        {
-            var langCode = _textAnalyticsService.DetectLanguage(item.Text);
-            var lang = Languages.GetLanguage(langCode);
-            item.Language = lang;
-        } 
-
-        /// <summary>
         /// Speaks out the queued item text
         /// </summary>
         /// <param name="item"></param>
@@ -156,36 +149,12 @@ namespace Sakura.Live.Speech.Core.Services
         async Task SpeakAsync(SpeechQueueItem item)
         {
             IsSpeaking = true;
-            var speakIndex = 0;
-            while (speakIndex < item.Text.Length)
+
+            if (!string.IsNullOrWhiteSpace(item.Text)) // Do not speak empty text
             {
-                var speakText = item.Text[speakIndex..];
-                if (speakText.StartsWith("大豆醬")
-                    || speakText.StartsWith("大豆酱")) // Simplified chinese
-                {
-                    speakText = speakText.Remove(0,5);
-                    speakIndex += 5;
-                }
-                var translated = speakText.Split("Translation:");
-                if (translated.Length > 1)
-                {
-                    speakText = translated[0];
-                    speakIndex += "Translation:".Length;
-                }
-
-                if (!string.IsNullOrWhiteSpace(speakText)) // Do not speak empty text
-                {
-                    Debug.WriteLine("Synthesized: " + speakText);
-                    await _azureTtsSvc.SpeakAsync(speakText, item.Language);
-                }
-
-                if (translated.Length > 1)
-                {
-                    item.Language = Languages.English;
-                }
-                speakIndex += speakText.Length;
+                Debug.WriteLine("Synthesized: " + item.Text);
+                await _azureTtsSvc.SpeakAsync(item.Text);
             }
-            IsSpeaking = false;
         }
 
         /// <summary>
@@ -206,12 +175,22 @@ namespace Sakura.Live.Speech.Core.Services
             }
         }
 
+        /// <summary>
+        /// Queues the result from the brain service
+        /// </summary>
+        /// <param name="obj"></param>
+        void OnResultReceived(ThinkResultEventArgs obj)
+        {
+	        Queue(Guid.NewGuid(), obj.PlainText, SpeechQueueRole.User);
+        }
+
         ///
         /// <inheritdoc />
         ///
         public override async Task StartAsync()
         {
             await base.StartAsync();
+            _messenger.Register<ThinkResultEventArgs>(this, OnResultReceived);
             _ = MonitorAsync(CancellationTokenSource.Token);
             _ = CleanupAsync(CancellationTokenSource.Token);
             _monitor.Register<AzureTextAnalyticsService>(this);

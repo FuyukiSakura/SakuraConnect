@@ -17,6 +17,7 @@ namespace Sakura.Live.Twitch.Core.Services
     public class TwitchChatService : BasicAutoStartable
     {
         readonly ISettingsService _settingsService;
+        readonly IPandaMessenger _messenger;
         TwitchClient? _client;
 
         /// <summary>
@@ -35,16 +36,12 @@ namespace Sakura.Live.Twitch.Core.Services
         public string Channel { get; set; } = "";
 
         /// <summary>
-        /// Is triggered when a message is received
-        /// </summary>
-        public event EventHandler<OnMessageReceivedArgs>? OnMessageReceived;
-
-        /// <summary>
         /// Creates a new instance of <see cref="TwitchChatService" />
         /// </summary>
-        public TwitchChatService(ISettingsService settings)
+        public TwitchChatService(ISettingsService settings, IPandaMessenger messenger)
         {
             _settingsService = settings;
+            _messenger = messenger;
             LoadSettings();
         }
 
@@ -142,7 +139,7 @@ namespace Sakura.Live.Twitch.Core.Services
         /// <param name="e"></param>
         Task TwitchMessageReceived(object? sender, OnMessageReceivedArgs e)
         {
-            OnMessageReceived?.Invoke(sender, e);
+            _messenger.Send(e);
             return Task.CompletedTask;
         }
 

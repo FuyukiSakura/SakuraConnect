@@ -30,10 +30,10 @@ namespace Sakura.Live.Connect.Dreamer.Services
         ///
         public override async Task StartAsync()
         {
-            await base.StartAsync();
             _socket.Closed += Reconnect_OnClosed;
             _socket.MessageReceived += Socket_OnMessageReceived;
             await _socket.ConnectAsync();
+            await base.StartAsync();
         }
 
         ///
@@ -43,6 +43,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
         {
             _socket.Closed -= Reconnect_OnClosed;
             _socket.MessageReceived -= Socket_OnMessageReceived;
+            _socket.Close();
             return base.StopAsync();
         }
 

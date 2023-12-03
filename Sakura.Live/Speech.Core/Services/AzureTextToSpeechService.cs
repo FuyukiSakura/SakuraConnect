@@ -1,5 +1,5 @@
-﻿using Microsoft.CognitiveServices.Speech;
-using Sakura.Live.Speech.Core.Models;
+﻿using System.Diagnostics;
+using Microsoft.CognitiveServices.Speech;
 using Sakura.Live.ThePanda.Core.Helpers;
 
 namespace Sakura.Live.Speech.Core.Services
@@ -26,9 +26,8 @@ namespace Sakura.Live.Speech.Core.Services
         /// Speaks the specified text
         /// </summary>
         /// <param name="text"></param>
-        /// <param name="language">The language to speak in</param>
         /// <returns></returns>
-        public async Task SpeakAsync(string text, string language)
+        public async Task SpeakAsync(string text)
         {
             if (_speechSynthesizer == null)
             {
@@ -37,7 +36,7 @@ namespace Sakura.Live.Speech.Core.Services
             }
 
             // The language of the voice that speaks.
-            var speechSynthesisResult = await _speechSynthesizer.SpeakSsmlAsync(CreateSsml(text, language));
+            var speechSynthesisResult = await _speechSynthesizer.SpeakSsmlAsync(CreateSsml(text));
 #if DEBUG 
             OutputSpeechSynthesisResult(speechSynthesisResult, text);
 #endif
@@ -92,9 +91,8 @@ namespace Sakura.Live.Speech.Core.Services
         /// Creates the SSML script for the specified text
         /// </summary>
         /// <param name="text"></param>
-        /// <param name="language"></param>
         /// <returns></returns>
-        public static string CreateSsml(string text, string language)
+        public static string CreateSsml(string text)
         {
             return $"<speak version=\"1.0\" xmlns=\"https://www.w3.org/2001/10/synthesis\" xml:lang=\"en-US\"><voice name=\"en-US-JennyMultilingualV2Neural\"><prosody pitch=\"+150%\">{text}</prosody></voice></speak>";
         }
@@ -115,6 +113,7 @@ namespace Sakura.Live.Speech.Core.Services
         public override async Task StopAsync()
         {
             await base.StopAsync();
+            await InterruptAsync();
             _speechSynthesizer = null;
         }
     }

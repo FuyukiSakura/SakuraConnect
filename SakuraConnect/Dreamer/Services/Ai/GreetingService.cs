@@ -74,9 +74,8 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         /// <returns></returns>
         public override Task StartAsync()
         {
-            _twitchChat.OnMessageReceived += TwitchChat_OnMessageReceived;
+            // _twitchChat.OnMessageReceived += TwitchChat_OnMessageReceived;
             _monitor.Register<TwitchChatService>(this);
-            _monitor.Register<OpenAiService>(this);
             return base.StartAsync();
         }
 
