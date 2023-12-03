@@ -121,6 +121,7 @@ namespace Sakura.Live.ThePanda.Core
                     if (!((now - autoStartable.LastUpdate).TotalSeconds > TimeoutIn)) continue;
 
                     autoStartable.Status = ServiceStatus.Error;
+                    await autoStartable.StopAsync();
                     _ = autoStartable.StartOnceAsync();
                 }
 
