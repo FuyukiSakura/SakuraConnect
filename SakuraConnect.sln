@@ -29,8 +29,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sakura.Live.Twitch.Core", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sakura.Live.Speech.Core", "Sakura.Live\Speech.Core\Sakura.Live.Speech.Core.csproj", "{57C66238-B686-4B5A-BE52-D7A60833CA39}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SakuraConnect.Streamer", "SakuraConnect\Streamer\SakuraConnect.Streamer.csproj", "{E1B2A7C2-C45D-41A5-921A-00BCB503E413}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -91,12 +89,6 @@ Global
 		{57C66238-B686-4B5A-BE52-D7A60833CA39}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{57C66238-B686-4B5A-BE52-D7A60833CA39}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{57C66238-B686-4B5A-BE52-D7A60833CA39}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E1B2A7C2-C45D-41A5-921A-00BCB503E413}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E1B2A7C2-C45D-41A5-921A-00BCB503E413}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E1B2A7C2-C45D-41A5-921A-00BCB503E413}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{E1B2A7C2-C45D-41A5-921A-00BCB503E413}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E1B2A7C2-C45D-41A5-921A-00BCB503E413}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E1B2A7C2-C45D-41A5-921A-00BCB503E413}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
