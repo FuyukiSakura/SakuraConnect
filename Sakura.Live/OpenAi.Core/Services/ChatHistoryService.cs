@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using OpenAI.ObjectModels;
 using OpenAI.ObjectModels.RequestModels;
 
 namespace Sakura.Live.OpenAi.Core.Services
@@ -39,14 +40,38 @@ namespace Sakura.Live.OpenAi.Core.Services
         /// Generates a chat log as a multi-line string
         /// </summary>
         /// <returns></returns>
-        public string GenerateChatLog()
+        public List<ChatMessage> GenerateChatLog()
         {
             var sb = new StringBuilder();
+            var chatMessages = new List<ChatMessage>();
             foreach (var msg in _chatHistory)
             {
-                sb.AppendLine(msg.Content);
+	            if (msg.Role == StaticValues.ChatMessageRoles.User)
+	            {
+		            sb.AppendLine(msg.Content);
+	            }
+	            else
+	            {
+                    // Treat the assistant message as a separation of old user messages
+                    // So the AI only respond to the latest user messages
+                    chatMessages.Add(ChatMessage.FromUser(sb.ToString()));
+                    chatMessages.Add(msg);
+                    sb.Clear();
+	            }
             }
-            return sb.ToString();
+
+            if (sb.Length > 0)
+            {
+                // Add the last user message if there is any
+	            chatMessages.Add(ChatMessage.FromUser(sb.ToString()));
+            }
+
+            if (chatMessages.Last().Role == StaticValues.ChatMessageRoles.Assistant)
+            {
+                // Don't include the last assistant message as she won't response
+				chatMessages.RemoveAt(chatMessages.Count - 1);
+			}
+            return chatMessages;
         }
 
         /// <summary>

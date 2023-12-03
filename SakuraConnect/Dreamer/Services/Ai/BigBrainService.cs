@@ -1,4 +1,5 @@
 ﻿
+using System.Diagnostics;
 using System.Text.Json;
 using Sakura.Live.OpenAi.Core.Services;
 using Sakura.Live.Speech.Core.Models;
@@ -59,6 +60,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
                 Messages = new List<ChatMessage>
                 {
                     ChatMessage.FromSystem(_characterService.GetPersonalityPrompt() + " "
+                        + SystemPrompts.SeparateLanguageForTts + " "
 	                    + SystemPrompts.OutputJson)
                 },
                 Model = OpenAI.ObjectModels.Models.Gpt_4_1106_preview,
@@ -67,7 +69,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
                 MaxTokens = 512
             };
             var chatlog = _chatHistoryService.GenerateChatLog();
-            request.Messages.Add(ChatMessage.FromUser(chatlog));
+            chatlog.ForEach(request.Messages.Add);
             return await QueueResponse(request, forRole);
         }
 
@@ -112,6 +114,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         /// <param name="obj"></param>
         async void ThinkOnCommentReceived(CommentReceivedEventArg obj)
         {
+            await Task.Delay(100); // Wait for the comment to be processed
 	        if (_isWaitingForResponse)
 	        {
                 // Do not start new threads if the AI is still thinking
