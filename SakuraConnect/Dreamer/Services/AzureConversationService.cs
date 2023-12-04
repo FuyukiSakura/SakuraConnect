@@ -153,7 +153,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
         public void Stop()
         {
             _isRunning = false;
-            _monitor.Unregister(this);
+            _monitor.UnregisterAll(this);
             _speechService.Recognized -= OnSpeechRecognized;
         }
     }

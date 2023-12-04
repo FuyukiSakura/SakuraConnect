@@ -60,7 +60,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Twitch
         ///
         public override Task StopAsync()
         {
-            _monitor.Unregister(this);
+            _monitor.UnregisterAll(this);
             _messenger.UnregisterAll(this);
             return base.StopAsync();
         }

@@ -69,7 +69,20 @@ namespace Sakura.Live.ThePanda.Core
         ///
         /// <inheritdoc />
         ///
-        public void Unregister(object sender)
+        public void Unregister<T>(object sender) where T : IAutoStartable
+        {
+            var service = (IAutoStartable)_serviceProvider.GetService(typeof(T)) 
+                          ?? throw new NullReferenceException($"Service {typeof(T).Name} is not registered");
+            if (!_services.ContainsKey(service)) return;
+
+            _services[service].Remove(sender);
+            StopServicesNoLongerReferenced();
+        }
+
+        ///
+        /// <inheritdoc />
+        ///
+        public void UnregisterAll(object sender)
         {
             var parentServiceSets = _services
                 .Where(pair => pair.Value.Contains(sender))

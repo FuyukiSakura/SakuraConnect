@@ -50,7 +50,6 @@ namespace Sakura.Live.Connect.Dreamer.Services.Twitch
             _monitor.Register<BigBrainService>(this);
             _monitor.Register<ChatMonitorService>(this);
             _monitor.Register<SpeechQueueService>(this);
-            _monitor.Register<ChatResponseService>(this);
         }
 
         /// <summary>
@@ -58,7 +57,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Twitch
         /// </summary>
         public override Task StopAsync()
         {
-	        _monitor.Unregister(this);
+	        _monitor.UnregisterAll(this);
 	        return base.StopAsync();
         }
     }

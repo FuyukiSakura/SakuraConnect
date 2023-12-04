@@ -43,7 +43,6 @@ namespace Sakura.Live.Connect.Dreamer.Services
         {
             _socket.Closed -= Reconnect_OnClosed;
             _socket.MessageReceived -= Socket_OnMessageReceived;
-            _socket.Close();
             return base.StopAsync();
         }
 
@@ -52,7 +51,6 @@ namespace Sakura.Live.Connect.Dreamer.Services
         ///
         protected override async Task HeartBeatAsync()
         {
-            Status = ServiceStatus.Running;
             while (_socket.IsConnected) // Checks if the client is connected
             {
                 LastUpdate = DateTime.Now;

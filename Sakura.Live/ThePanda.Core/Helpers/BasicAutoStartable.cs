@@ -1,4 +1,5 @@
-﻿using Sakura.Live.ThePanda.Core.Interfaces;
+﻿using System.Diagnostics;
+using Sakura.Live.ThePanda.Core.Interfaces;
 
 namespace Sakura.Live.ThePanda.Core.Helpers
 {
@@ -37,7 +38,6 @@ namespace Sakura.Live.ThePanda.Core.Helpers
         /// <returns></returns>
         protected virtual async Task HeartBeatAsync()
         {
-            Status = ServiceStatus.Running;
             while (Status == ServiceStatus.Running) // Checks if the client is connected
             {
                 LastUpdate = DateTime.Now;
@@ -70,10 +70,22 @@ namespace Sakura.Live.ThePanda.Core.Helpers
                 return;
             }
 
-            Status = ServiceStatus.Running;
-            Started?.Invoke(this, EventArgs.Empty);
-            _statusLock.Release();
-			await StartAsync();
+            try
+            {
+                Status = ServiceStatus.Running;
+				LastUpdate = DateTime.Now;
+                await StartAsync();
+                Started?.Invoke(this, EventArgs.Empty);
+            }
+            catch (Exception e)
+            {
+				Debug.WriteLine(e.Message);
+                Status = ServiceStatus.Error;
+            }
+            finally
+            {
+                _statusLock.Release();
+            }
         }
 
 		///

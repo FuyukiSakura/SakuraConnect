@@ -161,15 +161,15 @@
     /// <summary>
     /// Starts monitoring for chat messages and responding to them
     /// </summary>
-    async void StartChatService_OnClick()
+    void StartChatService_OnClick()
     {
         if (ChatResponseService.Status == ServiceStatus.Running)
         {
-            await ChatResponseService.StopAsync();
+            Monitor.Unregister<ChatResponseService>(this);
         }
         else
         {
-            await ChatResponseService.StartAsync();
+            Monitor.Register<ChatResponseService>(this);
         }
     }
 
@@ -178,7 +178,14 @@
     /// </summary>
     void MonitorChat_OnClick()
     {
-        Monitor.Register<ChatMonitorService>(this);
+        if (ChatMonitorService.Status == ServiceStatus.Running)
+        {
+            Monitor.Unregister<ChatMonitorService>(this);
+        }
+        else
+        {
+            Monitor.Register<ChatMonitorService>(this);
+        }
     }
 
     ///

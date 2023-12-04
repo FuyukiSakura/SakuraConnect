@@ -95,7 +95,7 @@ namespace Sakura.Live.Osc.Core.Services
         public void Stop()
         {
             _messenger.UnregisterAll(this);
-            _monitorSvc.Unregister(this);
+            _monitorSvc.UnregisterAll(this);
         }
     }
 }

@@ -203,7 +203,7 @@ namespace Sakura.Live.Speech.Core.Services
         public override async Task StopAsync()
         {
             await base.StopAsync();
-            _monitor.Unregister(this);
+            _monitor.UnregisterAll(this);
             _messenger.UnregisterAll(this);
             _speechQueue.Clear();
         }

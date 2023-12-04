@@ -152,7 +152,7 @@
     {
         if (_isServiceRunning)
         {
-            MonitorSvc.Unregister(this);
+            MonitorSvc.UnregisterAll(this);
             await StopRecognitionAsync();
             _isServiceRunning = false;
         }
