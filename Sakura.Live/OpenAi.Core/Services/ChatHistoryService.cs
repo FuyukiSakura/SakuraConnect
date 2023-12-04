@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using OpenAI.ObjectModels;
 using OpenAI.ObjectModels.RequestModels;
+using SakuraConnect.Shared.Models.Messaging.Ai;
 
 namespace Sakura.Live.OpenAi.Core.Services
 {
@@ -14,7 +15,7 @@ namespace Sakura.Live.OpenAi.Core.Services
         /// <summary>
         /// The maximum length of the chat history
         /// </summary>
-        public int MaxHistoryLength { get; set; } = 10;
+        public int MaxHistoryLength { get; set; } = 50;
 
         /// <summary>
         /// Adds a chat message to the history
@@ -22,7 +23,7 @@ namespace Sakura.Live.OpenAi.Core.Services
         /// <param name="message"></param>
         public void AddChat(ChatMessage message)
         {
-            if (_chatHistory.Any() 
+            if (_chatHistory.Any()
                 && _chatHistory.Last().Content == message.Content)
             {
                 return; // Ignore duplicate messages
@@ -82,7 +83,8 @@ namespace Sakura.Live.OpenAi.Core.Services
         public string GenerateChatLog()
         {
             var sb = new StringBuilder();
-            foreach (var msg in _chatHistory)
+            foreach (var msg in _chatHistory
+                         .Where(msg => !msg.Content.StartsWith(SystemNames.Audience)))
             {
                 if (msg.Role == StaticValues.ChatMessageRoles.User)
                 {
@@ -91,19 +93,20 @@ namespace Sakura.Live.OpenAi.Core.Services
                 else
                 {
                     // Append username of the AI
-                    sb.AppendLine($"大豆: {msg.Content}");
+                    sb.AppendLine($"{SystemNames.AI}: {msg.Content}");
                 }
             }
             return sb.ToString();
         }
 
         /// <summary>
-        /// Gets the last user message
+        /// Gets the last message
+        /// ignore the AI's message
         /// </summary>
         /// <returns></returns>
-        public ChatMessage? GetLastUserMessage()
+        public ChatMessage? GetLastMessage()
         {
-           return _chatHistory.LastOrDefault(msg => msg.Role == "user");
+           return _chatHistory.LastOrDefault(msg => !msg.Content.StartsWith(SystemNames.Audience));
         }
     }
 }

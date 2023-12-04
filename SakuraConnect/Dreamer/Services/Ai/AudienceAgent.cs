@@ -1,12 +1,14 @@
 ﻿
 using System.Diagnostics;
+using OpenAI.ObjectModels;
 using OpenAI.ObjectModels.RequestModels;
-using OpenAI.ObjectModels.ResponseModels;
 using Sakura.Live.Connect.Dreamer.Models.Chat;
 using Sakura.Live.OpenAi.Core.Services;
+using Sakura.Live.Speech.Core.Models;
 using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Helpers;
 using Sakura.Live.ThePanda.Core.Interfaces;
+using SakuraConnect.Shared.Models.Messaging.Ai;
 
 namespace Sakura.Live.Connect.Dreamer.Services.Ai
 {
@@ -47,7 +49,14 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
                    && !CancellationTokenSource.Token.IsCancellationRequested)
             {
                 await Task.Delay(10_000);
-                if (DateTime.Now - _lastcommentTime <= TimeSpan.FromSeconds(30))
+                if (_chatHistoryService.GetLastMessage()?.Role == StaticValues.ChatMessageRoles.User)
+                {
+                    // Only generate response when the last message is from the AI
+                    _lastcommentTime = DateTime.Now;
+                    continue;
+                }
+
+                if (DateTime.Now - _lastcommentTime <= TimeSpan.FromSeconds(60))
                 {
                     // On do it when there is no chat for 30 seconds
                     // The AI may need to think for a while too Orz
@@ -93,7 +102,8 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
                     {
                         Id = Guid.NewGuid().ToString(),
                         Comment = response,
-                        Username = "AWildCat",
+                        Username = SystemNames.Audience,
+                        Role = SpeechQueueRole.Self
                     }
                 }
             });

@@ -66,7 +66,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
                 },
                 Model = OpenAI.ObjectModels.Models.Gpt_4_1106_preview,
                 Temperature = 1,
-                ResponseFormat = new ResponseFormat { Type="json_object" },
+                ResponseFormat = new ResponseFormat { Type = "json_object" },
                 MaxTokens = 512
             };
             var chatlog = _chatHistoryService.GenerateChatMessage();
@@ -115,6 +115,13 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         /// <param name="obj"></param>
         async void ThinkOnCommentReceived(CommentReceivedEventArg obj)
         {
+            if (obj.Comments.All(comment => string.IsNullOrWhiteSpace(comment.Comment) 
+                                            || comment.Comment.StartsWith("!")))
+            {
+                // Ignore commands
+                return;
+            }
+
             await Task.Delay(100); // Wait for the comment to be processed
 	        if (_isWaitingForResponse)
 	        {

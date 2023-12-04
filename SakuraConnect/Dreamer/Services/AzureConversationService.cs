@@ -110,7 +110,8 @@ namespace Sakura.Live.Connect.Dreamer.Services
 	                    new ()
 	                    {
 		                    Comment = speech,
-		                    Username = "冬雪桜"
+		                    Username = "冬雪桜",
+                            Role = SpeechQueueRole.Master
 	                    }
                     }
                 });

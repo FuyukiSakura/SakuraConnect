@@ -1,4 +1,6 @@
 ﻿
+using Sakura.Live.Speech.Core.Models;
+
 namespace Sakura.Live.Connect.Dreamer.Models.Chat
 {
     /// <summary>
@@ -31,5 +33,10 @@ namespace Sakura.Live.Connect.Dreamer.Models.Chat
         /// The comment text
         /// </summary>
         public string Comment { get; set; } = "";
+
+        /// <summary>
+        /// The role of the commenter
+        /// </summary>
+        public SpeechQueueRole Role { get; set; } = SpeechQueueRole.User;
     }
 }
