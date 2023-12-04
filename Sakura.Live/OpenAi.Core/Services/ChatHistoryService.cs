@@ -40,7 +40,7 @@ namespace Sakura.Live.OpenAi.Core.Services
         /// Generates a chat log as a multi-line string
         /// </summary>
         /// <returns></returns>
-        public List<ChatMessage> GenerateChatLog()
+        public List<ChatMessage> GenerateChatMessage()
         {
             var sb = new StringBuilder();
             var chatMessages = new List<ChatMessage>();
@@ -72,6 +72,29 @@ namespace Sakura.Live.OpenAi.Core.Services
 				chatMessages.RemoveAt(chatMessages.Count - 1);
 			}
             return chatMessages;
+        }
+
+        /// <summary>
+        /// Generates a plain text chat log
+        /// with the AI's line
+        /// </summary>
+        /// <returns></returns>
+        public string GenerateChatLog()
+        {
+            var sb = new StringBuilder();
+            foreach (var msg in _chatHistory)
+            {
+                if (msg.Role == StaticValues.ChatMessageRoles.User)
+                {
+                    sb.AppendLine(msg.Content);
+                }
+                else
+                {
+                    // Append username of the AI
+                    sb.AppendLine($"大豆: {msg.Content}");
+                }
+            }
+            return sb.ToString();
         }
 
         /// <summary>

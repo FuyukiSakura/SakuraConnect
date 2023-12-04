@@ -14,6 +14,12 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         string Character { get; set; }
 
         /// <summary>
+        /// Defines what the audience character do
+        /// to assist the ai
+        /// </summary>
+        string AudienceCharacter { get; set; }
+
+        /// <summary>
         /// Defines the greeting style of the ai
         /// </summary>
         string GreetingStyle { get; set; }
@@ -29,6 +35,11 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         /// </summary>
         /// <returns>A prompt to instruct Open AI on how to talk to the user.</returns>
         string GetPersonalityPrompt();
+
+        /// <summary>
+        /// Gets the audience guiding prompt for open AI according to the audience character
+        /// </summary>
+        string GetAudiencePrompt();
 
         /// <summary>
         /// Saves OpenAI settings to the system

@@ -69,7 +69,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
                 ResponseFormat = new ResponseFormat { Type="json_object" },
                 MaxTokens = 512
             };
-            var chatlog = _chatHistoryService.GenerateChatLog();
+            var chatlog = _chatHistoryService.GenerateChatMessage();
             chatlog.ForEach(request.Messages.Add);
             return await QueueResponse(request, forRole);
         }

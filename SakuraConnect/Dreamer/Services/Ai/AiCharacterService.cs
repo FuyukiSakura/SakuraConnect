@@ -20,7 +20,12 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         ///
         /// <inheritdoc />
         ///
-        public string Character { get; set; } = "You are a vtuber";
+        public string Character { get; set; } = "";
+
+        ///
+        /// <inheritdoc />
+        ///
+        public string AudienceCharacter { get; set; } = "";
 
         ///
         /// <inheritdoc />
@@ -62,10 +67,20 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         ///
         /// <inheritdoc />
         ///
+        public string GetAudiencePrompt()
+        {
+            SaveSettings();
+            return $"{AudienceCharacter}";
+        }
+
+        ///
+        /// <inheritdoc />
+        ///
         public void SaveSettings()
         {
             _settingsService.Set(OpenAiPreferenceKeys.AiName, Name);
             _settingsService.Set(OpenAiPreferenceKeys.CharacterPrompt, Character);
+            _settingsService.Set(OpenAiPreferenceKeys.AudienceAgentPrompt, AudienceCharacter);
             _settingsService.Set(OpenAiPreferenceKeys.GreetingPrompt, GreetingStyle);
         }
 
@@ -76,6 +91,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         {
             Name = _settingsService.Get(OpenAiPreferenceKeys.AiName, "");
             Character = _settingsService.Get(OpenAiPreferenceKeys.CharacterPrompt, "You are a vtuber");
+            AudienceCharacter = _settingsService.Get(OpenAiPreferenceKeys.AudienceAgentPrompt, "You are a cool and engaging audience");
             GreetingStyle = _settingsService.Get(OpenAiPreferenceKeys.GreetingPrompt, "Act cute");
         }
     }

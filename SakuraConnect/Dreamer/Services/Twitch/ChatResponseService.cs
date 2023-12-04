@@ -13,8 +13,6 @@ namespace Sakura.Live.Connect.Dreamer.Services.Twitch
     /// </summary>
     public class ChatResponseService : BasicAutoStartable
     {
-        ChatMessage _lastRespondedMessage;
-
         // Dependencies
         readonly IThePandaMonitor _monitor;
         readonly ChatHistoryService _chatHistoryService;
@@ -48,6 +46,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Twitch
         {
             await base.StartAsync();
             _monitor.Register<BigBrainService>(this);
+            _monitor.Register<AudienceAgent>(this);
             _monitor.Register<ChatMonitorService>(this);
             _monitor.Register<SpeechQueueService>(this);
         }

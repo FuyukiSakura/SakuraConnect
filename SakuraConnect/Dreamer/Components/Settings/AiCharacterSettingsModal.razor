@@ -29,6 +29,13 @@
                         <FieldHelp>How do you want the bot the behave?</FieldHelp>
                     </TextEdit>
                 </Field>
+                 <Field>
+                     <FieldLabel>Audience Agent</FieldLabel>
+                     <textarea class="form-control" rows="3" 
+                     value="@CharacterService.AudienceCharacter"
+                            @onchange="@(args => CharacterService.AudienceCharacter = args.Value?.ToString())"></textarea>
+                     <FieldHelp>The audience agent assists the AI to talk when there is no audience</FieldHelp>
+                 </Field>
                 <Field>
                     <FieldLabel>Greeting style</FieldLabel>
                     <TextEdit @bind-Text="@CharacterService.GreetingStyle"
