@@ -16,7 +16,6 @@ namespace Sakura.Live.Speech.Core.Services
         readonly AzureSpeechSettingsService _settings;
 
         SpeechRecognizer? _recognizer;
-        bool _isRecognizing;
         public event EventHandler<SpeechRecognitionEventArgs>? Recognizing;
         public event EventHandler<SpeechRecognitionEventArgs>? Recognized;
 
@@ -46,15 +45,7 @@ namespace Sakura.Live.Speech.Core.Services
         /// <returns></returns>
         public override async Task StartAsync()
         {
-            _isRecognizing = true;
-            await base.StartAsync();
             _settings.Save();
-            if (_recognizer != null)
-            {
-                await StopAsync();
-                _recognizer.Dispose();
-                _recognizer = null;
-            }
 
             // Currently the v2 endpoint is required. In a future SDK release you won't need to set it.
             var endpointString = $"wss://{_settings.Region}.stt.speech.microsoft.com/speech/universal/v2";
@@ -74,6 +65,7 @@ namespace Sakura.Live.Speech.Core.Services
             _recognizer.SessionStopped += RecognizerOnSessionStopped;
 
             // Starts continuous recognition. Uses StopContinuousRecognitionAsync() to stop recognition.
+            await base.StartAsync();
             await _recognizer.StartContinuousRecognitionAsync();
         }
 
@@ -98,30 +90,23 @@ namespace Sakura.Live.Speech.Core.Services
             await StopAsync();
         }
 
-        /// <summary>
-        /// Stops the recognition service
-        /// </summary>
-        public override async Task StopAsync()
-        {
-            if (_recognizer != null)
-            {
-                await _recognizer.StopContinuousRecognitionAsync();
-            }
-            await base.StopAsync();
-        }
-
         ///
         /// <inheritdoc />
         ///
         protected override async Task HeartBeatAsync()
         {
-            Status = ServiceStatus.Running;
-	        while (_isRecognizing 
+            var recognizer = _recognizer!;
+	        while (CancellationTokenSource.Token.IsCancellationRequested == false
 	               && Status == ServiceStatus.Running)
 	        {
 		        LastUpdate = DateTime.Now;
 				await Task.Delay(HeartBeat.Default);
 			}
+            recognizer.Recognizing -= Recognizing;
+            recognizer.Recognized -= Recognized;
+            recognizer.Canceled -= RecognizerOnCanceled;
+            recognizer.SessionStopped -= RecognizerOnSessionStopped;
+            await recognizer.StopContinuousRecognitionAsync();
         }
     }
 }
