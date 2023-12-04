@@ -140,6 +140,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         public override Task StopAsync()
         {
             _monitor.UnregisterAll(this);
+            _messenger.UnregisterAll(this);
             return base.StopAsync();
         }
     }
