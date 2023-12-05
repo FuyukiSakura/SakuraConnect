@@ -56,7 +56,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
                     continue;
                 }
 
-                if (DateTime.Now - _lastCommentTime <= TimeSpan.FromSeconds(60))
+                if (DateTime.Now - _lastCommentTime <= TimeSpan.FromSeconds(30))
                 {
                     // On do it when there is no chat for 60 seconds
                     // The AI may need to think for a while too Orz

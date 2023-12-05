@@ -19,7 +19,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Twitch
         /// <summary>
         /// The maximum length of the chat history
         /// </summary>
-        public int MaxHistoryLength { get; set; } = 50;
+        public int MaxHistoryLength { get; set; } = 30;
 
         // Dependencies
         readonly IThePandaMonitor _monitor;
@@ -36,9 +36,9 @@ namespace Sakura.Live.Connect.Dreamer.Services.Twitch
             _messenger = messenger;
             _chatHistory.Add(new CommentData
             {
-                Comment = "Welcome to the stream!",
-                Username = SystemNames.Audience,
-                Role = SpeechQueueRole.User,
+                Comment = "Hello!",
+                Username = SystemNames.AI,
+                Role = SpeechQueueRole.Self,
                 ReceivedAt = DateTime.Now
             });
         }
@@ -117,12 +117,19 @@ namespace Sakura.Live.Connect.Dreamer.Services.Twitch
             var sb = new StringBuilder();
             foreach (var msg in _chatHistory.OrderBy(chat => chat.ReceivedAt))
             {
-                if (msg.Role == SpeechQueueRole.Self)
+                switch (msg.Role)
                 {
-                    sb.AppendLine($"{SystemNames.AI}: {msg.Comment}");
-                    continue;
+                    case SpeechQueueRole.Guidance:
+                        // Ignore guidance messages to prevent the guidance
+                        // from bias towards its own messages
+                        continue;
+                    case SpeechQueueRole.Self:
+                        sb.AppendLine($"{SystemNames.AI}: {msg.Comment}");
+                        continue;
+                    default:
+                        sb.AppendLine($"{msg.Username}: {msg.Comment}");
+                        break;
                 }
-                sb.AppendLine($"{msg.Username}: {msg.Comment}");
             }
             return sb.ToString();
         }
