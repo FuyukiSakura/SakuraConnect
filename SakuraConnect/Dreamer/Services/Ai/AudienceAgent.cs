@@ -1,8 +1,8 @@
 ﻿
 using System.Diagnostics;
-using OpenAI.ObjectModels;
 using OpenAI.ObjectModels.RequestModels;
 using Sakura.Live.Connect.Dreamer.Models.Chat;
+using Sakura.Live.Connect.Dreamer.Services.Twitch;
 using Sakura.Live.OpenAi.Core.Services;
 using Sakura.Live.Speech.Core.Models;
 using Sakura.Live.ThePanda.Core;
@@ -17,13 +17,13 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
     /// </summary>
     public class AudienceAgent : BasicAutoStartable
     {
-        DateTime _lastcommentTime = DateTime.Now;
+        DateTime _lastCommentTime = DateTime.Now;
 
         // Dependencies
         readonly IPandaMessenger _messenger;
         readonly OpenAiService _openAiService;
         readonly IAiCharacterService _characterService;
-        readonly ChatHistoryService _chatHistoryService;
+        readonly ChatMonitorService _chatMonitorService;
 
         /// <summary>
         /// Creates a new instance of <see cref="AudienceAgent" />
@@ -31,12 +31,12 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         public AudienceAgent(IPandaMessenger messenger,
             OpenAiService openAiService,
             IAiCharacterService characterService,
-            ChatHistoryService chatHistoryService)
+            ChatMonitorService chatMonitorService)
         {
             _messenger = messenger;
             _openAiService = openAiService;
             _characterService = characterService;
-            _chatHistoryService = chatHistoryService;
+            _chatMonitorService = chatMonitorService;
         }
 
         /// <summary>
@@ -49,16 +49,16 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
                    && !CancellationTokenSource.Token.IsCancellationRequested)
             {
                 await Task.Delay(10_000);
-                if (_chatHistoryService.GetLastMessage()?.Role == StaticValues.ChatMessageRoles.User)
+                if (_chatMonitorService.GetLastComment().Role != SpeechQueueRole.Self)
                 {
                     // Only generate response when the last message is from the AI
-                    _lastcommentTime = DateTime.Now;
+                    _lastCommentTime = DateTime.Now;
                     continue;
                 }
 
-                if (DateTime.Now - _lastcommentTime <= TimeSpan.FromSeconds(60))
+                if (DateTime.Now - _lastCommentTime <= TimeSpan.FromSeconds(60))
                 {
-                    // On do it when there is no chat for 30 seconds
+                    // On do it when there is no chat for 60 seconds
                     // The AI may need to think for a while too Orz
                     continue;
                 }
@@ -85,7 +85,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
                 Messages = new List<ChatMessage>
                 {
                     ChatMessage.FromSystem(_characterService.GetAudiencePrompt()),
-                    ChatMessage.FromUser(_chatHistoryService.GenerateChatLog())
+                    ChatMessage.FromUser(_chatMonitorService.CreateChatLog())
                 },
                 Model = OpenAI.ObjectModels.Models.Gpt_4_1106_preview,
                 MaxTokens = 128,
@@ -94,16 +94,17 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
             };
 
             var response = await _openAiService.CreateCompletionAndResponseAsync(request);
+            _ = ChatLogger.LogOpenAiRequest(request, response, SystemNames.Audience);
             _messenger.Send(new CommentReceivedEventArg
             {
-                Comments = new ()
+                Comments =
                 {
-                    new ()
+                    new CommentData
                     {
                         Id = Guid.NewGuid().ToString(),
                         Comment = response,
                         Username = SystemNames.Audience,
-                        Role = SpeechQueueRole.Self
+                        Role = SpeechQueueRole.Guidance
                     }
                 }
             });
@@ -125,7 +126,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         /// <param name="obj"></param>
         void OnCommentReceived(CommentReceivedEventArg obj)
         {
-            _lastcommentTime = DateTime.Now;
+            _lastCommentTime = DateTime.Now;
         }
     }
 }

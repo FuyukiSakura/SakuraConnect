@@ -1,10 +1,9 @@
 ﻿
-using OpenAI.ObjectModels.RequestModels;
 using Sakura.Live.Connect.Dreamer.Services.Ai;
-using Sakura.Live.OpenAi.Core.Services;
 using Sakura.Live.Speech.Core.Services;
 using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Helpers;
+using Sakura.Live.ThePanda.Core.Interfaces;
 
 namespace Sakura.Live.Connect.Dreamer.Services.Twitch
 {
@@ -15,28 +14,15 @@ namespace Sakura.Live.Connect.Dreamer.Services.Twitch
     {
         // Dependencies
         readonly IThePandaMonitor _monitor;
-        readonly ChatHistoryService _chatHistoryService;
 
         /// <summary>
         /// Creates a new instance of <see cref="ChatResponseService" />
         /// </summary>
         public ChatResponseService(
             IThePandaMonitor monitor,
-            ChatHistoryService chatHistoryService
-        )
+            IPandaMessenger messenger)
         {
-            _chatHistoryService = chatHistoryService;
             _monitor = monitor;
-            InitializeChat();
-        }
-
-        /// <summary>
-        /// Starts the chat with a greeting message
-        /// </summary>
-        void InitializeChat()
-        {
-            _chatHistoryService.MaxHistoryLength = 30;
-            _chatHistoryService.AddChat(ChatMessage.FromUser("You just started your stream, greet the users if any. Try to keep the conversation by sharing your experiences."));
         }
 
         ///

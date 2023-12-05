@@ -38,5 +38,10 @@ namespace Sakura.Live.Connect.Dreamer.Models.Chat
         /// The role of the commenter
         /// </summary>
         public SpeechQueueRole Role { get; set; } = SpeechQueueRole.User;
+
+        /// <summary>
+        /// Received time of the comment
+        /// </summary>
+        public DateTime ReceivedAt { get; set; } = DateTime.Now;
     }
 }

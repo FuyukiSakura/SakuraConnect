@@ -8,6 +8,7 @@ using Sakura.Live.Speech.Core.Models;
 using Sakura.Live.Speech.Core.Services;
 using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Interfaces;
+using SakuraConnect.Shared.Models.Messaging.Ai;
 
 namespace Sakura.Live.Connect.Dreamer.Services
 {
@@ -110,7 +111,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
 	                    new ()
 	                    {
 		                    Comment = speech,
-		                    Username = "冬雪桜",
+		                    Username = SystemNames.Sakura,
                             Role = SpeechQueueRole.Master
 	                    }
                     }
