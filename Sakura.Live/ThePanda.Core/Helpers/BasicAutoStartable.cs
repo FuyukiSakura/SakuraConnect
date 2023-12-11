@@ -36,12 +36,13 @@ namespace Sakura.Live.ThePanda.Core.Helpers
         /// Checks if the thread is still running
         /// </summary>
         /// <returns></returns>
-        protected virtual async Task HeartBeatAsync()
+        protected virtual async Task HeartBeatAsync(CancellationToken token)
         {
-            while (Status == ServiceStatus.Running) // Checks if the client is connected
+            while (Status == ServiceStatus.Running
+                   && !token.IsCancellationRequested)
             {
                 LastUpdate = DateTime.Now;
-                await Task.Delay(HeartBeat.Default);
+                await Task.Delay(HeartBeat.Default, token);
             }
         }
 
@@ -51,7 +52,7 @@ namespace Sakura.Live.ThePanda.Core.Helpers
 		/// <returns></returns>
 		public virtual Task StartAsync()
 		{
-            _ = HeartBeatAsync();
+            _ = HeartBeatAsync(CancellationTokenSource.Token);
             return Task.CompletedTask;
 		}
 

@@ -116,12 +116,13 @@ namespace Sakura.Live.Obs.Core.Services
         /// Updates the heart beat timer when the obs connection is still connected
         /// </summary>
         /// <returns></returns>
-        protected override async Task HeartBeatAsync()
+        protected override async Task HeartBeatAsync(CancellationToken token)
         {
-            while (_isConnected)
+            while (_isConnected
+                   && !token.IsCancellationRequested)
             {
                 LastUpdate = DateTime.Now;
-                await Task.Delay(HeartBeat.Default);
+                await Task.Delay(HeartBeat.Default, token);
             }
         }
 

@@ -93,14 +93,14 @@ namespace Sakura.Live.Speech.Core.Services
         ///
         /// <inheritdoc />
         ///
-        protected override async Task HeartBeatAsync()
+        protected override async Task HeartBeatAsync(CancellationToken token)
         {
             var recognizer = _recognizer!;
-	        while (CancellationTokenSource.Token.IsCancellationRequested == false
+	        while (!token.IsCancellationRequested
 	               && Status == ServiceStatus.Running)
 	        {
 		        LastUpdate = DateTime.Now;
-				await Task.Delay(HeartBeat.Default);
+				await Task.Delay(HeartBeat.Default, token);
 			}
             recognizer.Recognizing -= Recognizing;
             recognizer.Recognized -= Recognized;

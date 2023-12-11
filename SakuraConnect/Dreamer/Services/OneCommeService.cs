@@ -15,7 +15,8 @@ namespace Sakura.Live.Connect.Dreamer.Services
         readonly IPandaMessenger _messenger;
 
         const string Url = "ws://127.0.0.1:11180/sub";
-        WebSocket _socket = new (Url, false);
+        readonly WebSocket _socket = new (Url, false);
+        readonly SemaphoreSlim _socketLock = new (1, 1);
 
         /// <summary>
         /// Creates a new instance of <see cref="OneCommeService" />
@@ -30,33 +31,56 @@ namespace Sakura.Live.Connect.Dreamer.Services
         ///
         public override async Task StartAsync()
         {
-            _socket.Closed += Reconnect_OnClosed;
-            _socket.MessageReceived += Socket_OnMessageReceived;
-            await _socket.ConnectAsync();
+            await _socketLock.WaitAsync();
+            try
+            {
+                _socket.Closed += Reconnect_OnClosed;
+                _socket.MessageReceived += Socket_OnMessageReceived;
+                await _socket.ConnectAsync();
+            }
+            finally
+            {
+            
+                _socketLock.Release();
+            }
             await base.StartAsync();
         }
 
         ///
         /// <inheritdoc />
         ///
-        public override Task StopAsync()
+        public override async Task StopAsync()
         {
-            _socket.Closed -= Reconnect_OnClosed;
-            _socket.MessageReceived -= Socket_OnMessageReceived;
-            return base.StopAsync();
+            await _socketLock.WaitAsync();
+            try
+            {
+                _socket.Closed -= Reconnect_OnClosed;
+                _socket.MessageReceived -= Socket_OnMessageReceived;
+                _socket.Close();
+            }
+            finally
+            {
+                _socketLock.Release();
+            }
+            await base.StopAsync();
         }
 
         ///
         /// <inheritdoc />
         ///
-        protected override async Task HeartBeatAsync()
+        protected override async Task HeartBeatAsync(CancellationToken token)
         {
-            while (_socket.IsConnected) // Checks if the client is connected
+            while (_socket.IsConnected
+                   && !token.IsCancellationRequested) // Checks if the client is connected
             {
                 LastUpdate = DateTime.Now;
-                await Task.Delay(HeartBeat.Default);
+                await Task.Delay(HeartBeat.Default, token);
             }
-            Status = ServiceStatus.Error;
+
+            if (!token.IsCancellationRequested)
+            {
+                Status = ServiceStatus.Error;
+            }
         }
 
         /// <summary>
