@@ -54,7 +54,14 @@ namespace Sakura.Live.Speech.Core.Services
                 return;
             }
 
-            await _speechSynthesizer.StopSpeakingAsync();
+            try
+            {
+                await _speechSynthesizer.StopSpeakingAsync();
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+            }
         }
 
 #if DEBUG 
