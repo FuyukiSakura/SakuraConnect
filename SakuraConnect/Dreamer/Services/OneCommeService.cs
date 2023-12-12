@@ -74,7 +74,7 @@ namespace Sakura.Live.Connect.Dreamer.Services
                    && !token.IsCancellationRequested) // Checks if the client is connected
             {
                 LastUpdate = DateTime.Now;
-                await Task.Delay(HeartBeat.Default, token);
+                await Task.Delay(HeartBeat.Default);
             }
 
             if (!token.IsCancellationRequested)

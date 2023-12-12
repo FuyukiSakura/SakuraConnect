@@ -122,7 +122,7 @@ namespace Sakura.Live.Obs.Core.Services
                    && !token.IsCancellationRequested)
             {
                 LastUpdate = DateTime.Now;
-                await Task.Delay(HeartBeat.Default, token);
+                await Task.Delay(HeartBeat.Default);
             }
         }
 
