@@ -60,18 +60,17 @@ namespace Sakura.Live.OpenAi.Core.Services
         ///
         public async Task<string> CreateCompletionAndResponseAsync(ChatCompletionCreateRequest request)
         {
-            var client = CreateClient(ApiKey);
-            var completion = await client.ChatCompletion.CreateCompletion(request);
-            return completion.Choices[0].Message.Content;
+            var result = CreateCompletionAsync(request);
+            return await CombineResponseAsync(result);
         }
 
         ///
         /// <inheritdoc cref="IChatCompletionService.CreateCompletionAsStream"/>
         ///
-        public IAsyncEnumerable<ChatCompletionCreateResponse>? CreateCompletionAsync(ChatCompletionCreateRequest request)
+        public IAsyncEnumerable<ChatCompletionCreateResponse> CreateCompletionAsync(ChatCompletionCreateRequest request)
         {
             var client = CreateClient(ApiKey);
-            return client?.ChatCompletion.CreateCompletionAsStream(request);
+            return client.ChatCompletion.CreateCompletionAsStream(request);
         }
 
         /// <summary>
