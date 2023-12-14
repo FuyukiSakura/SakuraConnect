@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using Microsoft.CognitiveServices.Speech;
+using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Helpers;
 
 namespace Sakura.Live.Speech.Core.Services
@@ -123,6 +124,30 @@ namespace Sakura.Live.Speech.Core.Services
             await base.StopAsync();
             await InterruptAsync();
             _speechSynthesizer = null;
+        }
+
+        ///
+        /// <inheritdoc />
+        ///
+        protected override async Task HeartBeatAsync(CancellationToken token)
+        {
+            var synthesizer = _speechSynthesizer;
+            while (Status == ServiceStatus.Running
+                   && !token.IsCancellationRequested)
+            {
+                LastUpdate = DateTime.Now;
+                await Task.Delay(HeartBeat.Default);
+            }
+
+            try
+            {
+                // Makes sure the current synthsizer is stopped
+                await synthesizer?.StopSpeakingAsync();
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+            }
         }
     }
 }
