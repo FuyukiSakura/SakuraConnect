@@ -64,9 +64,12 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
                         + SystemPrompts.EmotionAndLanguage)
                 },
                 Model = OpenAI.ObjectModels.Models.Gpt_4_1106_preview,
-                Temperature = 1,
+                Temperature = 1.21f,
                 ResponseFormat = new ResponseFormat { Type = "json_object" },
-                MaxTokens = 512
+                MaxTokens = 321,
+                TopP = 0.89f,
+                FrequencyPenalty = 0.2f,
+                PresencePenalty = 0.2f
             };
             var chatlog = _chatMonitorService.CreateForRequest();
             chatlog.ForEach(request.Messages.Add);
