@@ -98,6 +98,7 @@ namespace Sakura.Live.OpenAi.Core.Services
                 }
 
                 response += choice.Message.Content;
+                await Task.Delay(1);
             }
             return response;
         }

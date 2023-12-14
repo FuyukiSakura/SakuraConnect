@@ -43,7 +43,7 @@ namespace Sakura.Live.ThePanda.Core
             foreach (var handler in _handlers[type].Keys
                          .SelectMany(subscriber => _handlers[type][subscriber]))
             {
-                handler(message);
+                _ = Task.Run(() => handler(message));
             }
         }
 
