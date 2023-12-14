@@ -94,6 +94,7 @@ namespace Sakura.Live.Osc.Core.Services
         public override async Task StopAsync()
         {
             _stopListeningToken?.Cancel();
+            _stopListeningToken?.Dispose();
             await base.StopAsync();
         }
 

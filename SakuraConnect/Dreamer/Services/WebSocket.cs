@@ -38,7 +38,8 @@ namespace Sakura.Live.Connect.Dreamer.Services
         public async Task ConnectAsync()
         {
             // Cancel existing request
-            _cancellationSource.Cancel();
+            await _cancellationSource.CancelAsync();
+            _cancellationSource.Dispose();
             _cancellationSource = new CancellationTokenSource();
 
             _ws = new ClientWebSocket();
