@@ -1,0 +1,137 @@
+﻿@page "/games/dnd"
+@using Sakura.Live.Connect.Dreamer.Models.Games.DND
+@using SakuraConnect.Shared.Models.Messaging
+
+<h1 class="tw-text-2xl tw-font-bold">D&D Game Dashboard</h1>
+
+@if (_gameData != null)
+{
+    <div class="tw-mx-auto tw-p-6 tw-bg-white tw-shadow-lg tw-rounded-lg">
+        <h2 class="tw-font-bold tw-text-xl tw-mb-4">Storyboard</h2>
+        <p>@_gameData.GameSetup.InitialScene</p>
+        <p>@_gameData.GameSetup.Progress.CurrentScene</p>
+        <p>@_gameData.GameSetup.Progress.NextSteps</p>
+
+        <!-- Scene Outcomes -->
+        @foreach (var sceneOutcome in _gameData.SceneOutcomes)
+        {
+            <div class="tw-mt-4">
+                <h3 class="tw-font-bold tw-text-lg">@sceneOutcome.SceneDescription</h3>
+                <table class="tw-w-full tw-text-sm tw-mt-2">
+                    <thead>
+                    <tr class="tw-bg-gray-100">
+                        <th class="tw-py-2 tw-px-4 tw-font-semibold">Character</th>
+                        <th class="tw-py-2 tw-px-4 tw-font-semibold">Effect</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var effect in sceneOutcome.EffectsOnCharacters)
+                    {
+                        <tr>
+                            <td class="tw-py-2 tw-px-4">@effect.CharacterName</td>
+                            <td class="tw-py-2 tw-px-4">@effect.Effect</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+
+    <div class="tw-flex tw-flex-row tw-overflow-x-auto tw-my-4">
+        @foreach (var character in _gameData.Characters)
+        {
+            <div class="tw-max-w-md tw-mx-auto tw-my-10 tw-p-6 tw-bg-white tw-shadow-lg tw-rounded-lg">
+                <div class="tw-flex tw-items-center tw-space-x-4 tw-mb-4">
+                    <div class="tw-h-24 tw-w-24 tw-bg-gray-300 tw-rounded-full"></div>
+                    <div class="tw-flex-1">
+                        <h1 class="tw-text-xl tw-font-bold">@character.Name</h1>
+                        <p class="tw-text-gray-600">@character.Race | @character.Class.Name Lv.@character.Class.Level | @character.Class.Subclass</p>
+                    </div>
+                </div>
+                <table class="tw-w-full tw-mb-6">
+                    <tbody>
+                    @foreach (var (ability, score) in character.AbilityScores)
+                    {
+                        <tr>
+                            <td class="tw-font-bold">@ability.ToUpper()[..3]</td>
+                            <td class="tw-text-center">@score</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+                <div class="tw-mb-4">
+                    <h2 class="tw-font-bold tw-text-lg tw-mb-2">Skills</h2>
+                    <p>@string.Join(", ", character.Skills?["proficient"] ?? new List<string>())</p>
+                </div>
+                <div class="tw-mb-4">
+                    <h2 class="tw-font-bold tw-text-lg tw-mb-2">Weapons</h2>
+                    <p>@string.Join(", ", character.Equipment?["weapons"] ?? new List<string>())</p>
+                </div>
+                <div>
+                    <h2 class="tw-font-bold tw-text-lg tw-mb-2">Packs</h2>
+                    <p>@string.Join(", ", character.Equipment?["packs"] ?? new List<string>())</p>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Consolidated Actions and Dice Checks Table -->
+    <div class="tw-mx-auto tw-p-6 tw-bg-white tw-shadow-lg tw-rounded-lg">
+        <h2 class="tw-font-bold tw-text-xl tw-mb-4">User Actions and Dice Checks</h2>
+        <table class="tw-w-full tw-text-sm tw-border tw-border-collapse">
+            <thead>
+            <tr class="tw-bg-gray-100">
+                <th class="tw-py-2 tw-px-4 tw-font-semibold">Character</th>
+                <th class="tw-py-2 tw-px-4 tw-font-semibold">Action</th>
+                <th class="tw-py-2 tw-px-4 tw-font-semibold">Effect</th>
+                <th class="tw-py-2 tw-px-4 tw-font-semibold">Dice Check</th>
+                <th class="tw-py-2 tw-px-4 tw-font-semibold">Roll</th>
+                <th class="tw-py-2 tw-px-4 tw-font-semibold">Result</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var character in _gameData.Characters)
+            {
+                @foreach (var action in character.Actions)
+                {
+                    <tr>
+                        <td class="tw-py-2 tw-px-4">@character.Name</td>
+                        <td class="tw-py-2 tw-px-4">@action.Description</td>
+                        <td class="tw-py-2 tw-px-4">@action.Effect</td>
+                        <td class="tw-py-2 tw-px-4">@character.DiceChecks.FirstOrDefault()?.CheckName</td>
+                        <td class="tw-py-2 tw-px-4">@character.DiceChecks.FirstOrDefault()?.Roll</td>
+                        <td class="tw-py-2 tw-px-4">@character.DiceChecks.FirstOrDefault()?.Result</td>
+                    </tr>
+                }
+            }
+            </tbody>
+        </table>
+    </div>
+}
+
+<div class="tw-my-4">
+    <textarea @bind="_jsonInput" class="tw-w-full tw-p-2 tw-border tw-border-gray-300 tw-rounded" rows="10"></textarea>
+    <button @onclick="LoadGameData" class="tw-px-4 tw-py-2 tw-bg-blue-500 tw-text-white tw-rounded">Load Game Data</button>
+</div>
+
+<div class="tw-my-4">
+    <textarea @bind="_textOutput" class="tw-w-full tw-p-2 tw-border tw-border-gray-300 tw-rounded" rows="10"></textarea>
+    <button @onclick="CreateSummary" class="tw-px-4 tw-py-2 tw-bg-blue-500 tw-text-white tw-rounded">Create Summary</button>
+</div>
+
+@code {
+    private string _jsonInput;
+    private string _textOutput;
+    private GameData _gameData;
+
+    private void LoadGameData()
+    {
+        _gameData = System.Text.Json.JsonSerializer.Deserialize<GameData>(_jsonInput, Json.DefaultSerializerOptions);
+    }
+
+    private void CreateSummary()
+    {
+        _textOutput = GameData.CreateGameSummary(_gameData);
+    }
+}
