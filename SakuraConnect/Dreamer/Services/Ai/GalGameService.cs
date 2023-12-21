@@ -110,7 +110,17 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
             };
 
             var response = await client.CreateCompletionAndResponseAsync(request);
-            return JsonSerializer.Deserialize<GameData>(response, Json.DefaultSerializerOptions);
+            try
+            {
+                return JsonSerializer.Deserialize<GameData>(response, Json.DefaultSerializerOptions);
+            }
+            catch (JsonException)
+            {
+                var requestMessages = request.Messages.Select(msg => $"{msg.Role,-10} | {msg.Name, -10} | {msg.Content}");
+                var requestText = string.Join("\r\n", requestMessages);
+                await ChatLogger.LogAsync($"Request\r\n==========\r\n{requestText}\r\n\r\n-----------\r\n{response}----------\r\n\r\n", "dnd");
+                throw;
+            }
         }
 
         string Prompt =>
