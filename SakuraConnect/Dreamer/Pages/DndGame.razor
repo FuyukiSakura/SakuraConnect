@@ -4,21 +4,27 @@
 @using Sakura.Live.ThePanda.Core
 @using SakuraConnect.Shared.Models.Messaging
 @using System.Diagnostics
+@using Sakura.Live.Connect.Dreamer.Services.Twitch
 
 @inject IThePandaMonitor Monitor
 @inject IDndGameService Game
+@inject ChatMonitorService ChatMonitorService
 
 <h1 class="tw-text-2xl tw-font-bold">D&D Game Dashboard</h1>
-<StartStopButton StartText="Start game" 
-                 StopText="Stop"
-                 Enabled="@(!_isLoading)"
-                 IsRunning="@(Game.Status == ServiceStatus.Running)"
-                 OnClick="StartGame"/>
+<div class="tw-flex tw-flex-row">
+    <StartStopButton StartText="Start game" 
+                     StopText="Stop"
+                     Enabled="@(!_isLoading)"
+                     IsRunning="@(Game.Status == ServiceStatus.Running)"
+                     OnClick="() => _ = StartGameAsync()"/>
+    <ServiceConfigButton Service="@ChatMonitorService"
+                         Text="Monitor Chat" />
+</div>
 
 <button class="tw-px-4 tw-py-2 tw-bg-blue-500 tw-text-white tw-rounded"
         type="button"
         disabled="@_isLoading"
-        @onclick="NextScene">
+        @onclick="() => _ = NextSceneAsync()">
     Next >>
 </button>
 
@@ -26,10 +32,43 @@
 {
     <div class="tw-mx-auto tw-p-6 tw-bg-white tw-shadow-lg tw-rounded-lg">
         <h2 class="tw-font-bold tw-text-xl tw-mb-4">Storyboard</h2>
-        <p>@_gameData.GameSetup.InitialScene</p>
+        <details class="tw-mb-4">
+            <summary class="tw-font-bold tw-text-xl">Setup</summary>
+            <p>@_gameData.GameSetup.InitialScene</p>
+        </details>
+
+        @* Display the current scene with a header *@
+        <h3 class="tw-font-bold tw-text-xl tw-mb-4">Current Scene</h3>
         <p>@_gameData.GameSetup.Progress.CurrentScene</p>
-        <p>@_gameData.SceneOutcome.Plot</p>
-        <p>@_gameData.GameSetup.Progress.NextSteps</p>
+        <p>@_gameData.Story.Plot</p>
+
+        <h3 class="tw-font-bold tw-text-xl tw-mb-4">Event</h3>
+        <p>@_gameData.Story.Event</p>
+
+        @* Next steps displayed in a table format *@
+        <h2 class="tw-font-bold tw-text-xl tw-mb-4">Next Steps</h2>
+        @if (_gameData.GameSetup.Progress.SuggestedNextSteps != null && _gameData.GameSetup.Progress.SuggestedNextSteps.Any())
+        {
+            <table class="tw-w-full tw-text-left tw-mb-4">
+                <thead>
+                <tr class="tw-bg-gray-200">
+                    <th class="tw-px-4 tw-py-2">Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var step in _gameData.GameSetup.Progress.SuggestedNextSteps)
+                {
+                    <tr>
+                        <td class="tw-px-4 tw-py-2">@step</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p>No next steps available.</p>
+        }
 
         <div class="tw-mt-4">
             <h3 class="tw-font-bold tw-text-lg">@_gameData.SceneOutcome.Description</h3>
@@ -140,7 +179,7 @@
         _gameData = System.Text.Json.JsonSerializer.Deserialize<GameData>(_jsonInput, Json.DefaultSerializerOptions);
     }
 
-    async void StartGame()
+    async Task StartGameAsync()
     {
         if (Game.Status == ServiceStatus.Running)
         {
@@ -152,9 +191,9 @@
             try
             {
                 _isLoading = true;
-                StateHasChanged();
+                await InvokeAsync(StateHasChanged);
                 _gameData = await Game.StartGameAsync();
-                StateHasChanged();
+                await InvokeAsync(StateHasChanged);
             }
             catch (Exception e)
             {
@@ -163,19 +202,19 @@
             finally
             {
                 _isLoading = false;
-                StateHasChanged();
+                await InvokeAsync(StateHasChanged);
             }
         }
     }
 
-    async void NextScene()
+    async Task NextSceneAsync()
     {
         try
         {
             _isLoading = true;
-            StateHasChanged();
+            await InvokeAsync(StateHasChanged);
             _gameData = await Game.NextSceneAsync(_gameData);
-            StateHasChanged();
+            await InvokeAsync(StateHasChanged);
         }
         catch (Exception e)
         {
@@ -184,7 +223,7 @@
         finally
         {
             _isLoading = false;
-            StateHasChanged();
+            await InvokeAsync(StateHasChanged);
         }
     }
 }

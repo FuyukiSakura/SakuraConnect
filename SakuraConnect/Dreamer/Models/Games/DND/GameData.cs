@@ -6,6 +6,7 @@ namespace Sakura.Live.Connect.Dreamer.Models.Games.DND
     public class GameData
     {
         public GameSetup GameSetup { get; set; }
+        public Story Story { get; set; }
         public List<Character> Characters { get; set; }
         public SceneOutcome SceneOutcome { get; set; }
 
@@ -26,7 +27,7 @@ namespace Sakura.Live.Connect.Dreamer.Models.Games.DND
             // Game Setup and Progress
             builder.AppendLine($"Initial Scene: {game.GameSetup.InitialScene}");
             builder.AppendLine($"Current Scene: {game.GameSetup.Progress.CurrentScene}");
-            builder.AppendLine($"Next Steps: {game.GameSetup.Progress.NextSteps}");
+            builder.AppendLine($"Next Steps: {game.GameSetup.Progress.SuggestedNextSteps}");
 
             // Characters
             builder.AppendLine("\nCharacters:");
@@ -89,7 +90,13 @@ namespace Sakura.Live.Connect.Dreamer.Models.Games.DND
     public class Progress
     {
         public string CurrentScene { get; set; }
-        public string NextSteps { get; set; }
+        public List<string> SuggestedNextSteps { get; set; }
+    }
+
+    public class Story
+    {
+        public string Plot { get; set; }
+        public string Event { get; set; }
     }
 
     public class Character
@@ -130,7 +137,6 @@ namespace Sakura.Live.Connect.Dreamer.Models.Games.DND
 
     public class SceneOutcome
     {
-        public string Plot { get; set; }
         public string Description { get; set; }
         public List<EffectOnCharacter> EffectsOnCharacters { get; set; }
     }
