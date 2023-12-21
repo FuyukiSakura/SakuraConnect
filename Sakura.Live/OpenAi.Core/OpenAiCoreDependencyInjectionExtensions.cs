@@ -12,7 +12,7 @@ namespace Sakura.Live.OpenAi.Core
         /// <returns></returns>
         public static IServiceCollection AddOpenAiCore(this IServiceCollection services)
         {
-            services.AddSingleton<OpenAiService>();
+            services.AddSingleton<OpenAiClient>();
             return services;
         }
     }

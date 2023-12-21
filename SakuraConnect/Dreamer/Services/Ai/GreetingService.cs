@@ -22,7 +22,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         // Dependencies
         readonly IAiCharacterService _characterService;
         readonly IThePandaMonitor _monitor;
-        readonly OpenAiService _service;
+        readonly OpenAiClient _client;
         readonly TwitchChatService _twitchChat;
 
         /// <summary>
@@ -30,11 +30,11 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         /// </summary>
         public GreetingService(IAiCharacterService characterService,
             IThePandaMonitor monitor,
-            OpenAiService service,
+            OpenAiClient client,
             TwitchChatService twitchChat)
         {
             _characterService = characterService;
-            _service = service;
+            _client = client;
             _twitchChat = twitchChat;
             _monitor = monitor;
         }
@@ -64,7 +64,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
                 Temperature = 1,
                 MaxTokens = 256
             };
-            var response = await _service.CreateCompletionAndResponseAsync(request);
+            var response = await _client.CreateCompletionAndResponseAsync(request);
             await _twitchChat.SendMessage(response); // Fire and forget
         }
 

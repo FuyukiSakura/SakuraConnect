@@ -28,7 +28,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         readonly IPandaMessenger _messenger;
         readonly IAiCharacterService _characterService;
         readonly ChatMonitorService _chatMonitorService;
-        readonly OpenAiService _openAiService;
+        readonly OpenAiClient _openAiClient;
 
         /// <summary>
         /// Creates a new instance of <see cref="BigBrainService" />
@@ -38,14 +38,14 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
             IPandaMessenger messenger,
             IAiCharacterService characterService,
             ChatMonitorService chatMonitorService,
-            OpenAiService openAiService
+            OpenAiClient openAiClient
         )
         {
             _monitor = monitor;
             _messenger = messenger;
             _characterService = characterService;
             _chatMonitorService = chatMonitorService;
-            _openAiService = openAiService;
+            _openAiClient = openAiClient;
         }
 
         /// <summary>
@@ -84,7 +84,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         {
             try
             {
-                var response = await _openAiService.CreateCompletionAndResponseAsync(request);
+                var response = await _openAiClient.CreateCompletionAndResponseAsync(request);
                 _ = ChatLogger.LogOpenAiRequest(request, response, SystemNames.AI);
                 var jsonObj = JsonSerializer.Deserialize<OpenAiJsonObject<List<Comment>>>(response, Json.DefaultSerializerOptions);
                 var plainComment = string.Join("\n", jsonObj.Data.Select(x => x.Text));

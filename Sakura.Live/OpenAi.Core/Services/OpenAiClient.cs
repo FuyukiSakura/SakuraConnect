@@ -11,7 +11,7 @@ namespace Sakura.Live.OpenAi.Core.Services
     /// <summary>
     /// Accesses the Open AI service
     /// </summary>
-    public class OpenAiService
+    public class OpenAiClient
     {
         readonly ISettingsService _settingsService;
 
@@ -21,10 +21,10 @@ namespace Sakura.Live.OpenAi.Core.Services
         public string ApiKey { get; set; } = "";
 
         /// <summary>
-        /// Creates a new instance of <see cref="OpenAiService" />
+        /// Creates a new instance of <see cref="OpenAiClient" />
         /// </summary>
         /// <param name="settingsService"></param>
-        public OpenAiService(ISettingsService settingsService)
+        public OpenAiClient(ISettingsService settingsService)
         {
             _settingsService = settingsService;
             LoadSettings();

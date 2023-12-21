@@ -21,7 +21,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
 
         // Dependencies
         readonly IPandaMessenger _messenger;
-        readonly OpenAiService _openAiService;
+        readonly OpenAiClient _openAiClient;
         readonly IAiCharacterService _characterService;
         readonly ChatMonitorService _chatMonitorService;
 
@@ -29,12 +29,12 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         /// Creates a new instance of <see cref="AudienceAgent" />
         /// </summary>
         public AudienceAgent(IPandaMessenger messenger,
-            OpenAiService openAiService,
+            OpenAiClient openAiClient,
             IAiCharacterService characterService,
             ChatMonitorService chatMonitorService)
         {
             _messenger = messenger;
-            _openAiService = openAiService;
+            _openAiClient = openAiClient;
             _characterService = characterService;
             _chatMonitorService = chatMonitorService;
         }
@@ -93,7 +93,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
                 Stop = "\n"
             };
 
-            var response = await _openAiService.CreateCompletionAndResponseAsync(request);
+            var response = await _openAiClient.CreateCompletionAndResponseAsync(request);
             _ = ChatLogger.LogOpenAiRequest(request, response, SystemNames.Audience);
             _messenger.Send(new CommentReceivedEventArg
             {

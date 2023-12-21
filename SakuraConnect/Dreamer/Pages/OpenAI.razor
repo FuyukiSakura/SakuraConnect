@@ -7,7 +7,7 @@
 @using Sakura.Live.Connect.Dreamer.Services.Twitch
 @using Sakura.Live.ThePanda.Core
 @inject IThePandaMonitor Monitor
-@inject OpenAiService OpenAiService
+@inject OpenAiClient OpenAiClient
 @inject GreetingService GreetingService
 @inject AzureSpeechService AzureSpeechService
 @inject AzureConversationService AzureConversationService
@@ -35,7 +35,7 @@
            placeholder="OpenAI API key"
            aria-label="Name"
            aria-describedby="open-ai-key"
-           @bind-value="OpenAiService.ApiKey">
+           @bind-value="OpenAiClient.ApiKey">
 </div>
 
 <div class="input-group mb-3">
