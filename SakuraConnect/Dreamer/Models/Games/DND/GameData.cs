@@ -7,23 +7,30 @@ namespace Sakura.Live.Connect.Dreamer.Models.Games.DND
     {
         public GameSetup GameSetup { get; set; }
         public List<Character> Characters { get; set; }
-        public List<SceneOutcome> SceneOutcomes { get; set; }
+        public SceneOutcome SceneOutcome { get; set; }
 
-        public static string CreateGameSummary(GameData gameData)
+        /// <summary>
+        /// Create a human readable summary of the game data
+        /// </summary>
+        /// <param name="game"></param>
+        /// <returns></returns>
+        public static string CreateGameSummary(GameData game)
         {
-            if (gameData == null)
+            if (game == null)
+            {
                 return "No game data available.";
+            }
 
             var builder = new StringBuilder();
 
             // Game Setup and Progress
-            builder.AppendLine($"Initial Scene: {gameData.GameSetup.InitialScene}");
-            builder.AppendLine($"Current Scene: {gameData.GameSetup.Progress.CurrentScene}");
-            builder.AppendLine($"Next Steps: {gameData.GameSetup.Progress.NextSteps}");
+            builder.AppendLine($"Initial Scene: {game.GameSetup.InitialScene}");
+            builder.AppendLine($"Current Scene: {game.GameSetup.Progress.CurrentScene}");
+            builder.AppendLine($"Next Steps: {game.GameSetup.Progress.NextSteps}");
 
             // Characters
             builder.AppendLine("\nCharacters:");
-            foreach (var character in gameData.Characters)
+            foreach (var character in game.Characters)
             {
                 builder.AppendLine($"- Name: {character.Name}, Race: {character.Race}, Class: {character.Class.Name}");
                 builder.AppendLine($"  Level: {character.Class.Level}, HP Base: {character.Class.HitPointBase}");
@@ -62,15 +69,11 @@ namespace Sakura.Live.Connect.Dreamer.Models.Games.DND
             }
 
             // Scene Outcomes
-            if (gameData.SceneOutcomes.Any())
+            builder.AppendLine("\nScene Outcomes:");
+            builder.AppendLine($"- Description: {game.SceneOutcome.Description}");
+            foreach (var effect in game.SceneOutcome.EffectsOnCharacters)
             {
-                builder.AppendLine("\nScene Outcomes:");
-                foreach (var outcome in gameData.SceneOutcomes)
-                {
-                    builder.AppendLine($"- Description: {outcome.SceneDescription}");
-                    foreach (var effect in outcome.EffectsOnCharacters)
-                        builder.AppendLine($"  - {effect.CharacterName}: {effect.Effect}");
-                }
+                builder.AppendLine($"  - {effect.CharacterName}: {effect.Effect}");
             }
 
             return builder.ToString();
@@ -127,7 +130,8 @@ namespace Sakura.Live.Connect.Dreamer.Models.Games.DND
 
     public class SceneOutcome
     {
-        public string SceneDescription { get; set; }
+        public string Plot { get; set; }
+        public string Description { get; set; }
         public List<EffectOnCharacter> EffectsOnCharacters { get; set; }
     }
 

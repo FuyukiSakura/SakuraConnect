@@ -1,8 +1,26 @@
 ﻿@page "/games/dnd"
 @using Sakura.Live.Connect.Dreamer.Models.Games.DND
+@using Sakura.Live.Connect.Dreamer.Services.Ai
+@using Sakura.Live.ThePanda.Core
 @using SakuraConnect.Shared.Models.Messaging
+@using System.Diagnostics
+
+@inject IThePandaMonitor Monitor
+@inject IDndGameService Game
 
 <h1 class="tw-text-2xl tw-font-bold">D&D Game Dashboard</h1>
+<StartStopButton StartText="Start game" 
+                 StopText="Stop"
+                 Enabled="@(!_isLoading)"
+                 IsRunning="@(Game.Status == ServiceStatus.Running)"
+                 OnClick="StartGame"/>
+
+<button class="tw-px-4 tw-py-2 tw-bg-blue-500 tw-text-white tw-rounded"
+        type="button"
+        disabled="@_isLoading"
+        @onclick="NextScene">
+    Next >>
+</button>
 
 @if (_gameData != null)
 {
@@ -10,32 +28,29 @@
         <h2 class="tw-font-bold tw-text-xl tw-mb-4">Storyboard</h2>
         <p>@_gameData.GameSetup.InitialScene</p>
         <p>@_gameData.GameSetup.Progress.CurrentScene</p>
+        <p>@_gameData.SceneOutcome.Plot</p>
         <p>@_gameData.GameSetup.Progress.NextSteps</p>
 
-        <!-- Scene Outcomes -->
-        @foreach (var sceneOutcome in _gameData.SceneOutcomes)
-        {
-            <div class="tw-mt-4">
-                <h3 class="tw-font-bold tw-text-lg">@sceneOutcome.SceneDescription</h3>
-                <table class="tw-w-full tw-text-sm tw-mt-2">
-                    <thead>
-                    <tr class="tw-bg-gray-100">
-                        <th class="tw-py-2 tw-px-4 tw-font-semibold">Character</th>
-                        <th class="tw-py-2 tw-px-4 tw-font-semibold">Effect</th>
+        <div class="tw-mt-4">
+            <h3 class="tw-font-bold tw-text-lg">@_gameData.SceneOutcome.Description</h3>
+            <table class="tw-w-full tw-text-sm tw-mt-2">
+                <thead>
+                <tr class="tw-bg-gray-100">
+                    <th class="tw-py-2 tw-px-4 tw-font-semibold">Character</th>
+                    <th class="tw-py-2 tw-px-4 tw-font-semibold">Effect</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var effect in _gameData.SceneOutcome.EffectsOnCharacters)
+                {
+                    <tr>
+                        <td class="tw-py-2 tw-px-4">@effect.CharacterName</td>
+                        <td class="tw-py-2 tw-px-4">@effect.Effect</td>
                     </tr>
-                    </thead>
-                    <tbody>
-                    @foreach (var effect in sceneOutcome.EffectsOnCharacters)
-                    {
-                        <tr>
-                            <td class="tw-py-2 tw-px-4">@effect.CharacterName</td>
-                            <td class="tw-py-2 tw-px-4">@effect.Effect</td>
-                        </tr>
-                    }
-                    </tbody>
-                </table>
-            </div>
-        }
+                }
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <div class="tw-flex tw-flex-row tw-overflow-x-auto tw-my-4">
@@ -115,23 +130,61 @@
     <button @onclick="LoadGameData" class="tw-px-4 tw-py-2 tw-bg-blue-500 tw-text-white tw-rounded">Load Game Data</button>
 </div>
 
-<div class="tw-my-4">
-    <textarea @bind="_textOutput" class="tw-w-full tw-p-2 tw-border tw-border-gray-300 tw-rounded" rows="10"></textarea>
-    <button @onclick="CreateSummary" class="tw-px-4 tw-py-2 tw-bg-blue-500 tw-text-white tw-rounded">Create Summary</button>
-</div>
-
 @code {
-    private string _jsonInput;
-    private string _textOutput;
-    private GameData _gameData;
+    bool _isLoading;
+    string _jsonInput;
+    GameData _gameData;
 
-    private void LoadGameData()
+    void LoadGameData()
     {
         _gameData = System.Text.Json.JsonSerializer.Deserialize<GameData>(_jsonInput, Json.DefaultSerializerOptions);
     }
 
-    private void CreateSummary()
+    async void StartGame()
     {
-        _textOutput = GameData.CreateGameSummary(_gameData);
+        if (Game.Status == ServiceStatus.Running)
+        {
+            Monitor.UnregisterAll(this);
+        }
+        else
+        {
+            Monitor.Register<IDndGameService>(this);
+            try
+            {
+                _isLoading = true;
+                StateHasChanged();
+                _gameData = await Game.StartGameAsync();
+                StateHasChanged();
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+            }
+            finally
+            {
+                _isLoading = false;
+                StateHasChanged();
+            }
+        }
+    }
+
+    async void NextScene()
+    {
+        try
+        {
+            _isLoading = true;
+            StateHasChanged();
+            _gameData = await Game.NextSceneAsync(_gameData);
+            StateHasChanged();
+        }
+        catch (Exception e)
+        {
+            Debug.WriteLine(e);
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
     }
 }

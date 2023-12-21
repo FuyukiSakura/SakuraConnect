@@ -77,6 +77,7 @@ namespace Sakura.Live.Connect.Dreamer
         {
             builder.Services.AddSingleton<BigBrainService>();
             builder.Services.AddSingleton<GreetingService>();
+            builder.Services.AddSingleton<IDndGameService, GalGameService>();
             builder.Services.AddSingleton<IAiCharacterService, AiCharacterService>();
             builder.Services.AddSingleton<AudienceAgent>();
         }

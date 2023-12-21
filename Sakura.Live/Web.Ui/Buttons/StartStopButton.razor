@@ -1,6 +1,7 @@
 ﻿<div class="d-grid gap-2">
     <button type="button"
             class="btn @GetClasses()"
+            disabled="@(!Enabled)"
             @onclick="OnClick">@GetText()</button>
 </div>
 
@@ -22,6 +23,12 @@
     /// </summary>
     [Parameter]
     public bool IsRunning { get; set; }
+
+    /// <summary>
+    /// Enables or disables the button
+    /// </summary>
+    [Parameter]
+    public bool Enabled { get; set; } = true;
 
     /// <summary>
     /// Gets or sets the save button callback action
