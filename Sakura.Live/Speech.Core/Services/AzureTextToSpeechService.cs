@@ -140,10 +140,16 @@ namespace Sakura.Live.Speech.Core.Services
                 await Task.Delay(HeartBeat.Default);
             }
 
+            if (synthesizer == null)
+            {
+                // Service not running
+                return;
+            }
+
             try
             {
-                // Makes sure the current synthsizer is stopped
-                await synthesizer?.StopSpeakingAsync();
+                // Makes sure the current synthesizer is stopped
+                await synthesizer.StopSpeakingAsync();
             }
             catch (Exception e)
             {
