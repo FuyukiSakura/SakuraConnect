@@ -9,6 +9,11 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         string Name { get; set; }
 
         /// <summary>
+        /// How the stream should be started
+        /// </summary>
+        string Topic { get; set; }
+
+        /// <summary>
         /// Defines the character of the ai
         /// </summary>
         string Character { get; set; }
@@ -31,6 +36,12 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         string GetGreetingPrompt();
 
         /// <summary>
+        /// Gets the topic prompt for today's stream
+        /// </summary>
+        /// <returns></returns>
+        string GetTopicPrompt();
+
+        /// <summary>
         /// Gets the personality prompt for open AI according to the character
         /// </summary>
         /// <returns>A prompt to instruct Open AI on how to talk to the user.</returns>
@@ -40,15 +51,5 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         /// Gets the audience guiding prompt for open AI according to the audience character
         /// </summary>
         string GetAudiencePrompt();
-
-        /// <summary>
-        /// Saves OpenAI settings to the system
-        /// </summary>
-        void SaveSettings();
-
-        /// <summary>
-        /// Loads OpenAI settings from the system
-        /// </summary>
-        void LoadSettings();
     }
 }

@@ -20,6 +20,11 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         ///
         /// <inheritdoc />
         ///
+        public string Topic { get; set; } = "";
+
+        ///
+        /// <inheritdoc />
+        ///
         public string Character { get; set; } = "";
 
         ///
@@ -58,6 +63,15 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         ///
         /// <inheritdoc />
         ///
+        public string GetTopicPrompt()
+        {
+            SaveSettings();
+            return $"{Topic}";
+        }
+
+        ///
+        /// <inheritdoc />
+        ///
         public string GetPersonalityPrompt()
         {
             SaveSettings();
@@ -73,23 +87,25 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
             return $"{AudienceCharacter}";
         }
 
-        ///
-        /// <inheritdoc />
-        ///
-        public void SaveSettings()
+        /// <summary>
+        /// Saves OpenAI settings to the system
+        /// </summary>
+        void SaveSettings()
         {
             _settingsService.Set(OpenAiPreferenceKeys.AiName, Name);
+            _settingsService.Set(OpenAiPreferenceKeys.AiTopic, Topic);
             _settingsService.Set(OpenAiPreferenceKeys.CharacterPrompt, Character);
             _settingsService.Set(OpenAiPreferenceKeys.AudienceAgentPrompt, AudienceCharacter);
             _settingsService.Set(OpenAiPreferenceKeys.GreetingPrompt, GreetingStyle);
         }
 
-        ///
-        /// <inheritdoc />
-        ///
-        public void LoadSettings()
+        /// <summary>
+        /// Loads OpenAI settings from the system
+        /// </summary>
+        void LoadSettings()
         {
             Name = _settingsService.Get(OpenAiPreferenceKeys.AiName, "");
+            Topic = _settingsService.Get(OpenAiPreferenceKeys.AiTopic, "We are just chitchatting.");
             Character = _settingsService.Get(OpenAiPreferenceKeys.CharacterPrompt, "You are a vtuber");
             AudienceCharacter = _settingsService.Get(OpenAiPreferenceKeys.AudienceAgentPrompt, "You are a cool and engaging audience");
             GreetingStyle = _settingsService.Get(OpenAiPreferenceKeys.GreetingPrompt, "Act cute");

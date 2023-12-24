@@ -60,7 +60,8 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
                 {
                     ChatMessage.FromSystem(_characterService.GetPersonalityPrompt() + "\r\n\r\nOutput requirements\r\n"
 	                    + SystemPrompts.OutputJson + " "
-                        + SystemPrompts.EmotionAndLanguage)
+                        + SystemPrompts.EmotionAndLanguage),
+                    ChatMessage.FromUser(_characterService.GetTopicPrompt())
                 },
                 Model = OpenAI.ObjectModels.Models.Gpt_4_1106_preview,
                 Temperature = 1.21f,
@@ -104,11 +105,14 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         ///
         /// <inheritdoc />
         ///
-        public override Task StartAsync()
+        public override async Task StartAsync()
         {
             _messenger.Register<CommentReceivedEventArg>(this, ThinkOnCommentReceived);
             _monitor.Register<SpeechQueueService>(this);
-            return base.StartAsync();
+
+            var result = await ThinkAsync();
+            NotifyCommentFinished(result);
+            await base.StartAsync();
         }
 
         /// <summary>
@@ -139,21 +143,29 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
 	        }
             await _thinkLock.WaitAsync();
 
+	        var result = await ThinkAsync();
+            NotifyCommentFinished(result);
+            _thinkLock.Release();
+            _isWaitingForResponse = false;
+        }
+
+        /// <summary>
+        /// Notify the system that the comment has finished loading
+        /// </summary>
+        /// <param name="text"></param>
+        void NotifyCommentFinished(string text)
+        {
             var comment = new CommentData
             {
                 Role = SpeechQueueRole.Self,
                 Username = SystemNames.AI,
+                Comment = text,
                 ReceivedAt = DateTime.Now
             };
-	        var result = await ThinkAsync();
-            comment.Comment = result;
             _messenger.Send(new CommentReceivedEventArg
             {
                 Comments = { comment }
             });
-
-            _thinkLock.Release();
-            _isWaitingForResponse = false;
         }
 
         ///

@@ -34,13 +34,6 @@ namespace Sakura.Live.Connect.Dreamer.Services.Twitch
         {
             _monitor = monitor;
             _messenger = messenger;
-            _chatHistory.Add(new CommentData
-            {
-                Comment = "Hello!",
-                Username = SystemNames.AI,
-                Role = SpeechQueueRole.Self,
-                ReceivedAt = DateTime.Now
-            });
         }
 
         /// <summary>

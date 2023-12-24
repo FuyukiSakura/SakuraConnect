@@ -21,8 +21,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Twitch
         /// <summary>
         /// Creates a new instance of <see cref="AiChatServices" />
         /// </summary>
-        public AiChatServices(
-            IThePandaMonitor monitor)
+        public AiChatServices(IThePandaMonitor monitor)
         {
             _monitor = monitor;
         }

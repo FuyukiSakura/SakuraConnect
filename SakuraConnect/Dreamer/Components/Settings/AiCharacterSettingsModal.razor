@@ -23,6 +23,14 @@
                     </TextEdit>
                 </Field>
                 <Field>
+                    <FieldLabel>How to start?</FieldLabel>
+                    <textarea class="form-control"
+                              rows="3"
+                              value="@CharacterService.Topic"
+                              @onchange="@(args => CharacterService.Topic = args.Value?.ToString())"></textarea>
+                    <FieldHelp>You can treat this like today's topic.</FieldHelp>
+                </Field>
+                <Field>
                     <FieldLabel>Personality</FieldLabel>
                     <textarea class="form-control"
                               rows="10"
@@ -33,7 +41,7 @@
                  <Field>
                      <FieldLabel>Audience Agent</FieldLabel>
                      <textarea class="form-control"
-                               rows="10" 
+                               rows="5" 
                                value="@CharacterService.AudienceCharacter"
                                @onchange="@(args => CharacterService.AudienceCharacter = args.Value?.ToString())"></textarea>
                      <FieldHelp>The audience agent assists the AI to talk when there is no audience</FieldHelp>

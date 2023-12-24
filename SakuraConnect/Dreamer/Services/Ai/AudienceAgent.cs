@@ -84,7 +84,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         /// <param name="obj"></param>
         async void OnFinishedSpeaking(EndedSpeakingEventArg obj)
         {
-            if (_chatMonitorService.GetLastComment().Role != SpeechQueueRole.Self)
+            if (_chatMonitorService.GetLastComment()?.Role != SpeechQueueRole.Self)
             {
                 // New comment is received, no need to assist
                 return;
