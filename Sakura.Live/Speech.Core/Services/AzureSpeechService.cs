@@ -46,10 +46,6 @@ namespace Sakura.Live.Speech.Core.Services
         public override async Task StartAsync()
         {
             _settings.Save();
-            if (_recognizer != null)
-            {
-                await StopAsync();
-            }
 
             // Currently the v2 endpoint is required. In a future SDK release you won't need to set it.
             var endpointString = $"wss://{_settings.Region}.stt.speech.microsoft.com/speech/universal/v2";
@@ -69,8 +65,8 @@ namespace Sakura.Live.Speech.Core.Services
             _recognizer.SessionStopped += RecognizerOnSessionStopped;
 
             // Starts continuous recognition. Uses StopContinuousRecognitionAsync() to stop recognition.
+            await base.StartAsync();
             await _recognizer.StartContinuousRecognitionAsync();
-            await HeartBeatAsync();
         }
 
         /// <summary>
@@ -94,31 +90,23 @@ namespace Sakura.Live.Speech.Core.Services
             await StopAsync();
         }
 
-        /// <summary>
-        /// Stops the recognition service
-        /// </summary>
-        public override async Task StopAsync()
+        ///
+        /// <inheritdoc />
+        ///
+        protected override async Task HeartBeatAsync(CancellationToken token)
         {
-            if (_recognizer != null)
-            {
-                await _recognizer.StopContinuousRecognitionAsync();
-            }
-            await base.StopAsync();
-        }
-
-        /// <summary>
-        /// Updates the heart beat timer when
-        /// session stop is not detected
-        /// </summary>
-        /// <returns></returns>
-        async Task HeartBeatAsync()
-        {
-            Status = ServiceStatus.Running;
-            while (Status == ServiceStatus.Running)
-            {
-                LastUpdate = DateTime.Now;
-                await Task.Delay(HeartBeat.Default);
-            }
+            var recognizer = _recognizer!;
+	        while (!token.IsCancellationRequested
+	               && Status == ServiceStatus.Running)
+	        {
+		        LastUpdate = DateTime.Now;
+				await Task.Delay(HeartBeat.Default, CancellationToken.None);
+			}
+            recognizer.Recognizing -= Recognizing;
+            recognizer.Recognized -= Recognized;
+            recognizer.Canceled -= RecognizerOnCanceled;
+            recognizer.SessionStopped -= RecognizerOnSessionStopped;
+            await recognizer.StopContinuousRecognitionAsync();
         }
     }
 }

@@ -1,10 +1,11 @@
-﻿using OpenAI.GPT3.ObjectModels.RequestModels;
+﻿using OpenAI.ObjectModels.RequestModels;
+using Sakura.Live.OpenAi.Core.Services;
 using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Helpers;
 using Sakura.Live.Twitch.Core.Services;
 using TwitchLib.Client.Events;
 
-namespace Sakura.Live.OpenAi.Core.Services
+namespace Sakura.Live.Connect.Dreamer.Services.Ai
 {
     /// <summary>
     /// Greets the user with a message
@@ -59,7 +60,7 @@ namespace Sakura.Live.OpenAi.Core.Services
                         + $"You can only response within {Characters} words."), // Adds character limits
                     ChatMessage.FromUser($"{username}: {message}"),
                 },
-                Model = OpenAI.GPT3.ObjectModels.Models.ChatGpt3_5Turbo,
+                Model = OpenAI.ObjectModels.Models.Gpt_3_5_Turbo_16k_0613,
                 Temperature = 1,
                 MaxTokens = 256
             };
@@ -73,9 +74,8 @@ namespace Sakura.Live.OpenAi.Core.Services
         /// <returns></returns>
         public override Task StartAsync()
         {
-            _twitchChat.OnMessageReceived += TwitchChat_OnMessageReceived;
-            _monitor.Register(this, _twitchChat);
-            _monitor.Register(this, _service);
+            // _twitchChat.OnMessageReceived += TwitchChat_OnMessageReceived;
+            _monitor.Register<TwitchChatService>(this);
             return base.StartAsync();
         }
 
@@ -102,7 +102,7 @@ namespace Sakura.Live.OpenAi.Core.Services
         ///
         public override Task StopAsync()
         {
-            _monitor.Unregister(this);
+            _monitor.UnregisterAll(this);
             return base.StopAsync();
         }
     }

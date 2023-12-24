@@ -3,25 +3,28 @@
 @using Sakura.Live.Connect.Dreamer.Services
 @using Sakura.Live.Speech.Core.Services
 @using Microsoft.CognitiveServices.Speech
-@using Sakura.Live.ThePanda.Core
+@using Sakura.Live.Connect.Dreamer.Services.Ai
+@using Sakura.Live.Connect.Dreamer.Services.Twitch
 @inject OpenAiService OpenAiService
 @inject GreetingService GreetingService
 @inject AzureSpeechService AzureSpeechService
 @inject AzureConversationService AzureConversationService
-@inject TwitchChatResponseService TwitchChatResponseService
+@inject AiChatServices AiChatServices
+@inject OneCommeService OneCommeSvc
 
-<h1>Open AI</h1>
+<h3>AI VTubing</h3>
 
 <AiCharacterSettingsModal />
+<ServiceConfigButton Service="@OneCommeSvc"
+                     Text="OneComme" />
 <TwitchSettingsModal />
 <AzureTextAnalyticsSettingsModal />
 
-<h2>Greetings</h2>
+<h4>Greetings</h4>
 
 <p>Create your own style of greetings dynamically!</p>
 
 <div class="input-group mb-3">
-    <ServiceConfigButton Service="@OpenAiService" />
     <span class="input-group-text"
           id="open-ai-key">API Key</span>
     <input type="password"
@@ -45,16 +48,16 @@
                  IsRunning="@IsGreetingServiceRunning"
                  @onclick="StartGreetingService_OnClick" />
 
-<h2>Conversational</h2>
+<h4>Voice Input</h4>
 
 <AzureSpeechSettingsModal />
 
-<h4>Input</h4>
+<h5>Input</h5>
 <article>
     @SpeechInput
 </article>
 
-<h4>Response</h4>
+<h5>Response</h5>
 <article>
     @ConversationResponse
 </article>
@@ -65,9 +68,16 @@
                  @onclick="StartConversationService_OnClick" />
 
 <h3>Chat response</h3>
-<ServiceConfigButton Service="@TwitchChatResponseService"
-                     Text="Start / Stop"
-                     Clicked="StartChatService_OnClick" />
+<div class="tw-flex tw-flex-row tw-space-x-2">
+    <StartStopButton IsRunning="@AiChatServices.IsChatResponseRunning"
+                     StartText="Start"
+                     StopText="Stop"
+                     OnClick="StartChatService_OnClick" />
+    <StartStopButton IsRunning="@AiChatServices.IsChatMonitorRunning"
+                     StartText="Monitor chat"
+                     StopText="Stop monitoring"
+                     OnClick="MonitorChat_OnClick" />
+</div>
 
 @code {
     /// <summary>
@@ -152,15 +162,17 @@
     /// <summary>
     /// Starts monitoring for chat messages and responding to them
     /// </summary>
-    void StartChatService_OnClick() {
-        if (TwitchChatResponseService.Status == ServiceStatus.Running)
-        {
-            TwitchChatResponseService.Stop();
-        }
-        else
-        {
-            TwitchChatResponseService.Start();
-        }
+    async void StartChatService_OnClick()
+    {
+        await AiChatServices.ToggleChatResponseAsync();
+    }
+
+    /// <summary>
+    /// Starts the chat monitor
+    /// </summary>
+    async void MonitorChat_OnClick()
+    {
+        await AiChatServices.ToggleChatMonitorAsync();
     }
 
     ///

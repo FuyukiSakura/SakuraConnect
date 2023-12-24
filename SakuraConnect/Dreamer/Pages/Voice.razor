@@ -9,7 +9,7 @@
 @inject ObsSocketService Obs
 @inject TranslationService TranslationSvc;
 
-<h1>Voice</h1>
+<h3>Subtitle</h3>
 
 <ObsSettingsModal/>
 <br /><br />
@@ -152,7 +152,7 @@
     {
         if (_isServiceRunning)
         {
-            MonitorSvc.Unregister(this);
+            MonitorSvc.UnregisterAll(this);
             await StopRecognitionAsync();
             _isServiceRunning = false;
         }
@@ -160,7 +160,7 @@
         {
             TranslationSvc.SaveSettings();
             Preferences.Set(ObsSourceDefaultKey, ObsSource);
-            MonitorSvc.Register(this, Obs);
+            MonitorSvc.Register<ObsSocketService>(this);
             await StartRecognitionAsync();
             _isServiceRunning = true;
         }

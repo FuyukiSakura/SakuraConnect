@@ -7,12 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.AI.TextAnalytics" Version="5.2.0" />
-    <PackageReference Include="Microsoft.CognitiveServices.Speech" Version="1.27.0" />
+    <PackageReference Include="Azure.AI.TextAnalytics" Version="5.3.0" />
+    <PackageReference Include="Microsoft.CognitiveServices.Speech" Version="1.33.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\SakuraConnect\Shared\SakuraConnect.Shared.csproj" />
     <ProjectReference Include="..\ThePanda.Core\Sakura.Live.ThePanda.Core.csproj" />
   </ItemGroup>
 
