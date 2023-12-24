@@ -143,8 +143,18 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
 	        }
             await _thinkLock.WaitAsync();
 
+            var comment = new CommentData
+            {
+                Role = SpeechQueueRole.Self,
+                Username = SystemNames.AI,
+                ReceivedAt = DateTime.Now
+            };
 	        var result = await ThinkAsync();
-            NotifyCommentFinished(result);
+            comment.Comment = result;
+            _messenger.Send(new CommentReceivedEventArg
+            {
+                Comments = { comment }
+            });
             _thinkLock.Release();
             _isWaitingForResponse = false;
         }
