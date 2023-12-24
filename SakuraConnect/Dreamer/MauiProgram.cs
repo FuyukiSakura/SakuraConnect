@@ -2,15 +2,15 @@
 using BlazorBootstrap;
 using Blazorise;
 using Blazorise.Bootstrap;
+using CommunityToolkit.Maui;
 using Sakura.Live.Cognitive.Translation.Core;
 using Sakura.Live.Connect.Dreamer.Services;
 using Sakura.Live.Connect.Dreamer.Services.Ai;
+using Sakura.Live.Connect.Dreamer.Services.Twitch;
 using Sakura.Live.Obs.Core;
 using Sakura.Live.OpenAi.Core;
-using Sakura.Live.OpenAi.Core.Services;
 using Sakura.Live.Osc.Core;
 using Sakura.Live.Speech.Core;
-using Sakura.Live.Speech.Core.Services;
 using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Interfaces;
 using Sakura.Live.Twitch.Core;
@@ -24,9 +24,11 @@ namespace Sakura.Live.Connect.Dreamer
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
+                .UseMauiCommunityToolkit()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+                    fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
 
             builder.Services.AddMauiBlazorWebView();
@@ -44,15 +46,49 @@ namespace Sakura.Live.Connect.Dreamer
 
             builder.Services.AddOpenAiCore();
             builder.Services.AddTwitchCore();
-            builder.Services.AddScoped<ISettingsService, SettingsService>();
-            builder.Services.AddScoped<IAiCharacterService, AiCharacterService>();
-            builder.Services.AddScoped<AzureConversationService>();
-            builder.Services.AddScoped<TwitchChatResponseService>();
+            AddDreamerCore(builder);
+            AddRegisters(builder);
+            AddTheAIs(builder);
 
             var app = builder.Build();
             var monitor = app.Services.GetService<IThePandaMonitor>();
             monitor!.StartAsync();
             return app;
+        }
+
+        /// <summary>
+        /// Add the services of the dreamer app
+        /// </summary>
+        /// <param name="builder"></param>
+        static void AddDreamerCore(MauiAppBuilder builder)
+        {
+            builder.Services.AddScoped<ISettingsService, SettingsService>();
+            builder.Services.AddSingleton<IPandaMessenger, SimpleMessenger>();
+            builder.Services.AddSingleton<OneCommeService>();
+            builder.Services.AddScoped<AzureConversationService>();
+            builder.Services.AddSingleton<ChatMonitorService>();
+            builder.Services.AddSingleton<AiChatServices>();
+        }
+
+        /// <summary>
+        /// The registers handles service status
+        /// </summary>
+        /// <param name="builder"></param>
+        static void AddRegisters(MauiAppBuilder builder)
+        {
+            builder.Services.AddSingleton<AiChatServices>();
+        }
+
+        /// <summary>
+        /// Add the services of the ai
+        /// </summary>
+        /// <param name="builder"></param>
+        static void AddTheAIs(MauiAppBuilder builder)
+        {
+            builder.Services.AddSingleton<BigBrainService>();
+            builder.Services.AddSingleton<GreetingService>();
+            builder.Services.AddSingleton<IAiCharacterService, AiCharacterService>();
+            builder.Services.AddSingleton<AudienceAgent>();
         }
     }
 }

@@ -24,12 +24,12 @@ namespace Sakura.Live.Obs.Core.Services
         ///
         /// <inheritdoc cref="OBSWebsocket.Connected"/>
         ///
-        public EventHandler? Connected;
+        public EventHandler? Connected { get; set; }
 
         ///
         /// <inheritdoc cref="OBSWebsocket.Disconnected"/>
         ///
-        public EventHandler? Disconnected;
+        public EventHandler? Disconnected { get; set; }
 
         /// <summary>
         /// Creates a new instance of <see cref="ObsSocketService" />
@@ -116,12 +116,13 @@ namespace Sakura.Live.Obs.Core.Services
         /// Updates the heart beat timer when the obs connection is still connected
         /// </summary>
         /// <returns></returns>
-        protected override async Task HeartBeatAsync()
+        protected override async Task HeartBeatAsync(CancellationToken token)
         {
-            while (_isConnected)
+            while (_isConnected
+                   && !token.IsCancellationRequested)
             {
                 LastUpdate = DateTime.Now;
-                await Task.Delay(HeartBeat.Default);
+                await Task.Delay(HeartBeat.Default, CancellationToken.None);
             }
         }
 

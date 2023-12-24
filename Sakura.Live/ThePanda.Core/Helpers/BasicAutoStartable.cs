@@ -1,4 +1,5 @@
-﻿using Sakura.Live.ThePanda.Core.Interfaces;
+﻿using System.Diagnostics;
+using Sakura.Live.ThePanda.Core.Interfaces;
 
 namespace Sakura.Live.ThePanda.Core.Helpers
 {
@@ -9,6 +10,12 @@ namespace Sakura.Live.ThePanda.Core.Helpers
 	public abstract class BasicAutoStartable : IAutoStartable
 	{
 		ServiceStatus _status = ServiceStatus.Stopped;
+		readonly SemaphoreSlim _statusLock = new (1,1);
+		
+        ///
+        /// <inheritdoc />
+        ///
+		public CancellationTokenSource CancellationTokenSource { get; protected set; } = new ();
 
 		///
 		/// <inheritdoc />
@@ -29,26 +36,58 @@ namespace Sakura.Live.ThePanda.Core.Helpers
         /// Checks if the thread is still running
         /// </summary>
         /// <returns></returns>
-        protected virtual async Task HeartBeatAsync()
+        protected virtual async Task HeartBeatAsync(CancellationToken token)
         {
-            Status = ServiceStatus.Running;
-            while (Status == ServiceStatus.Running) // Checks if the client is connected
+            while (Status == ServiceStatus.Running
+                   && !token.IsCancellationRequested)
             {
                 LastUpdate = DateTime.Now;
-                await Task.Delay(HeartBeat.Default);
+                await Task.Delay(HeartBeat.Default, token);
             }
         }
+
+		/// <summary>
+		/// The actual start of the service
+		/// </summary>
+		/// <returns></returns>
+		public virtual Task StartAsync()
+		{
+            _ = HeartBeatAsync(CancellationTokenSource.Token);
+            return Task.CompletedTask;
+		}
 
 		///
 		/// <inheritdoc />
 		///
-		public virtual async Task StartAsync()
-		{
-			Status = ServiceStatus.Running;
-            _ = HeartBeatAsync();
-			Started?.Invoke(this, EventArgs.Empty);
-			await Task.CompletedTask;
-		}
+        public async Task StartOnceAsync()
+        {
+			await _statusLock.WaitAsync();
+			CancellationTokenSource.Cancel(); // Cancel the previous thread
+			CancellationTokenSource = new CancellationTokenSource();
+
+            if (Status == ServiceStatus.Running)
+            {
+                _statusLock.Release();
+                return;
+            }
+
+            try
+            {
+                Status = ServiceStatus.Running;
+				LastUpdate = DateTime.Now;
+                await StartAsync();
+                Started?.Invoke(this, EventArgs.Empty);
+            }
+            catch (Exception e)
+            {
+				Debug.WriteLine(e.Message);
+                Status = ServiceStatus.Error;
+            }
+            finally
+            {
+                _statusLock.Release();
+            }
+        }
 
 		///
 		/// <inheritdoc />
@@ -57,6 +96,7 @@ namespace Sakura.Live.ThePanda.Core.Helpers
 		{
 			Stopped?.Invoke(this, EventArgs.Empty);
 			Status = ServiceStatus.Stopped;
+			CancellationTokenSource.Cancel();
 			await Task.CompletedTask;
 		}
 

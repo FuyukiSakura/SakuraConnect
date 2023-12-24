@@ -1,20 +1,23 @@
-﻿using Microsoft.CognitiveServices.Speech;
-using Sakura.Live.Speech.Core.Models;
+﻿using System.Diagnostics;
+using Microsoft.CognitiveServices.Speech;
+using Sakura.Live.ThePanda.Core;
+using Sakura.Live.ThePanda.Core.Helpers;
 
 namespace Sakura.Live.Speech.Core.Services
 {
     /// <summary>
     /// Accesses Azure text-to-speech services
     /// </summary>
-    public class AzureTextToSpeechService
+    public class AzureTextToSpeechService : BasicAutoStartable
     {
+        SpeechSynthesizer? _speechSynthesizer;
+
         // Dependencies
         readonly AzureSpeechSettingsService _settings;
 
         /// <summary>
         /// Creates a new instance of <see cref="AzureTextToSpeechService" />
         /// </summary>
-        /// <param name="settings"></param>
         public AzureTextToSpeechService(AzureSpeechSettingsService settings)
         {
             _settings = settings;
@@ -24,18 +27,43 @@ namespace Sakura.Live.Speech.Core.Services
         /// Speaks the specified text
         /// </summary>
         /// <param name="text"></param>
-        /// <param name="language">The language to speak in</param>
         /// <returns></returns>
-        public async Task SpeakAsync(string text, string language)
+        public async Task<SpeechSynthesisResult?> SpeakAsync(string text)
         {
-            var speechConfig = SpeechConfig.FromSubscription(_settings.SubscriptionKey, _settings.Region);
+            if (_speechSynthesizer == null)
+            {
+                // Service not running
+                return null;
+            }
 
             // The language of the voice that speaks.
-            using var speechSynthesizer = new SpeechSynthesizer(speechConfig);
-            var speechSynthesisResult = await speechSynthesizer.SpeakSsmlAsync(CreateSsml(text, language));
+            var speechSynthesisResult = await _speechSynthesizer.SpeakSsmlAsync(CreateSsml(text));
 #if DEBUG 
             OutputSpeechSynthesisResult(speechSynthesisResult, text);
 #endif
+            return speechSynthesisResult;
+        }
+
+        /// <summary>
+        /// Interrupts the speech
+        /// </summary>
+        /// <returns></returns>
+        public async Task InterruptAsync()
+        {
+            if (_speechSynthesizer == null)
+            {
+                // Service not running
+                return;
+            }
+
+            try
+            {
+                await _speechSynthesizer.StopSpeakingAsync();
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+            }
         }
 
 #if DEBUG 
@@ -53,12 +81,12 @@ namespace Sakura.Live.Speech.Core.Services
                     break;
                 case ResultReason.Canceled:
                     var cancellation = SpeechSynthesisCancellationDetails.FromResult(speechSynthesisResult);
-                    Console.WriteLine($"CANCELED: Reason={cancellation.Reason}");
+                    Debug.WriteLine($"CANCELED: Reason={cancellation.Reason}");
 
                     if (cancellation.Reason == CancellationReason.Error)
                     {
-                        Console.WriteLine($"CANCELED: ErrorCode={cancellation.ErrorCode}");
-                        Console.WriteLine($"CANCELED: ErrorDetails=[{cancellation.ErrorDetails}]");
+                        Debug.WriteLine($"CANCELED: ErrorCode={cancellation.ErrorCode}");
+                        Debug.WriteLine($"CANCELED: ErrorDetails=[{cancellation.ErrorDetails}]");
                         Console.WriteLine($"CANCELED: Did you set the speech resource key and region values?");
                     }
                     break;
@@ -72,25 +100,61 @@ namespace Sakura.Live.Speech.Core.Services
         /// Creates the SSML script for the specified text
         /// </summary>
         /// <param name="text"></param>
-        /// <param name="language"></param>
         /// <returns></returns>
-        public static string CreateSsml(string text, string language)
+        public static string CreateSsml(string text)
         {
-            var voice = language switch
-            {
-                Languages.Mandarin => "zh-TW-HsiaoChenNeural",
-                Languages.Japanese => "ja-JP-NanamiNeural",
-                Languages.Cantonese => "zh-HK-HiuGaaiNeural",
-                _ => "zh-HK-HiuGaaiNeural"
-            };
+            return $"<speak version=\"1.0\" xmlns=\"https://www.w3.org/2001/10/synthesis\" xml:lang=\"en-US\"><voice name=\"en-US-JennyMultilingualV2Neural\" sentenceboundarysilence=\"500ms\" commasilence-exact=\"250ms\" semicolonsilence-exact=\"250ms\"><prosody pitch=\"+150%\">{text}</prosody></voice></speak>";
+        }
 
-            var rate = language switch
+        ///
+        /// <inheritdoc />
+        ///
+        public override async Task StartAsync()
+        {
+	        _settings.Save();
+            var speechConfig = SpeechConfig.FromSubscription(_settings.SubscriptionKey, _settings.Region);
+            _speechSynthesizer = new SpeechSynthesizer(speechConfig);
+            await base.StartAsync();
+        }
+
+        ///
+        /// <inheritdoc />
+        ///
+        public override async Task StopAsync()
+        {
+            await base.StopAsync();
+            await InterruptAsync();
+            _speechSynthesizer = null;
+        }
+
+        ///
+        /// <inheritdoc />
+        ///
+        protected override async Task HeartBeatAsync(CancellationToken token)
+        {
+            var synthesizer = _speechSynthesizer;
+            while (Status == ServiceStatus.Running
+                   && !token.IsCancellationRequested)
             {
-                Languages.Cantonese => "+50%",
-                Languages.English => "+20%",
-                _ => "+0%"
-            };
-            return $"<speak version=\"1.0\" xmlns=\"https://www.w3.org/2001/10/synthesis\" xml:lang=\"{language}\"><voice name=\"{voice}\"><prosody pitch=\"+700%\" rate=\"{rate}\">{text}</prosody></voice></speak>";
+                LastUpdate = DateTime.Now;
+                await Task.Delay(HeartBeat.Default, CancellationToken.None);
+            }
+
+            if (synthesizer == null)
+            {
+                // Service not running
+                return;
+            }
+
+            try
+            {
+                // Makes sure the current synthesizer is stopped
+                await synthesizer.StopSpeakingAsync();
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+            }
         }
     }
 }

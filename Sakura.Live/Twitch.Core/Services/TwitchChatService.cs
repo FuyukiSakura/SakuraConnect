@@ -5,7 +5,9 @@ using Sakura.Live.ThePanda.Core.Interfaces;
 using Sakura.Live.Twitch.Core.Models;
 using TwitchLib.Client;
 using TwitchLib.Client.Events;
+using TwitchLib.Client.Exceptions;
 using TwitchLib.Client.Models;
+using TwitchLib.Communication.Clients;
 
 namespace Sakura.Live.Twitch.Core.Services
 {
@@ -15,7 +17,8 @@ namespace Sakura.Live.Twitch.Core.Services
     public class TwitchChatService : BasicAutoStartable
     {
         readonly ISettingsService _settingsService;
-        readonly TwitchClient _client;
+        readonly IPandaMessenger _messenger;
+        TwitchClient? _client;
 
         /// <summary>
         /// Gets or sets the Twitch username for login
@@ -33,30 +36,13 @@ namespace Sakura.Live.Twitch.Core.Services
         public string Channel { get; set; } = "";
 
         /// <summary>
-        /// Is triggered when a message is received
-        /// </summary>
-        public event EventHandler<OnMessageReceivedArgs>? OnMessageReceived;
-
-        /// <summary>
         /// Creates a new instance of <see cref="TwitchChatService" />
         /// </summary>
-        public TwitchChatService(ISettingsService settings)
+        public TwitchChatService(ISettingsService settings, IPandaMessenger messenger)
         {
-            _client = new TwitchClient();
-            _client.OnLog += ClientOnOnLog;
-            _client.OnMessageReceived += (sender, args) => OnMessageReceived?.Invoke(sender, args);
             _settingsService = settings;
+            _messenger = messenger;
             LoadSettings();
-        }
-
-        /// <summary>
-        /// Shows the Twitch client log
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        static void ClientOnOnLog(object? sender, OnLogArgs e)
-        {
-            Debug.WriteLine(e.Data);
         }
 
         /// <summary>
@@ -85,6 +71,12 @@ namespace Sakura.Live.Twitch.Core.Services
         /// <param name="message"></param>
         public async Task SendMessage(string message)
         {
+            if (_client == null)
+            {
+                // Service not started
+                return;
+            }
+
             var retries = 0;
             while ((!_client.IsConnected 
                    || Status != ServiceStatus.Running)
@@ -94,25 +86,33 @@ namespace Sakura.Live.Twitch.Core.Services
                 await Task.Delay(HeartBeat.Default);
                 ++retries;
             }
-            await _client.SendMessageAsync(Channel, message);
+            _client.SendMessage(Channel, message);
         }
 
         /// <summary>
         /// Checks if the Twitch client is still connected
         /// </summary>
         /// <returns></returns>
-        async Task ReconnectAsync()
+        async Task ReconnectAsync(CancellationToken cancellationToken)
         {
-            while (Status == ServiceStatus.Running) // Checks if the client is connected
+            while (Status == ServiceStatus.Running 
+                   || !cancellationToken.IsCancellationRequested) // Checks if the client is connected
             {
-                await Task.Delay(HeartBeat.Default);
-                if (_client.JoinedChannels.Count > 0)
+                await Task.Delay(HeartBeat.Default, CancellationToken.None);
+                if (_client!.JoinedChannels.Count > 0)
                 {
                     continue;
                 }
 
-                await _client.JoinChannelAsync(Channel);
-                Debug.WriteLine("Twitch client reconnected");
+                try
+                {
+                    await _client.JoinChannelAsync(Channel, true);
+                    Debug.WriteLine("Twitch client reconnected");
+                }
+                catch (ClientNotConnectedException e)
+                {
+                    Debug.WriteLine(e);
+                }
             }
         }
 
@@ -125,8 +125,22 @@ namespace Sakura.Live.Twitch.Core.Services
         async Task Start(string username, string accessToken, string channel)
         {
             var credentials = new ConnectionCredentials(username, accessToken);
+            var customClient = new WebSocketClient();
+            _client = new TwitchClient(customClient);
+            _client.OnMessageReceived += TwitchMessageReceived;
             _client.Initialize(credentials, channel);
             await _client.ConnectAsync();
+        }
+
+        /// <summary>
+        /// Sends the received message to the subscribers
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        Task TwitchMessageReceived(object? sender, OnMessageReceivedArgs e)
+        {
+            _messenger.Send(e);
+            return Task.CompletedTask;
         }
 
         ///
@@ -134,10 +148,10 @@ namespace Sakura.Live.Twitch.Core.Services
         ///
         public override async Task StartAsync()
         {
+            await base.StartAsync();
             SaveSettings();
             await Start(Username, AccessToken, Channel);
-            await base.StartAsync();
-            _ = ReconnectAsync();
+            _ = ReconnectAsync(CancellationTokenSource.Token);
         }
 
         ///
@@ -146,7 +160,14 @@ namespace Sakura.Live.Twitch.Core.Services
         public override async Task StopAsync()
         {
             await base.StopAsync();
+            if (_client == null)
+            {
+                // Service not started
+                return;
+            }
+
             await _client.DisconnectAsync();
+            _client.OnMessageReceived -= TwitchMessageReceived;
         }
     }
 }

@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
-
+	<Import Project="TailwindCss.targets" />
     <PropertyGroup>
-        <TargetFrameworks>net6.0-ios;net6.0-maccatalyst;net6.0-android33.0</TargetFrameworks>
-        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net6.0-windows10.0.19041.0</TargetFrameworks>
+        <TargetFrameworks>$(TargetFrameworks);net8.0-windows10.0.19041.0</TargetFrameworks>
+        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net8.0-windows10.0.19041.0</TargetFrameworks>
         <!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
         <!-- <TargetFrameworks>$(TargetFrameworks);net6.0-tizen</TargetFrameworks> -->
         <OutputType>Exe</OutputType>
@@ -58,7 +58,10 @@
     <ItemGroup>
       <PackageReference Include="Blazorise.Bootstrap" Version="1.2.2" />
       <PackageReference Include="Blazor.Bootstrap" Version="1.5.0" />
-      <PackageReference Include="TwitchLib" Version="3.5.3" />
+      <PackageReference Include="CommunityToolkit.Maui" Version="7.0.0" />
+      <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="8.0.3" />
+      <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+      <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
     </ItemGroup>
 
     <ItemGroup>
@@ -71,6 +74,9 @@
       <ProjectReference Include="..\..\Sakura.Live\Twitch.Core\Sakura.Live.Twitch.Core.csproj" />
       <ProjectReference Include="..\..\Sakura.Live\Web.Ui\Sakura.Live.Web.Ui.csproj" />
       <ProjectReference Include="..\Web.Ui\SakuraConnect.Web.Ui.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
     </ItemGroup>
 
 </Project>

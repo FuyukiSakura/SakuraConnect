@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
-    <PackageReference Include="TwitchLib.Client" Version="4.0.0-preview-17df7187194c865b51ca7635cec638b720d717ed" />
+    <PackageReference Include="TwitchLib.Client" Version="4.0.0-preview-fd131763416cb9f1a31705ca609566d7e7e7fac8" />
   </ItemGroup>
 
   <ItemGroup>

@@ -16,8 +16,14 @@ namespace Sakura.Live.ThePanda.Core
 		/// Adds a service to the monitor list
 		/// </summary>
 		/// <param name="sender">the service that depends on the registered service</param>
-		/// <param name="service">the service to be monitored</param>
-		public void Register(object sender, IAutoStartable service);
+		public void Register<T>(object sender) where T:IAutoStartable;
+
+		/// <summary>
+		/// Unregisters a single service from the monitor list
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="sender"></param>
+		public void Unregister<T>(object sender) where T:IAutoStartable;
 
 		/// <summary>
 		/// Unregisters a parent service and releases all of it's child service 
@@ -27,7 +33,7 @@ namespace Sakura.Live.ThePanda.Core
 		/// A child service can be relied on multiple parents.
 		/// The child service will only stop until all parents are unregistered
 		/// </remarks>
-		public void Unregister(object sender);
+		public void UnregisterAll(object sender);
 
 		/// <summary>
 		/// Starts the panda monitor

@@ -1,7 +1,9 @@
 ﻿using System.Net.Sockets;
 using Sakura.Live.Osc.Core.Events;
+using Sakura.Live.Osc.Core.Models;
 using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Helpers;
+using Sakura.Live.ThePanda.Core.Interfaces;
 
 namespace Sakura.Live.Osc.Core.Services
 {
@@ -10,48 +12,27 @@ namespace Sakura.Live.Osc.Core.Services
     /// </summary>
     public class OscReceiverService : BasicAutoStartable
     {
+        // Dependencies
+        readonly IPandaMessenger _messenger;
+        readonly ISettingsService _settingsSvc;
+
         /// <summary>
         /// Sets the port number the service will listen to
         /// </summary>
         // TODO: Restarts service if port changed
 	    public int Port { get; set; } = 39550;
 
-        CancellationTokenSource? _stopListeningToken;
-
         /// <summary>
-        /// Is triggered when a OSC buffer is received
+        /// Creates a new instance of <see cref="OscReceiverService" />
         /// </summary>
-        public event EventHandler<OscEventArgs>? OscReceived;
-
-        /// <summary>
-        /// Starts listening and duplicating OSC requests
-        /// </summary>
-        /// <param name="listenPort"></param>
-        /// <returns></returns>
-        public async Task StartAsync(int listenPort)
+        public OscReceiverService(ISettingsService settingsSvc, IPandaMessenger messenger)
         {
-            var listener = new UdpClient(listenPort);
-            _stopListeningToken = new CancellationTokenSource();
-            _ = HeartBeatAsync();
-
-            try
-            {
-                while (!_stopListeningToken.IsCancellationRequested)
-                {
-                    var result = await listener.ReceiveAsync(_stopListeningToken.Token);
-                    OscReceived?.Invoke(this, new OscEventArgs
-                    {
-                        OscData = result.Buffer,
-                        CreatedAt = DateTime.Now
-                    });
-                }
-            }
-            finally
-            {
-                listener.Close();
-                Status = ServiceStatus.Stopped;
-            }
+            _settingsSvc = settingsSvc;
+            LoadSettings();
+            _messenger = messenger;
         }
+
+        CancellationTokenSource? _stopListeningToken;
 
         /// <summary>
         /// Checks if the Udp client is connected
@@ -72,8 +53,39 @@ namespace Sakura.Live.Osc.Core.Services
         ///
         public override async Task StartAsync()
         {
+            SaveSettings();
             _ = StartAsync(Port);
             await base.StartAsync();
+        }
+
+        /// <summary>
+        /// Starts listening and duplicating OSC requests
+        /// </summary>
+        /// <param name="listenPort"></param>
+        /// <returns></returns>
+        public async Task StartAsync(int listenPort)
+        {
+            var listener = new UdpClient(listenPort);
+            _stopListeningToken = new CancellationTokenSource();
+            _ = HeartBeatAsync();
+
+            try
+            {
+                while (!_stopListeningToken.IsCancellationRequested)
+                {
+                    var result = await listener.ReceiveAsync(_stopListeningToken.Token);
+                    _messenger.Send(new OscEventArgs
+                    {
+                        OscData = result.Buffer,
+                        CreatedAt = DateTime.Now
+                    });
+                }
+            }
+            finally
+            {
+                listener.Close();
+                Status = ServiceStatus.Stopped;
+            }
         }
 
         ///
@@ -82,7 +94,24 @@ namespace Sakura.Live.Osc.Core.Services
         public override async Task StopAsync()
         {
             _stopListeningToken?.Cancel();
+            _stopListeningToken?.Dispose();
             await base.StopAsync();
+        }
+
+        /// <summary>
+        /// Saves settings to the system
+        /// </summary>
+        void SaveSettings()
+        {
+            _settingsSvc.Set(VmcPreferenceKeys.Port, Port.ToString());
+        }
+
+        /// <summary>
+        /// Loads settings from the system
+        /// </summary>
+        void LoadSettings()
+        {
+            Port = int.Parse(_settingsSvc.Get(VmcPreferenceKeys.Port, "39550"));
         }
     }
 }

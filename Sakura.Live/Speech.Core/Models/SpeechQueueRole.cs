@@ -8,6 +8,7 @@ namespace Sakura.Live.Speech.Core.Models
     {
         User,
         Self,
-        Master
+        Master,
+        Guidance
     }
 }
