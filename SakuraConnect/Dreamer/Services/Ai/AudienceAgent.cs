@@ -90,6 +90,13 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
                 return;
             }
 
+            await Task.Delay(10_000);
+            if (_chatMonitorService.GetLastComment()?.Role != SpeechQueueRole.Self)
+            {
+                // Check again after 10 seconds
+                return;
+            }
+
             var speechLine = "Continue";
             try
             {

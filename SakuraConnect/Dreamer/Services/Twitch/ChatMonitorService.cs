@@ -133,7 +133,8 @@ namespace Sakura.Live.Connect.Dreamer.Services.Twitch
         /// <returns></returns>
         public CommentData GetLastComment()
         {
-            return _chatHistory.LastOrDefault(data => data.Role != SpeechQueueRole.Guidance);
+            return _chatHistory.OrderBy(chat => chat.ReceivedAt)
+                .LastOrDefault(data => data.Role != SpeechQueueRole.Guidance);
         }
 
         ///
