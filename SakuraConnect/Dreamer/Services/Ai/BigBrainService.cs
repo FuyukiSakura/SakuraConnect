@@ -58,8 +58,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
             {
                 Messages = new List<ChatMessage>
                 {
-                    ChatMessage.FromSystem(_characterService.GetPersonalityPrompt() + " "
-                        + SystemPrompts.SeparateLanguageForTts + " "
+                    ChatMessage.FromSystem(_characterService.GetPersonalityPrompt() + "\r\n\r\nOutput requirements\r\n"
 	                    + SystemPrompts.OutputJson + " "
                         + SystemPrompts.EmotionAndLanguage)
                 },

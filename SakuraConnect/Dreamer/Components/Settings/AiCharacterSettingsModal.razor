@@ -24,16 +24,18 @@
                 </Field>
                 <Field>
                     <FieldLabel>Personality</FieldLabel>
-                    <TextEdit @bind-Text="@CharacterService.Character"
-                              Placeholder="You're a vtuber.'">
-                        <FieldHelp>How do you want the bot the behave?</FieldHelp>
-                    </TextEdit>
+                    <textarea class="form-control"
+                              rows="10"
+                              value="@CharacterService.Character"
+                              @onchange="@(args => CharacterService.Character = args.Value?.ToString())"></textarea>
+                     <FieldHelp>How do you want the bot the behave?</FieldHelp>
                 </Field>
                  <Field>
                      <FieldLabel>Audience Agent</FieldLabel>
-                     <textarea class="form-control" rows="3" 
-                     value="@CharacterService.AudienceCharacter"
-                            @onchange="@(args => CharacterService.AudienceCharacter = args.Value?.ToString())"></textarea>
+                     <textarea class="form-control"
+                               rows="10" 
+                               value="@CharacterService.AudienceCharacter"
+                               @onchange="@(args => CharacterService.AudienceCharacter = args.Value?.ToString())"></textarea>
                      <FieldHelp>The audience agent assists the AI to talk when there is no audience</FieldHelp>
                  </Field>
                 <Field>

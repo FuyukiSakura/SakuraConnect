@@ -1,6 +1,5 @@
 ﻿
 using System.Diagnostics;
-using Azure;
 using OpenAI.ObjectModels.RequestModels;
 using Sakura.Live.Connect.Dreamer.Models.Chat;
 using Sakura.Live.Connect.Dreamer.Services.Twitch;
