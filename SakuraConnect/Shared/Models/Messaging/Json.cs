@@ -6,7 +6,7 @@ namespace SakuraConnect.Shared.Models.Messaging
 	/// <summary>
 	/// Helper class for json
 	/// </summary>
-	public class Json
+	public static class Json
 	{
 		/// <summary>
 		/// Gets the default SerializerOptions

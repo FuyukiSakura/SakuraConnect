@@ -35,6 +35,30 @@ namespace Sakura.Live.Osc.Core.Services
         CancellationTokenSource? _stopListeningToken;
 
         /// <summary>
+        /// Checks if the Udp client is connected
+        /// </summary>
+        /// <returns></returns>
+        async Task HeartBeatAsync()
+        {
+            Status = ServiceStatus.Running;
+            while (Status == ServiceStatus.Running)
+            {
+                LastUpdate = DateTime.Now;
+                await Task.Delay(HeartBeat.Default);
+            }
+        }
+
+        ///
+        /// <inheritdoc cref="StartAsync(int)"/>
+        ///
+        public override async Task StartAsync()
+        {
+            SaveSettings();
+            _ = StartAsync(Port);
+            await base.StartAsync();
+        }
+
+        /// <summary>
         /// Starts listening and duplicating OSC requests
         /// </summary>
         /// <param name="listenPort"></param>
@@ -62,30 +86,6 @@ namespace Sakura.Live.Osc.Core.Services
                 listener.Close();
                 Status = ServiceStatus.Stopped;
             }
-        }
-
-        /// <summary>
-        /// Checks if the Udp client is connected
-        /// </summary>
-        /// <returns></returns>
-        async Task HeartBeatAsync()
-        {
-            Status = ServiceStatus.Running;
-            while (Status == ServiceStatus.Running)
-            {
-                LastUpdate = DateTime.Now;
-                await Task.Delay(HeartBeat.Default);
-            }
-        }
-
-        ///
-        /// <inheritdoc cref="StartAsync(int)"/>
-        ///
-        public override async Task StartAsync()
-        {
-            SaveSettings();
-            _ = StartAsync(Port);
-            await base.StartAsync();
         }
 
         ///

@@ -34,6 +34,6 @@ namespace Sakura.Live.Speech.Core.Models
         /// <summary>
         /// Indicates if the item is being spoken
         /// </summary>
-        public bool IsSpeaking = false;
+        public bool IsSpeaking { get; set; }
     }
 }

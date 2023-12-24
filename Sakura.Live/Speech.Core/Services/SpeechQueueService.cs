@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using Microsoft.CognitiveServices.Speech;
-using Sakura.Live.Connect.Dreamer.Services.Ai;
 using Sakura.Live.Speech.Core.Models;
 using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Helpers;
@@ -68,19 +67,18 @@ namespace Sakura.Live.Speech.Core.Services
                 if (speechPair.Key == Guid.Empty)
                 {
                     // No input, wait 2 seconds
-                    await Task.Delay(TimeSpan.FromSeconds(2));
+                    await Task.Delay(TimeSpan.FromSeconds(2), CancellationToken.None);
                     continue;
                 }
 
                 // Simply wait for more results before speaking
                 speechPair.Value.IsSpeaking = true;
-                // await WaitForText(speechPair.Value);
                 var synthResult = await SpeakAsync(speechPair.Value);
                 _speechQueue.Remove(speechPair.Key);
 
                 FireFinishWhenQueueIsEmpty(synthResult, speechPair.Value.Text);
                 // Take short brake before next speech
-                await Task.Delay(500);
+                await Task.Delay(500, CancellationToken.None);
             }
         }
 
@@ -135,7 +133,7 @@ namespace Sakura.Live.Speech.Core.Services
             while (Status == ServiceStatus.Running
                    || !cancel.IsCancellationRequested)
             {
-                await Task.Delay(TimeSpan.FromMinutes(1));
+                await Task.Delay(TimeSpan.FromMinutes(1), CancellationToken.None);
                 var oldMessages = _speechQueue.Where(item => DateTime.Now - item.Value.TimeStamp > TimeSpan.FromMinutes(1));
                 foreach (var message in oldMessages)
                 {

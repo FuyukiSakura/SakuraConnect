@@ -100,7 +100,7 @@ namespace Sakura.Live.Speech.Core.Services
 	               && Status == ServiceStatus.Running)
 	        {
 		        LastUpdate = DateTime.Now;
-				await Task.Delay(HeartBeat.Default);
+				await Task.Delay(HeartBeat.Default, CancellationToken.None);
 			}
             recognizer.Recognizing -= Recognizing;
             recognizer.Recognized -= Recognized;

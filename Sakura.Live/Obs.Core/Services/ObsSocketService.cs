@@ -24,12 +24,12 @@ namespace Sakura.Live.Obs.Core.Services
         ///
         /// <inheritdoc cref="OBSWebsocket.Connected"/>
         ///
-        public EventHandler? Connected;
+        public EventHandler? Connected { get; set; }
 
         ///
         /// <inheritdoc cref="OBSWebsocket.Disconnected"/>
         ///
-        public EventHandler? Disconnected;
+        public EventHandler? Disconnected { get; set; }
 
         /// <summary>
         /// Creates a new instance of <see cref="ObsSocketService" />
@@ -122,7 +122,7 @@ namespace Sakura.Live.Obs.Core.Services
                    && !token.IsCancellationRequested)
             {
                 LastUpdate = DateTime.Now;
-                await Task.Delay(HeartBeat.Default);
+                await Task.Delay(HeartBeat.Default, CancellationToken.None);
             }
         }
 

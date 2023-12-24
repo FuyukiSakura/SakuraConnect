@@ -4,7 +4,7 @@ namespace SakuraConnect.Shared.Models.Messaging.Ai
     /// <summary>
     /// System users names
     /// </summary>
-    public class SystemNames
+    public static class SystemNames
     {
         /// <summary>
         /// The fake user name for the AI

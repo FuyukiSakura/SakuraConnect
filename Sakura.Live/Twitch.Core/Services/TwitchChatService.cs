@@ -98,7 +98,7 @@ namespace Sakura.Live.Twitch.Core.Services
             while (Status == ServiceStatus.Running 
                    || !cancellationToken.IsCancellationRequested) // Checks if the client is connected
             {
-                await Task.Delay(HeartBeat.Default);
+                await Task.Delay(HeartBeat.Default, CancellationToken.None);
                 if (_client!.JoinedChannels.Count > 0)
                 {
                     continue;

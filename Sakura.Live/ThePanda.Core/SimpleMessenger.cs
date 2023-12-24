@@ -34,6 +34,12 @@ namespace Sakura.Live.ThePanda.Core
         ///
         public void Send<T>(T message)
         {
+            if (message == null)
+            {
+                // The message type is dependent for the messenger to work
+                throw new ArgumentNullException(nameof(message));
+            }
+
             var type = typeof(T);
             if (!_handlers.ContainsKey(type))
             {

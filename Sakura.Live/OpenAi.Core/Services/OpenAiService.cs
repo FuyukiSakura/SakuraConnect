@@ -1,4 +1,5 @@
-﻿using OpenAI;
+﻿using System.Text;
+using OpenAI;
 using OpenAI.Interfaces;
 using OpenAI.Managers;
 using OpenAI.ObjectModels.RequestModels;
@@ -81,7 +82,7 @@ namespace Sakura.Live.OpenAi.Core.Services
         /// <returns></returns>
         static async Task<string> CombineResponseAsync(IAsyncEnumerable<ChatCompletionCreateResponse> completionResult)
         {
-            var response = "";
+            var response = new StringBuilder();
             await foreach (var result in completionResult)
             {
                 if (!result.Successful)
@@ -97,10 +98,10 @@ namespace Sakura.Live.OpenAi.Core.Services
                     continue;
                 }
 
-                response += choice.Message.Content;
+                response.Append(choice.Message.Content);
                 await Task.Delay(1);
             }
-            return response;
+            return response.ToString();
         }
 
         /// <summary>

@@ -41,10 +41,9 @@ namespace Sakura.Live.ThePanda.Core
         ///
         public void Register<T>(object sender) where T:IAutoStartable
         {
-            var service = (IAutoStartable)_serviceProvider.GetService(typeof(T));
-            if (service == null)
+            if (_serviceProvider.GetService(typeof(T)) is not IAutoStartable service)
             {
-                throw new NullReferenceException($"Service {typeof(T).Name} is not registered");
+                throw new ArgumentException($"Service {typeof(T).Name} is not registered");
             }
 
             if (service.Status == ServiceStatus.Stopped)
@@ -54,9 +53,9 @@ namespace Sakura.Live.ThePanda.Core
                 _ = service.StartOnceAsync();
             }
 
-            if (_services.ContainsKey(service))
+            if (_services.TryGetValue(service, out var subscribedServices))
             {
-                _services[service].Add(sender);
+                subscribedServices.Add(sender);
                 return;
             }
 
@@ -71,9 +70,12 @@ namespace Sakura.Live.ThePanda.Core
         ///
         public void Unregister<T>(object sender) where T : IAutoStartable
         {
-            var service = (IAutoStartable)_serviceProvider.GetService(typeof(T)) 
-                          ?? throw new NullReferenceException($"Service {typeof(T).Name} is not registered");
-            if (!_services.ContainsKey(service)) return;
+            var service = _serviceProvider.GetService(typeof(T)) as IAutoStartable 
+                          ?? throw new ArgumentException($"Service {typeof(T).Name} is not registered");
+            if (!_services.ContainsKey(service))
+            {
+                return;
+            }
 
             _services[service].Remove(sender);
             StopServicesNoLongerReferenced();
@@ -131,7 +133,10 @@ namespace Sakura.Live.ThePanda.Core
                     .ToArray();
                 foreach (var autoStartable in monitoredServices)
                 {
-                    if (!((now - autoStartable.LastUpdate).TotalSeconds > TimeoutIn)) continue;
+                    if ((now - autoStartable.LastUpdate).TotalSeconds <= TimeoutIn)
+                    {
+                        continue;
+                    }
 
                     autoStartable.Status = ServiceStatus.Error;
                     await autoStartable.StopAsync();

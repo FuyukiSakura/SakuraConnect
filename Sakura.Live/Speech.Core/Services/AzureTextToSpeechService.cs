@@ -137,7 +137,7 @@ namespace Sakura.Live.Speech.Core.Services
                    && !token.IsCancellationRequested)
             {
                 LastUpdate = DateTime.Now;
-                await Task.Delay(HeartBeat.Default);
+                await Task.Delay(HeartBeat.Default, CancellationToken.None);
             }
 
             if (synthesizer == null)
