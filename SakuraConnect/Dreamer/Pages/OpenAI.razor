@@ -5,14 +5,11 @@
 @using Microsoft.CognitiveServices.Speech
 @using Sakura.Live.Connect.Dreamer.Services.Ai
 @using Sakura.Live.Connect.Dreamer.Services.Twitch
-@using Sakura.Live.ThePanda.Core
-@inject IThePandaMonitor Monitor
 @inject OpenAiService OpenAiService
 @inject GreetingService GreetingService
 @inject AzureSpeechService AzureSpeechService
 @inject AzureConversationService AzureConversationService
-@inject ChatMonitorService ChatMonitorService
-@inject ChatResponseService ChatResponseService
+@inject AiChatServices AiChatServices
 @inject OneCommeService OneCommeSvc
 
 <h3>AI VTubing</h3>
@@ -51,7 +48,7 @@
                  IsRunning="@IsGreetingServiceRunning"
                  @onclick="StartGreetingService_OnClick" />
 
-<h4>Conversational</h4>
+<h4>Voice Input</h4>
 
 <AzureSpeechSettingsModal />
 
@@ -71,12 +68,16 @@
                  @onclick="StartConversationService_OnClick" />
 
 <h3>Chat response</h3>
-<ServiceConfigButton Service="@ChatResponseService"
-                     Text="Start / Stop"
-                     Clicked="StartChatService_OnClick" />
-<ServiceConfigButton Service="@ChatMonitorService"
-                     Text="Monitor Chat"
-                     Clicked="MonitorChat_OnClick" />
+<div class="tw-flex tw-flex-row tw-space-x-2">
+    <StartStopButton IsRunning="@AiChatServices.IsChatResponseRunning"
+                     StartText="Start"
+                     StopText="Stop"
+                     OnClick="StartChatService_OnClick" />
+    <StartStopButton IsRunning="@AiChatServices.IsChatMonitorRunning"
+                     StartText="Monitor chat"
+                     StopText="Stop monitoring"
+                     OnClick="MonitorChat_OnClick" />
+</div>
 
 @code {
     /// <summary>
@@ -161,31 +162,17 @@
     /// <summary>
     /// Starts monitoring for chat messages and responding to them
     /// </summary>
-    void StartChatService_OnClick()
+    async void StartChatService_OnClick()
     {
-        if (ChatResponseService.Status == ServiceStatus.Running)
-        {
-            Monitor.Unregister<ChatResponseService>(this);
-        }
-        else
-        {
-            Monitor.Register<ChatResponseService>(this);
-        }
+        await AiChatServices.ToggleChatResponseAsync();
     }
 
     /// <summary>
     /// Starts the chat monitor
     /// </summary>
-    void MonitorChat_OnClick()
+    async void MonitorChat_OnClick()
     {
-        if (ChatMonitorService.Status == ServiceStatus.Running)
-        {
-            Monitor.Unregister<ChatMonitorService>(this);
-        }
-        else
-        {
-            Monitor.Register<ChatMonitorService>(this);
-        }
+        await AiChatServices.ToggleChatMonitorAsync();
     }
 
     ///

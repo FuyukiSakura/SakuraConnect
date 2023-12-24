@@ -47,6 +47,7 @@ namespace Sakura.Live.Connect.Dreamer
             builder.Services.AddOpenAiCore();
             builder.Services.AddTwitchCore();
             AddDreamerCore(builder);
+            AddRegisters(builder);
             AddTheAIs(builder);
 
             var app = builder.Build();
@@ -66,7 +67,16 @@ namespace Sakura.Live.Connect.Dreamer
             builder.Services.AddSingleton<OneCommeService>();
             builder.Services.AddScoped<AzureConversationService>();
             builder.Services.AddSingleton<ChatMonitorService>();
-            builder.Services.AddSingleton<ChatResponseService>();
+            builder.Services.AddSingleton<AiChatServices>();
+        }
+
+        /// <summary>
+        /// The registers handles service status
+        /// </summary>
+        /// <param name="builder"></param>
+        static void AddRegisters(MauiAppBuilder builder)
+        {
+            builder.Services.AddSingleton<AiChatServices>();
         }
 
         /// <summary>
