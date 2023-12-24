@@ -48,17 +48,17 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
             while (Status == ServiceStatus.Running 
                    && !CancellationTokenSource.Token.IsCancellationRequested)
             {
-                await Task.Delay(10_000);
+                await Task.Delay(5_000);
                 if (_chatMonitorService.GetLastComment().Role != SpeechQueueRole.Self)
                 {
                     // Only generate response when the last message is from the AI
                     _lastCommentTime = DateTime.Now;
-                    continue;
+                    break;
                 }
 
-                if (DateTime.Now - _lastCommentTime <= TimeSpan.FromSeconds(30))
+                if (DateTime.Now - _lastCommentTime <= TimeSpan.FromSeconds(10))
                 {
-                    // On do it when there is no chat for 60 seconds
+                    // On do it when there is no chat for 610 seconds
                     // The AI may need to think for a while too Orz
                     continue;
                 }
@@ -71,6 +71,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
                 {
                     Debug.WriteLine("Audience error: " + e);
                 }
+                break;
             }
         }
 
@@ -116,8 +117,17 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         public override Task StartAsync()
         {
             _messenger.Register<CommentReceivedEventArg>(this, OnCommentReceived);
-            _ = MonitorComment();
+            _messenger.Register<EndedSpeakingEventArg>(this, OnFinishedSpeaking);
             return base.StartAsync();
+        }
+
+        ///
+        /// <inheritdoc />
+        ///
+        public override Task StopAsync()
+        {
+            _messenger.UnregisterAll(this);
+            return base.StopAsync();
         }
 
         /// <summary>
@@ -127,6 +137,30 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         void OnCommentReceived(CommentReceivedEventArg obj)
         {
             _lastCommentTime = DateTime.Now;
+        }
+
+        /// <summary>
+        /// Generates a new response when the AI finishes speaking
+        /// </summary>
+        /// <param name="obj"></param>
+        async void OnFinishedSpeaking(EndedSpeakingEventArg obj)
+        {
+            if (_chatMonitorService.GetLastComment().Role != SpeechQueueRole.Self)
+            {
+                // Only generate response when the last message is from the AI
+                _lastCommentTime = DateTime.Now;
+                _ = MonitorComment();
+                return;
+            }
+
+            try
+            {
+                await CreateResponseAsync();
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine("Audience error: " + e);
+            }
         }
     }
 }

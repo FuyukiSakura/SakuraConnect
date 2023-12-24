@@ -4,6 +4,7 @@ using Sakura.Live.Speech.Core.Models;
 using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Helpers;
 using Sakura.Live.ThePanda.Core.Interfaces;
+using SakuraConnect.Shared.Models.Messaging.Ai;
 
 namespace Sakura.Live.Speech.Core.Services
 {
@@ -95,6 +96,11 @@ namespace Sakura.Live.Speech.Core.Services
                 await SpeakAsync(speechPair.Value);
                 _speechQueue.Remove(speechPair.Key);
 
+                if (_speechQueue.Count == 0)
+                {
+                    // No more messages, send finished speaking event
+                    _messenger.Send(new EndedSpeakingEventArg());
+                }
                 // Take short brake before next speech
                 await Task.Delay(500);
             }
