@@ -14,6 +14,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Twitch
     /// </summary>
     public class ChatMonitorService : BasicAutoStartable
     {
+        readonly SemaphoreSlim _chatLock = new(1, 1);
         readonly List<CommentData> _chatHistory = new();
         
         /// <summary>
@@ -40,12 +41,12 @@ namespace Sakura.Live.Connect.Dreamer.Services.Twitch
         /// Adds a chat message to the history when twitch chat message received
         /// </summary>
         /// <param name="e"></param>
-        void OnMessageReceived(CommentReceivedEventArg e)
+        async void OnMessageReceived(CommentReceivedEventArg e)
         {
             foreach (var chat in e.Comments.Where(comment => !comment.Comment.StartsWith("!")))
             {
                 _ = ChatLogger.LogAsync($"[{chat.ReceivedAt:T}] | {chat.Username,-10} |{chat.Comment}", LogPurpose.Chat);
-                AddComment(chat);
+                await AddComment(chat);
             }
         }
 
@@ -54,7 +55,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Twitch
         /// removes the first element if the length exceeds max
         /// </summary>
         /// <param name="message"></param>
-        void AddComment(CommentData message)
+        async Task AddComment(CommentData message)
         {
             if (_chatHistory.Count != 0
                 && _chatHistory.Last().Comment == message.Comment)
@@ -63,11 +64,13 @@ namespace Sakura.Live.Connect.Dreamer.Services.Twitch
                 return; // Ignore duplicate messages
             }
 
+            await _chatLock.WaitAsync();
             if (_chatHistory.Count > MaxHistoryLength)
             {
                 _chatHistory.RemoveAt(0); // Remove first element if length exceeds max
             }
             _chatHistory.Add(message);
+            _chatLock.Release();
         }
 
         /// <summary>
@@ -105,8 +108,9 @@ namespace Sakura.Live.Connect.Dreamer.Services.Twitch
         /// Creates chat log as a multi-line string
         /// </summary>
         /// <returns></returns>
-        public string CreateChatLog()
+        public async Task<string> CreateChatLogAsync()
         {
+            await _chatLock.WaitAsync();
             var sb = new StringBuilder();
             foreach (var msg in _chatHistory.OrderBy(chat => chat.ReceivedAt))
             {
@@ -124,6 +128,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Twitch
                         break;
                 }
             }
+            _chatLock.Release();
             return sb.ToString();
         }
 

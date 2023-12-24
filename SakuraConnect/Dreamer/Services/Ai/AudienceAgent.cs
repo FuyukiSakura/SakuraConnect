@@ -47,7 +47,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
                 Messages = new List<ChatMessage>
                 {
                     ChatMessage.FromSystem(_characterService.GetAudiencePrompt()),
-                    ChatMessage.FromUser(_chatMonitorService.CreateChatLog())
+                    ChatMessage.FromUser(await _chatMonitorService.CreateChatLogAsync())
                 },
                 Model = OpenAI.ObjectModels.Models.Gpt_4_1106_preview,
                 MaxTokens = 128,
@@ -90,6 +90,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
                 return;
             }
 
+            // Wait for 10 seconds to see if there is any new comment
             await Task.Delay(10_000);
             if (_chatMonitorService.GetLastComment()?.Role != SpeechQueueRole.Self)
             {

@@ -21,7 +21,6 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
     public class BigBrainService : BasicAutoStartable
     {
         readonly SemaphoreSlim _thinkLock = new(1, 1);
-        bool _isWaitingForResponse;
 
         // Dependencies
         readonly IThePandaMonitor _monitor;
@@ -49,10 +48,37 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         }
 
         /// <summary>
+        /// Thinks about the chat history and respond to the user
+        /// sends the result to the chat monitor
+        /// </summary>
+        /// <returns></returns>
+        async Task ThinkAsync()
+        {
+            if (!await _thinkLock.WaitAsync(0))
+            {
+                return;
+            }
+            var comment = new CommentData
+            {
+                Role = SpeechQueueRole.Self,
+                Username = SystemNames.AI,
+                ReceivedAt = DateTime.Now
+            };
+            var result = await RequestAsync();
+            comment.Comment = result;
+            _messenger.Send(new CommentReceivedEventArg
+            {
+                Comments = { comment }
+            });
+            _thinkLock.Release();
+        }
+
+
+        /// <summary>
         /// Instructs open ai to think about the chat history
         /// </summary>
         /// <returns></returns>
-        public async Task<string> ThinkAsync()
+        async Task<string> RequestAsync()
         {
             var request = new ChatCompletionCreateRequest
             {
@@ -102,17 +128,16 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
             }
         }
 
-        ///
-        /// <inheritdoc />
-        ///
-        public override async Task StartAsync()
+        /// <summary>
+        /// Responses to the user when the AI has finished speaking
+        /// </summary>
+        /// <param name="obj"></param>
+        async void CheckForNewCommentOnSpeakingEnded(EndedSpeakingEventArg obj)
         {
-            _messenger.Register<CommentReceivedEventArg>(this, ThinkOnCommentReceived);
-            _monitor.Register<SpeechQueueService>(this);
-
-            var result = await ThinkAsync();
-            NotifyCommentFinished(result);
-            await base.StartAsync();
+            if (_chatMonitorService.GetLastComment()?.Role != SpeechQueueRole.Self)
+            {
+                await ThinkAsync();
+            }
         }
 
         /// <summary>
@@ -128,54 +153,21 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
                 return;
             }
 
-            await Task.Delay(100); // Wait for the comment to be processed
-	        if (_isWaitingForResponse)
-	        {
-                // Do not start new threads if the AI is still thinking
-                // and a new comment is already queued
-		        return;
-	        }
-
-	        if (_thinkLock.CurrentCount == 0)
-	        {
-                // Thinking is already in progress
-                _isWaitingForResponse = true;
-	        }
-            await _thinkLock.WaitAsync();
-
-            var comment = new CommentData
-            {
-                Role = SpeechQueueRole.Self,
-                Username = SystemNames.AI,
-                ReceivedAt = DateTime.Now
-            };
-	        var result = await ThinkAsync();
-            comment.Comment = result;
-            _messenger.Send(new CommentReceivedEventArg
-            {
-                Comments = { comment }
-            });
-            _thinkLock.Release();
-            _isWaitingForResponse = false;
+            await Task.Delay(100); // Wait for the chat monitor to process the comment
+            await ThinkAsync();
         }
 
-        /// <summary>
-        /// Notify the system that the comment has finished loading
-        /// </summary>
-        /// <param name="text"></param>
-        void NotifyCommentFinished(string text)
+        ///
+        /// <inheritdoc />
+        ///
+        public override async Task StartAsync()
         {
-            var comment = new CommentData
-            {
-                Role = SpeechQueueRole.Self,
-                Username = SystemNames.AI,
-                Comment = text,
-                ReceivedAt = DateTime.Now
-            };
-            _messenger.Send(new CommentReceivedEventArg
-            {
-                Comments = { comment }
-            });
+            _messenger.Register<CommentReceivedEventArg>(this, ThinkOnCommentReceived);
+            _messenger.Register<EndedSpeakingEventArg>(this, CheckForNewCommentOnSpeakingEnded);
+            _monitor.Register<SpeechQueueService>(this);
+
+            await ThinkAsync();
+            await base.StartAsync();
         }
 
         ///
