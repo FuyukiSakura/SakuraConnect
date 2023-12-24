@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Microsoft.CognitiveServices.Speech;
 using Sakura.Live.Connect.Dreamer.Services.Ai;
 using Sakura.Live.Speech.Core.Models;
 using Sakura.Live.ThePanda.Core;
@@ -24,7 +25,6 @@ namespace Sakura.Live.Speech.Core.Services
         readonly IThePandaMonitor _monitor;
         readonly IPandaMessenger _messenger;
         readonly AzureTextToSpeechService _azureTtsSvc;
-        readonly AzureTextAnalyticsService _textAnalyticsService;
 
         /// <summary>
         /// Creates a new instance of <see cref="SpeechQueueService" />
@@ -32,13 +32,11 @@ namespace Sakura.Live.Speech.Core.Services
         public SpeechQueueService(
             IThePandaMonitor monitor,
             IPandaMessenger messenger,
-            AzureTextToSpeechService azureTtsSvc,
-            AzureTextAnalyticsService textAnalyticsService
+            AzureTextToSpeechService azureTtsSvc
         ) {
             _monitor = monitor;
 	        _messenger = messenger;
             _azureTtsSvc = azureTtsSvc;
-            _textAnalyticsService = textAnalyticsService;
         }
 
         /// <summary>
@@ -54,22 +52,6 @@ namespace Sakura.Live.Speech.Core.Services
                 Role = role,
                 Text = text,
             });
-        }
-
-        /// <summary>
-        /// Appends the text to the speech item
-        /// </summary>
-        /// <param name="speechId"></param>
-        /// <param name="text"></param>
-        public void Append(Guid speechId, string text)
-        {
-            _speechQueue.TryGetValue(speechId, out var item);
-            if (item == null)
-            {
-                // The speech is already terminated or does not exist
-                return;
-            }
-            item.Text += text;
         }
 
         /// <summary>
@@ -93,14 +75,10 @@ namespace Sakura.Live.Speech.Core.Services
                 // Simply wait for more results before speaking
                 speechPair.Value.IsSpeaking = true;
                 // await WaitForText(speechPair.Value);
-                await SpeakAsync(speechPair.Value);
+                var synthResult = await SpeakAsync(speechPair.Value);
                 _speechQueue.Remove(speechPair.Key);
 
-                if (_speechQueue.Count == 0)
-                {
-                    // No more messages, send finished speaking event
-                    _messenger.Send(new EndedSpeakingEventArg());
-                }
+                FireFinishWhenQueueIsEmpty(synthResult, speechPair.Value.Text);
                 // Take short brake before next speech
                 await Task.Delay(500);
             }
@@ -131,36 +109,21 @@ namespace Sakura.Live.Speech.Core.Services
         }
 
         /// <summary>
-        /// Wait for text being input and release after 5 seconds regardless of text existence
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        static async Task WaitForText(SpeechQueueItem item)
-        {
-            // Simply wait for more results before speaking
-            var retries = 0;
-            while (item.Text.Length == 0
-                   && retries < 5) // abandon the message if no text received in 5 seconds
-            {
-                await Task.Delay(TimeSpan.FromSeconds(2));
-                retries++;
-            }
-        }
-
-        /// <summary>
         /// Speaks out the queued item text
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        async Task SpeakAsync(SpeechQueueItem item)
+        async Task<SpeechSynthesisResult?> SpeakAsync(SpeechQueueItem item)
         {
             IsSpeaking = true;
 
-            if (!string.IsNullOrWhiteSpace(item.Text)) // Do not speak empty text
+            if (string.IsNullOrWhiteSpace(item.Text))
             {
-                Debug.WriteLine("Synthesized: " + item.Text);
-                await _azureTtsSvc.SpeakAsync(item.Text);
+                return null;
             }
+            Debug.WriteLine("Synthesized: " + item.Text);
+            return await _azureTtsSvc.SpeakAsync(item.Text);
+
         }
 
         /// <summary>
@@ -212,6 +175,51 @@ namespace Sakura.Live.Speech.Core.Services
             _monitor.UnregisterAll(this);
             _messenger.UnregisterAll(this);
             _speechQueue.Clear();
+        }
+
+        /// <summary>
+        /// Notifies the subscribers about the synthesis result
+        /// </summary>
+        /// <param name="speechSynthesisResult"></param>
+        /// <param name="text"></param>
+        void FireFinishWhenQueueIsEmpty(SpeechSynthesisResult? speechSynthesisResult, string text)
+        {
+            if (_speechQueue.Count != 0)
+            {
+                // Only fire finish when the queue is empty
+                return;
+            }
+
+            if (speechSynthesisResult == null)
+            {
+                // For some reason, the speech synthesis result is null
+                // Fire a ended speaking event to notify the subscribers
+                // to make sure the program can continue
+                _messenger.Send(new EndedSpeakingEventArg
+                {
+                    Text = text
+                });
+                return;
+            }
+
+            switch (speechSynthesisResult.Reason)
+            {
+                case ResultReason.SynthesizingAudioCompleted:
+                    _messenger.Send(new EndedSpeakingEventArg
+                    {
+                        Text = text
+                    });
+                    break;
+                case ResultReason.Canceled:
+                    _messenger.Send(new EndedSpeakingEventArg
+                    {
+                        Text = text,
+                        Reason = "Canceled"
+                    });
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }

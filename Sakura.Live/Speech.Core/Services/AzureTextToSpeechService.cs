@@ -28,12 +28,12 @@ namespace Sakura.Live.Speech.Core.Services
         /// </summary>
         /// <param name="text"></param>
         /// <returns></returns>
-        public async Task SpeakAsync(string text)
+        public async Task<SpeechSynthesisResult?> SpeakAsync(string text)
         {
             if (_speechSynthesizer == null)
             {
                 // Service not running
-                return;
+                return null;
             }
 
             // The language of the voice that speaks.
@@ -41,6 +41,7 @@ namespace Sakura.Live.Speech.Core.Services
 #if DEBUG 
             OutputSpeechSynthesisResult(speechSynthesisResult, text);
 #endif
+            return speechSynthesisResult;
         }
 
         /// <summary>

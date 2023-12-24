@@ -1,11 +1,11 @@
 ﻿
 using System.Diagnostics;
+using Azure;
 using OpenAI.ObjectModels.RequestModels;
 using Sakura.Live.Connect.Dreamer.Models.Chat;
 using Sakura.Live.Connect.Dreamer.Services.Twitch;
 using Sakura.Live.OpenAi.Core.Services;
 using Sakura.Live.Speech.Core.Models;
-using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Helpers;
 using Sakura.Live.ThePanda.Core.Interfaces;
 using SakuraConnect.Shared.Models.Messaging.Ai;
@@ -17,8 +17,6 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
     /// </summary>
     public class AudienceAgent : BasicAutoStartable
     {
-        DateTime _lastCommentTime = DateTime.Now;
-
         // Dependencies
         readonly IPandaMessenger _messenger;
         readonly OpenAiService _openAiService;
@@ -40,46 +38,10 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         }
 
         /// <summary>
-        /// Monitors the chat and generate response when there is no chat
-        /// </summary>
-        /// <returns></returns>
-        async Task MonitorComment()
-        {
-            while (Status == ServiceStatus.Running 
-                   && !CancellationTokenSource.Token.IsCancellationRequested)
-            {
-                await Task.Delay(5_000);
-                if (_chatMonitorService.GetLastComment().Role != SpeechQueueRole.Self)
-                {
-                    // Only generate response when the last message is from the AI
-                    _lastCommentTime = DateTime.Now;
-                    break;
-                }
-
-                if (DateTime.Now - _lastCommentTime <= TimeSpan.FromSeconds(10))
-                {
-                    // On do it when there is no chat for 610 seconds
-                    // The AI may need to think for a while too Orz
-                    continue;
-                }
-
-                try
-                {
-                    await CreateResponseAsync();
-                }
-                catch (Exception e)
-                {
-                    Debug.WriteLine("Audience error: " + e);
-                }
-                break;
-            }
-        }
-
-        /// <summary>
         /// Generates a comment as a user, leaving no trace of the AI
         /// </summary>
         /// <returns></returns>
-        async Task CreateResponseAsync()
+        async Task<string> CreateResponseAsync()
         {
             var request = new ChatCompletionCreateRequest
             {
@@ -96,19 +58,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
 
             var response = await _openAiService.CreateCompletionAndResponseAsync(request);
             _ = ChatLogger.LogOpenAiRequest(request, response, SystemNames.Audience);
-            _messenger.Send(new CommentReceivedEventArg
-            {
-                Comments =
-                {
-                    new CommentData
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        Comment = response,
-                        Username = SystemNames.Audience,
-                        Role = SpeechQueueRole.Guidance
-                    }
-                }
-            });
+            return response;
         }
 
         ///
@@ -116,7 +66,6 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         ///
         public override Task StartAsync()
         {
-            _messenger.Register<CommentReceivedEventArg>(this, OnCommentReceived);
             _messenger.Register<EndedSpeakingEventArg>(this, OnFinishedSpeaking);
             return base.StartAsync();
         }
@@ -131,15 +80,6 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         }
 
         /// <summary>
-        /// Logs the last comment time
-        /// </summary>
-        /// <param name="obj"></param>
-        void OnCommentReceived(CommentReceivedEventArg obj)
-        {
-            _lastCommentTime = DateTime.Now;
-        }
-
-        /// <summary>
         /// Generates a new response when the AI finishes speaking
         /// </summary>
         /// <param name="obj"></param>
@@ -147,20 +87,33 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         {
             if (_chatMonitorService.GetLastComment().Role != SpeechQueueRole.Self)
             {
-                // Only generate response when the last message is from the AI
-                _lastCommentTime = DateTime.Now;
-                _ = MonitorComment();
+                // New comment is received, no need to assist
                 return;
             }
 
+            var speechLine = "Continue";
             try
             {
-                await CreateResponseAsync();
+                speechLine = await CreateResponseAsync();
             }
             catch (Exception e)
             {
                 Debug.WriteLine("Audience error: " + e);
             }
+
+            _messenger.Send(new CommentReceivedEventArg
+            {
+                Comments =
+                {
+                    new CommentData
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Comment = speechLine,
+                        Username = SystemNames.Audience,
+                        Role = SpeechQueueRole.Guidance
+                    }
+                }
+            });
         }
     }
 }
