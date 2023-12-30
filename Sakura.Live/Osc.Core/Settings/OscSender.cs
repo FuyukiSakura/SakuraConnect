@@ -61,12 +61,12 @@ namespace Sakura.Live.Osc.Core.Settings
 		/// <summary>
 		/// Gets my own Id for sender settings
 		/// </summary>
-		public static string MyId = "me";
+		public const string MyId = "me";
 
 		/// <summary>
 		/// Gets the default settings string as json
 		/// </summary>
-		public static string Default =
+		public const string Default =
 			"[{\"Name\":\"Beat Saber\",\"IpAddress\":\"127.0.0.1\",\"Port\":39539},{\"Name\":\"VTuber Plus\",\"IpAddress\":\"127.0.0.1\",\"Port\":39551}]";
 	}
 }

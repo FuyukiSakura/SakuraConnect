@@ -29,7 +29,7 @@ namespace Sakura.Live.Speech.Core.Models
         /// <summary>
         /// The time the item was added to the queue
         /// </summary>
-        public DateTime TimeStamp { get; set; } = DateTime.Now;
+        public DateTime TimeStamp { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Indicates if the item is being spoken

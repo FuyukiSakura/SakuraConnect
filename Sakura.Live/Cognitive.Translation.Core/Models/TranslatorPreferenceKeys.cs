@@ -4,7 +4,7 @@ namespace Sakura.Live.Cognitive.Translation.Core.Models
     /// <summary>
     /// Settings related to Azure Translator
     /// </summary>
-    public class TranslatorPreferenceKeys
+    public static class TranslatorPreferenceKeys
     {
         /// <summary>
         /// Gets the system preference key for Azure Translator API Key

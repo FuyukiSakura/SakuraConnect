@@ -1,7 +1,7 @@
 ﻿
 namespace Sakura.Live.ThePanda.Core.Helpers
 {
-	public class HeartBeat
+	public static class HeartBeat
 	{
 		/// <summary>
 		/// Gets the default time a heart beat message should send

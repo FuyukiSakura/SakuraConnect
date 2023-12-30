@@ -134,7 +134,7 @@ namespace Sakura.Live.Speech.Core.Services
                    || !cancel.IsCancellationRequested)
             {
                 await Task.Delay(TimeSpan.FromMinutes(1), CancellationToken.None);
-                var oldMessages = _speechQueue.Where(item => DateTime.Now - item.Value.TimeStamp > TimeSpan.FromMinutes(1));
+                var oldMessages = _speechQueue.Where(item => DateTime.UtcNow - item.Value.TimeStamp > TimeSpan.FromMinutes(1));
                 foreach (var message in oldMessages)
                 {
                     _speechQueue.Remove(message.Key);   

@@ -1,4 +1,6 @@
 ﻿
+using System.Collections.Immutable;
+
 namespace Sakura.Live.Cognitive.Translation.Core.Models
 {
     /// <summary>
@@ -20,7 +22,7 @@ namespace Sakura.Live.Cognitive.Translation.Core.Models
         /// <summary>
         /// Gets the default list of translation options
         /// </summary>
-        public static readonly List<TranslationOption> DefaultList = new()
+        public static readonly ImmutableArray<TranslationOption> DefaultList = new()
         {
             new TranslationOption
             {
