@@ -1,0 +1,57 @@
+﻿@using Sakura.Live.Web.Ui.Buttons
+@using Sakura.Live.ThePanda.Core
+@using Microsoft.JSInterop
+@using Sakura.Live.ThePanda.Core.Interfaces
+@using SakuraConnect.Shared.Models.Messaging.Speech
+@inject IJSRuntime JS
+@inject SpeechToTextService SpeechService
+@inject IPandaMessenger Messenger
+
+<h3>SpeechRecognizer</h3>
+<StartStopButton IsRunning="@(SpeechService.Status == ServiceStatus.Running)"
+                 @onclick="StartRecognition_OnClick" />
+
+@code {
+    ///
+    /// <inheritdoc />
+    ///
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeAsync<IJSObjectReference>(
+                "import", "./SpeechToText/SpeechRecognizer.razor.js");
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    /// <summary>
+    /// Starts speech recognition service
+    /// </summary>
+    async void StartRecognition_OnClick()
+    {
+        if (SpeechService.Status == ServiceStatus.Running)
+        {
+            await JS.InvokeVoidAsync("stopRecognition");
+        }
+        else
+        {
+            await JS.InvokeAsync<string>("startRecognition", SpeechService.SpokenLanguage);
+        }
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Handles the result from speech recognition service
+    /// </summary>
+    /// <param name="text"></param>
+    /// <returns></returns>
+    [JSInvokable]
+    public void Recognize_OnResult(string text)
+    {
+        Messenger.Send(new SpeechRecognizedEventArgs
+        {
+            Text = text
+        });
+    }
+}

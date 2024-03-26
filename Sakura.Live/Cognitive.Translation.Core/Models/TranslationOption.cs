@@ -22,7 +22,7 @@ namespace Sakura.Live.Cognitive.Translation.Core.Models
         /// <summary>
         /// Gets the default list of translation options
         /// </summary>
-        public static readonly ImmutableArray<TranslationOption> DefaultList = new()
+        public static readonly List<TranslationOption> DefaultList = new()
         {
             new TranslationOption
             {

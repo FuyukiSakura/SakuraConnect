@@ -7,6 +7,7 @@
     <Company>Sakura Live Studio</Company>
     <Title>ThePanda Core</Title>
     <Description>ThePanda reads as Dependa. Which is a dependency stack service for auto running services depended by the other.</Description>
+    <Version>1.0.2</Version>
   </PropertyGroup>
 
   <ItemGroup>

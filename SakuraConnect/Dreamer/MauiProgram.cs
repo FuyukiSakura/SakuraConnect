@@ -11,9 +11,11 @@ using Sakura.Live.Obs.Core;
 using Sakura.Live.OpenAi.Core;
 using Sakura.Live.Osc.Core;
 using Sakura.Live.Speech.Core;
+using Sakura.Live.Speech.Core.Services;
 using Sakura.Live.ThePanda.Core;
 using Sakura.Live.ThePanda.Core.Interfaces;
 using Sakura.Live.Twitch.Core;
+using Sakura.Live.Web.Ui.SpeechToText;
 
 namespace Sakura.Live.Connect.Dreamer
 {
@@ -68,6 +70,7 @@ namespace Sakura.Live.Connect.Dreamer
             builder.Services.AddScoped<AzureConversationService>();
             builder.Services.AddSingleton<ChatMonitorService>();
             builder.Services.AddSingleton<AiChatServices>();
+            builder.Services.AddSingleton<ISpeechToTextService, SpeechToTextService>();
         }
 
         /// <summary>

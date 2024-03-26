@@ -16,6 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\SakuraConnect\Shared\SakuraConnect.Shared.csproj" />
+    <ProjectReference Include="..\Speech.Core\Sakura.Live.Speech.Core.csproj" />
     <ProjectReference Include="..\ThePanda.Core\Sakura.Live.ThePanda.Core.csproj" />
   </ItemGroup>
 

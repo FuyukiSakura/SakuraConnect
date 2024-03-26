@@ -10,7 +10,7 @@ namespace Sakura.Live.Speech.Core.Services
     /// <summary>
     /// Accesses Azure Speech Service
     /// </summary>
-    public class AzureSpeechService : BasicAutoStartable
+    public class AzureSpeechService : BasicAutoStartable, ISpeechToTextService
     {
         // Dependencies
         readonly AzureSpeechSettingsService _settings;
