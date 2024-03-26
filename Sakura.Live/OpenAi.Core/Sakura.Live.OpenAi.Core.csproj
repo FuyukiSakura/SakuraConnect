@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Betalgo.OpenAI" Version="7.4.1" />
+    <PackageReference Include="Betalgo.OpenAI" Version="7.4.6" />
   </ItemGroup>
 
   <ItemGroup>
