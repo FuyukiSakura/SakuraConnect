@@ -19,6 +19,6 @@ namespace SakuraConnect.Shared.Models.Messaging.Ai
         /// <summary>
         /// The name of the AI inside the system*
         /// </summary>
-        public const string AI = "大豆";
+        public const string AI = "You";
     }
 }

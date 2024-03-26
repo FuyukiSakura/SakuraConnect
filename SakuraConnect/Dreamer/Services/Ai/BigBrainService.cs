@@ -18,34 +18,19 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
     /// The big brain of the AI
     /// The class handles the logic of how the AI prioritize and process messages
     /// </summary>
-    public class BigBrainService : BasicAutoStartable
+    /// <remarks>
+    /// Creates a new instance of <see cref="BigBrainService" />
+    /// </remarks>
+    public class BigBrainService(
+        IThePandaMonitor monitor,
+        IPandaMessenger messenger,
+        IAiCharacterService characterService,
+        ChatMonitorService chatMonitorService,
+        OpenAiService openAiService
+        ) : BasicAutoStartable
     {
         readonly SemaphoreSlim _thinkLock = new(1, 1);
-
-        // Dependencies
-        readonly IThePandaMonitor _monitor;
-        readonly IPandaMessenger _messenger;
-        readonly IAiCharacterService _characterService;
-        readonly ChatMonitorService _chatMonitorService;
-        readonly OpenAiService _openAiService;
-
-        /// <summary>
-        /// Creates a new instance of <see cref="BigBrainService" />
-        /// </summary>
-        public BigBrainService(
-            IThePandaMonitor monitor,
-            IPandaMessenger messenger,
-            IAiCharacterService characterService,
-            ChatMonitorService chatMonitorService,
-            OpenAiService openAiService
-        )
-        {
-            _monitor = monitor;
-            _messenger = messenger;
-            _characterService = characterService;
-            _chatMonitorService = chatMonitorService;
-            _openAiService = openAiService;
-        }
+        bool _isThinking;
 
         /// <summary>
         /// Thinks about the chat history and respond to the user
@@ -54,10 +39,6 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         /// <returns></returns>
         async Task ThinkAsync()
         {
-            if (!await _thinkLock.WaitAsync(0))
-            {
-                return;
-            }
             var comment = new CommentData
             {
                 Role = SpeechQueueRole.Self,
@@ -66,11 +47,10 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
             };
             var result = await RequestAsync();
             comment.Comment = result;
-            _messenger.Send(new CommentReceivedEventArg
+            messenger.Send(new CommentReceivedEventArg
             {
                 Comments = { comment }
             });
-            _thinkLock.Release();
         }
 
 
@@ -84,12 +64,12 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
             {
                 Messages = new List<ChatMessage>
                 {
-                    ChatMessage.FromSystem(_characterService.GetPersonalityPrompt() + "\r\n\r\nOutput requirements\r\n"
+                    ChatMessage.FromSystem(characterService.GetPersonalityPrompt() + "\r\n\r\nOutput requirements\r\n"
 	                    + SystemPrompts.OutputJson + " "
                         + SystemPrompts.EmotionAndLanguage),
-                    ChatMessage.FromUser(_characterService.GetTopicPrompt())
+                    ChatMessage.FromUser(characterService.GetTopicPrompt())
                 },
-                Model = OpenAI.ObjectModels.Models.Gpt_4_1106_preview,
+                Model = OpenAI.ObjectModels.Models.Gpt_4_turbo_preview,
                 Temperature = 1.21f,
                 ResponseFormat = new ResponseFormat { Type = "json_object" },
                 MaxTokens = 321,
@@ -97,7 +77,7 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
                 FrequencyPenalty = 0.2f,
                 PresencePenalty = 0.2f
             };
-            var chatlog = _chatMonitorService.CreateForRequest();
+            var chatlog = chatMonitorService.CreateForRequest();
             chatlog.ForEach(request.Messages.Add);
             return await QueueResponse(request);
         }
@@ -110,11 +90,11 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         {
             try
             {
-                var response = await _openAiService.CreateCompletionAndResponseAsync(request);
+                var response = await openAiService.CreateCompletionAndResponseAsync(request);
                 _ = ChatLogger.LogOpenAiRequest(request, response, SystemNames.AI);
                 var jsonObj = JsonSerializer.Deserialize<OpenAiJsonObject<List<Comment>>>(response, Json.DefaultSerializerOptions);
                 var plainComment = string.Join("\n", jsonObj.Data.Select(x => x.Text));
-                _messenger.Send(new ThinkResultEventArgs
+                messenger.Send(new ThinkResultEventArgs
                 {
                     Comments = jsonObj.Data
                 });
@@ -134,10 +114,30 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         /// <param name="obj"></param>
         async void CheckForNewCommentOnSpeakingEnded(EndedSpeakingEventArg obj)
         {
-            if (_chatMonitorService.GetLastComment()?.Role != SpeechQueueRole.Self)
+            if (chatMonitorService.GetLastComment()?.Role == SpeechQueueRole.Self)
             {
-                await ThinkAsync();
+                return;
             }
+            await _thinkLock.WaitAsync();
+            try
+            {
+                // If a "think" operation is already queued or in progress, do nothing
+                if (_isThinking)
+                {
+                    return;
+                }
+
+                _isThinking = true;
+            }
+            finally
+            {
+                _thinkLock.Release();
+            }
+
+            await Task.Delay(100); // Wait for the chat monitor to process the comment
+            await ThinkAsync();
+
+            _isThinking = false;
         }
 
         /// <summary>
@@ -153,8 +153,26 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
                 return;
             }
 
+            await _thinkLock.WaitAsync();
+            try
+            {
+                // If a "think" operation is already queued or in progress, do nothing
+                if (_isThinking)
+                {
+                    return;
+                }
+
+                _isThinking = true;
+            }
+            finally
+            {
+                _thinkLock.Release();
+            }
+
             await Task.Delay(100); // Wait for the chat monitor to process the comment
             await ThinkAsync();
+
+            _isThinking = false;
         }
 
         ///
@@ -162,9 +180,10 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         ///
         public override async Task StartAsync()
         {
-            _messenger.Register<CommentReceivedEventArg>(this, ThinkOnCommentReceived);
-            _messenger.Register<EndedSpeakingEventArg>(this, CheckForNewCommentOnSpeakingEnded);
-            _monitor.Register<SpeechQueueService>(this);
+            await Task.Yield();
+            messenger.Register<CommentReceivedEventArg>(this, ThinkOnCommentReceived);
+            messenger.Register<EndedSpeakingEventArg>(this, CheckForNewCommentOnSpeakingEnded);
+            monitor.Register<SpeechQueueService>(this);
 
             await ThinkAsync();
             await base.StartAsync();
@@ -175,8 +194,8 @@ namespace Sakura.Live.Connect.Dreamer.Services.Ai
         ///
         public override Task StopAsync()
         {
-            _monitor.UnregisterAll(this);
-            _messenger.UnregisterAll(this);
+            monitor.UnregisterAll(this);
+            messenger.UnregisterAll(this);
             return base.StopAsync();
         }
     }

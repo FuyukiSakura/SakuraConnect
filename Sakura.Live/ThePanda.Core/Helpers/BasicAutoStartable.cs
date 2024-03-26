@@ -61,6 +61,7 @@ namespace Sakura.Live.ThePanda.Core.Helpers
 		///
         public async Task StartOnceAsync()
         {
+            await Task.Yield();
 			await _statusLock.WaitAsync();
 			CancellationTokenSource.Cancel(); // Cancel the previous thread
 			CancellationTokenSource = new CancellationTokenSource();

@@ -26,7 +26,12 @@ namespace Sakura.Live.ThePanda.Core
                 _handlers[type][subscriber] = new List<Action<object>>();
             }
 
-            _handlers[type][subscriber].Add(message => handler((T)message));
+            Action<object> action = message => handler((T)message);
+
+            if (!_handlers[type][subscriber].Contains(action))
+            {
+                _handlers[type][subscriber].Add(action);
+            }
         }
 
         ///
@@ -49,7 +54,18 @@ namespace Sakura.Live.ThePanda.Core
             foreach (var handler in _handlers[type].Keys
                          .SelectMany(subscriber => _handlers[type][subscriber]))
             {
-                _ = Task.Run(() => handler(message));
+                _ = Task.Run(() =>
+                {
+                    try
+                    {
+                        handler(message);
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log the exception, rethrow it, or handle it in some other way
+                        Console.WriteLine($"An error occurred: {ex.Message}");
+                    }
+                });
             }
         }
 

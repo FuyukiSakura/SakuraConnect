@@ -9,22 +9,12 @@ namespace Sakura.Live.Connect.Dreamer.Services
     /// <summary>
     /// Reads chat from OneComme
     /// </summary>
-    public class OneCommeService : BasicAutoStartable
+    public class OneCommeService(IPandaMessenger messenger) : BasicAutoStartable
     {
-        // Dependencies
-        readonly IPandaMessenger _messenger;
-
         const string Url = "ws://127.0.0.1:11180/sub";
+        bool _isReconnecting;
         readonly WebSocket _socket = new (Url, false);
         readonly SemaphoreSlim _socketLock = new (1, 1);
-
-        /// <summary>
-        /// Creates a new instance of <see cref="OneCommeService" />
-        /// </summary>
-        public OneCommeService(IPandaMessenger messenger)
-        {
-            _messenger = messenger;
-        }
 
         ///
         /// <inheritdoc />
@@ -93,20 +83,23 @@ namespace Sakura.Live.Connect.Dreamer.Services
             var msg = OneCommeSubscriptionMessage.Serialize(e);
             if (msg == null) return; // Cannot parse result, listen for next event
 
-            if (msg.Type == OneCommeSubscriptionMessage.Comments)
+            if (msg.Type != OneCommeSubscriptionMessage.Comments)
             {
-                var comments = msg.Data.Comments
-                    .Select(comment => new CommentData
-                    {
-                        Id = comment.Id,
-                        Comment = comment.Data.Comment,
-                        Username = comment.Data.Name
-                    }).ToList();
-                _messenger.Send(new CommentReceivedEventArg
-                {
-                    Comments = comments
-                });
+                // Ignore other message types
+                return;
             }
+
+            var comments = msg.Data.Comments
+                .Select(comment => new CommentData
+                {
+                    Id = comment.Id,
+                    Comment = comment.Data.Comment,
+                    Username = comment.Data.Name
+                }).ToList();
+            messenger.Send(new CommentReceivedEventArg
+            {
+                Comments = comments
+            });
         }
 
         /// <summary>
@@ -116,8 +109,16 @@ namespace Sakura.Live.Connect.Dreamer.Services
         /// <param name="e"></param>
         async void Reconnect_OnClosed(object sender, string e)
         {
+            // If the socket is already connected or a reconnection attempt is in progress, do nothing
+            if (_socket.IsConnected || _isReconnecting)
+            {
+                return;
+            }
+
+            _isReconnecting = true;
             Status = ServiceStatus.Error;
             await _socket.ReconnectAsync();
+            _isReconnecting = false;
         }
     }
 }
